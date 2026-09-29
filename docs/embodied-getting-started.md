@@ -159,7 +159,9 @@ cargo run -p archon-embodied-cli -- \
 
 - 终端进入 ratatui Chat：输入自然语言，`Enter` 发送  
 - 快捷命令：`/help` · `/estop` · `/quit`（或 Ctrl+C）  
-- Viewer 与 worker 跨多轮保持；退出时再 shutdown  
+- Busy 时禁止新指令，但 `/estop` 可即时抢占当前轮  
+- Viewer 与 worker 跨多轮保持；`/quit` 立即关窗退出（无需先关 MuJoCo）  
+- 每轮独立 Episode；会话复用同一 backend  
 - 可选：启动时加 `--instruction "..."` 作为第一轮自动发送  
 - LLM：`--policy llm`（需 `DEEPSEEK_API_KEY`）同样支持 `--tui`
 

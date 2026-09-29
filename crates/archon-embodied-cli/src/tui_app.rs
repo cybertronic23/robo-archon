@@ -23,7 +23,7 @@ use tokio::sync::{mpsc, Mutex};
 use tui_textarea::{Input, Key, TextArea};
 
 use archon_perception::PerceptionBridge;
-use archon_runtime::{Executive, RuntimeEvent};
+use archon_runtime::{EventBus, Executive, RuntimeEvent};
 use archon_embodied::RobotBackend;
 
 use crate::session::{self, SessionConfig, TurnOutcome};
@@ -48,7 +48,6 @@ struct ChatLine {
 
 enum WorkerCmd {
     Turn(String),
-    Estop,
     Quit,
 }
 
@@ -69,6 +68,8 @@ pub async fn run_tui(
 
     let (cmd_tx, mut cmd_rx) = mpsc::channel::<WorkerCmd>(8);
     let (evt_tx, mut evt_rx) = mpsc::channel::<WorkerEvt>(8);
+    // Clone EventBus so /estop can preempt from the UI thread while a turn is running.
+    // Queuing Estop behind WorkerCmd::Turn would delay cancel until the turn finished.
     let events = executive.events.clone();
 
     let worker_cfg = cfg.clone();
@@ -90,11 +91,6 @@ pub async fn run_tui(
                     .await
                     .map_err(|e| format!("{e:#}"));
                     let _ = evt_tx.send(WorkerEvt::Finished(outcome)).await;
-                }
-                WorkerCmd::Estop => {
-                    events.publish(RuntimeEvent::EStop {
-                        reason: "tui".into(),
-                    });
                 }
                 WorkerCmd::Quit => {
                     {
@@ -121,13 +117,13 @@ pub async fn run_tui(
     push_sys(
         &mut lines,
         format!(
-            "就绪 · {} / {} · {} · 底部唯一输入框打字",
+            "就绪 · {} / {} · {} · 每轮独立 Episode · 会话常驻",
             cfg.backend_name, cfg.model, cfg.policy_name
         ),
     );
     push_help(
         &mut lines,
-        "紧凑窗：旁侧看 MuJoCo。Enter 发送 · /estop · /quit · PgUp/PgDn",
+        "紧凑窗：旁侧看 MuJoCo。Enter 发送 · Busy 时可用 /estop · /quit · PgUp/PgDn",
     );
 
     if let Some(text) = first_instruction {
@@ -139,7 +135,7 @@ pub async fn run_tui(
         }
     }
 
-    let mut events = EventStream::new();
+    let mut event_stream = EventStream::new();
     let mut tick = tokio::time::interval(Duration::from_millis(80));
     let mut spinner = 0usize;
     let spin = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
@@ -195,23 +191,21 @@ pub async fn run_tui(
                     }
                 }
             }
-            maybe = events.next() => {
+            maybe = event_stream.next() => {
                 let Some(Ok(ev)) = maybe else { continue };
                 if let Event::Key(key) = ev {
                     if key.kind != KeyEventKind::Press {
                         continue;
                     }
-                    if handle_key(
+                    let _ = handle_key(
                         key,
                         &mut textarea,
                         &mut lines,
                         &mut phase,
                         &mut scroll,
                         &cmd_tx,
-                        &mut should_quit,
-                    ).await? {
-                        // submitted or command handled
-                    }
+                        &events,
+                    ).await?;
                 }
             }
         }
@@ -225,7 +219,7 @@ pub async fn run_tui(
 fn set_input_block(textarea: &mut TextArea<'_>, phase: Phase) {
     let (title, border) = if phase == Phase::Busy {
         (
-            " › busy — wait or /estop ",
+            " › busy — /estop 可抢占 ",
             Style::default().fg(Color::DarkGray),
         )
     } else {
@@ -249,12 +243,16 @@ async fn handle_key(
     phase: &mut Phase,
     scroll: &mut u16,
     cmd_tx: &mpsc::Sender<WorkerCmd>,
-    should_quit: &mut bool,
+    events: &EventBus,
 ) -> Result<bool> {
     if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
-        let _ = cmd_tx.send(WorkerCmd::Quit).await;
+        // Preempt any in-flight turn, then shut down the backend.
+        events.publish(RuntimeEvent::EStop {
+            reason: "tui-ctrl-c".into(),
+        });
         push_sys(lines, "正在退出并关闭仿真会话…".into());
         *phase = Phase::Busy;
+        let _ = cmd_tx.send(WorkerCmd::Quit).await;
         return Ok(true);
     }
 
@@ -268,21 +266,28 @@ async fn handle_key(
             return Ok(true);
         }
         KeyCode::Enter => {
-            if *phase == Phase::Busy {
-                return Ok(true);
-            }
             let text = textarea.lines().join("\n");
             let text = text.trim().to_string();
             if text.is_empty() {
                 return Ok(true);
             }
+
+            // Slash commands (esp. /estop /quit) must work while Busy.
+            if let Some(cmd) = text.strip_prefix('/') {
+                textarea.select_all();
+                textarea.cut();
+                *scroll = 0;
+                return handle_slash(cmd.trim(), lines, phase, cmd_tx, events).await;
+            }
+
+            if *phase == Phase::Busy {
+                // Natural-language turns are disabled while Busy (no queue in MVP).
+                return Ok(true);
+            }
+
             textarea.select_all();
             textarea.cut();
             *scroll = 0;
-
-            if let Some(cmd) = text.strip_prefix('/') {
-                return handle_slash(cmd.trim(), lines, phase, cmd_tx, should_quit).await;
-            }
 
             push_you(lines, text.clone());
             *phase = Phase::Busy;
@@ -305,27 +310,32 @@ async fn handle_slash(
     lines: &mut Vec<ChatLine>,
     phase: &mut Phase,
     cmd_tx: &mpsc::Sender<WorkerCmd>,
-    should_quit: &mut bool,
+    events: &EventBus,
 ) -> Result<bool> {
     match cmd.to_ascii_lowercase().as_str() {
         "q" | "quit" | "exit" => {
+            events.publish(RuntimeEvent::EStop {
+                reason: "tui-quit".into(),
+            });
             push_sys(lines, "正在退出…".into());
             *phase = Phase::Busy;
             let _ = cmd_tx.send(WorkerCmd::Quit).await;
-            let _ = should_quit;
             Ok(true)
         }
         "estop" | "stop" => {
-            push_sys(lines, "E-STOP 已请求".into());
-            let _ = cmd_tx.send(WorkerCmd::Estop).await;
+            // Publish immediately on the EventBus — do not wait for the turn worker.
+            events.publish(RuntimeEvent::EStop {
+                reason: "tui".into(),
+            });
+            push_sys(lines, "E-STOP 已请求（取消当前轮）".into());
             Ok(true)
         }
         "help" | "h" | "?" => {
             push_help(
                 lines,
-                "命令: /help  /estop  /quit\n\
+                "命令: /help  /estop  /quit  /clear\n\
                  直接输入自然语言，例如「向前走一点再左转90度」\n\
-                 Busy 时请等待当前动作结束；可用 /estop 抢占",
+                 Busy 时禁止新指令，但可用 /estop 抢占当前轮",
             );
             Ok(true)
         }

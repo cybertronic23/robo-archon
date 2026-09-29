@@ -68,6 +68,7 @@ class MujocoSession:
         self.video_out: Optional[Path] = None
         self.video_frame_seq = 0
         self.record_every_n = 2  # subsample for smoother file size
+        self.hold_viewer_on_shutdown = True
 
     def load(self, hello: Dict[str, Any]) -> None:
         try:
@@ -80,6 +81,8 @@ class MujocoSession:
 
         self.render = bool(hello.get("render", True))
         self.want_viewer = bool(hello.get("viewer", False))
+        # Default true for one-shot demos; TUI sets false so /quit is non-blocking.
+        self.hold_viewer_on_shutdown = bool(hello.get("hold_viewer_on_shutdown", True))
         media = hello.get("media_root")
         self.media_root = Path(media) if media else None
         if hello.get("record_dir"):
@@ -408,10 +411,17 @@ def main() -> int:
             elif t == "command":
                 write_msg(session.command(msg))
             elif t == "estop":
+                # Zero actuators so motion stops; do not latch — next turn must work.
+                if session.data is not None:
+                    try:
+                        session.data.ctrl[:] = 0.0
+                        session._sync_viewer()
+                    except Exception as e:
+                        sys.stderr.write(f"[mujoco_worker] estop ctrl zero failed: {e}\n")
                 write_msg({"type": "ack"})
             elif t == "shutdown":
                 session.encode_video()
-                if session.viewer is not None:
+                if session.viewer is not None and session.hold_viewer_on_shutdown:
                     session.hold_viewer_until_closed()
                 else:
                     session.close_viewer()

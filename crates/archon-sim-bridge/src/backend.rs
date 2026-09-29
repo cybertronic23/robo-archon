@@ -32,6 +32,9 @@ pub struct BridgeConfig {
     pub video_out: Option<PathBuf>,
     pub record_width: u32,
     pub record_height: u32,
+    /// Keep interactive viewer open until the user closes it on `shutdown` (one-shot demos).
+    /// Set false for multi-turn TUI so `/quit` does not block on the window.
+    pub hold_viewer_on_shutdown: bool,
 }
 
 impl BridgeConfig {
@@ -54,6 +57,7 @@ impl BridgeConfig {
             video_out: None,
             record_width: 1280,
             record_height: 720,
+            hold_viewer_on_shutdown: true,
         }
     }
 
@@ -65,6 +69,11 @@ impl BridgeConfig {
 
     pub fn with_media_root(mut self, root: impl Into<PathBuf>) -> Self {
         self.media_root = Some(root.into());
+        self
+    }
+
+    pub fn with_hold_viewer_on_shutdown(mut self, hold: bool) -> Self {
+        self.hold_viewer_on_shutdown = hold;
         self
     }
 
@@ -347,6 +356,7 @@ impl RobotBackend for BridgedSimBackend {
                 .map(|p| p.to_string_lossy().into_owned()),
             record_width: Some(self.config.record_width),
             record_height: Some(self.config.record_height),
+            hold_viewer_on_shutdown: self.config.hold_viewer_on_shutdown,
         };
         let line = serde_json::to_string(&hello)?;
         io.stdin.write_all(line.as_bytes()).await?;
@@ -533,9 +543,12 @@ mod tests {
             video_out: None,
             record_width: 1280,
             record_height: 720,
+            hold_viewer_on_shutdown: false,
         };
         let mut backend = BridgedSimBackend::new(cfg);
         backend.connect().await.expect("connect mock worker");
+        // Idempotent connect — required for multi-turn keep_backend_alive.
+        backend.connect().await.expect("reconnect noop");
         let obs = backend.read_observation().await.expect("observe");
         assert_eq!(obs.joints().dof(), 6);
         let cmd = JointCommand {
@@ -548,6 +561,16 @@ mod tests {
         backend.execute_command(&cmd, &cancel).await.unwrap();
         let obs2 = backend.read_observation().await.unwrap();
         assert!((obs2.joints().positions[0] - 0.1).abs() < 1e-9);
+        // State survives a second command without reset (multi-turn invariant).
+        let cmd2 = JointCommand {
+            stamp_us: now_us(),
+            names: cmd.names.clone(),
+            positions: vec![0.2, 0.0, 0.0, 0.0, 0.0, 0.0],
+            gripper_open: Some(1.0),
+        };
+        backend.execute_command(&cmd2, &cancel).await.unwrap();
+        let obs3 = backend.read_observation().await.unwrap();
+        assert!((obs3.joints().positions[0] - 0.2).abs() < 1e-9);
         backend.shutdown().await.unwrap();
     }
 }

@@ -34,7 +34,3 @@ bollard = "0.18"
 rustyline = { version = "15", features = ["with-file-history"] }
 dirs = "6"
 toml = "0.8"
-
-# Prefer vendored/path async-trait when registry is unavailable.
-[patch.crates-io]
-async-trait = { path = "third_party/async-trait" }

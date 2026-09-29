@@ -201,13 +201,28 @@ async fn main() -> Result<()> {
                 BridgeConfig::mujoco(&script)
             };
             if args.save_frames {
-                cfg = cfg.with_media_root(&bundle_dir);
+                // Per-turn episode dirs are allocated in session::run_turn; a fixed
+                // media_root here would dump all TUI frames into the pre-connect ep-*.
+                // One-shot keeps media under the CLI-allocated bundle; TUI skips worker frames.
+                if !args.tui {
+                    cfg = cfg.with_media_root(&bundle_dir);
+                }
+            }
+            if args.tui {
+                // /quit must not block waiting for the MuJoCo window to be closed.
+                cfg = cfg.with_hold_viewer_on_shutdown(false);
             }
             if args.viewer {
                 cfg = cfg.with_viewer(true);
-                eprintln!(
-                    "[archon-embodied] MuJoCo viewer enabled (close the window on quit to finish)"
-                );
+                if args.tui {
+                    eprintln!(
+                        "[archon-embodied] MuJoCo viewer enabled (stays open across turns; /quit closes it)"
+                    );
+                } else {
+                    eprintln!(
+                        "[archon-embodied] MuJoCo viewer enabled (close the window on quit to finish)"
+                    );
+                }
             }
             if let Some(path_opt) = &args.record_video {
                 if args.tui {
