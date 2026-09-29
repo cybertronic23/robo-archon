@@ -69,3 +69,6 @@ venv/
 !/python/models/external/.gitkeep
 !/python/models/external/README.md
 
+
+__pycache__/
+*.pyc
