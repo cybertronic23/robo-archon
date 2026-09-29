@@ -201,9 +201,8 @@ async fn main() -> Result<()> {
                 BridgeConfig::mujoco(&script)
             };
             if args.save_frames {
-                // Per-turn episode dirs are allocated in session::run_turn; a fixed
-                // media_root here would dump all TUI frames into the pre-connect ep-*.
-                // One-shot keeps media under the CLI-allocated bundle; TUI skips worker frames.
+                // One-shot: frames go under the CLI-allocated episode bundle from hello.
+                // TUI: per-turn SetMediaRoot in session::run_turn (no fixed hello media_root).
                 if !args.tui {
                     cfg = cfg.with_media_root(&bundle_dir);
                 }

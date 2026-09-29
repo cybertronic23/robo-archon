@@ -159,9 +159,10 @@ cargo run -p archon-embodied-cli -- \
 
 - 终端进入 ratatui Chat：输入自然语言，`Enter` 发送  
 - 快捷命令：`/help` · `/estop` · `/quit`（或 Ctrl+C）  
-- Busy 时禁止新指令，但 `/estop` 可即时抢占当前轮  
+- Busy 时禁止新指令，但 `/estop` 可即时抢占当前轮（含 `mj_step` 中途）  
 - Viewer 与 worker 跨多轮保持；`/quit` 立即关窗退出（无需先关 MuJoCo）  
-- 每轮独立 Episode；会话复用同一 backend  
+- 每轮独立 Episode；`--save-frames` 时帧写入该轮 `media/images.primary/`  
+- 会话复用同一 backend  
 - 可选：启动时加 `--instruction "..."` 作为第一轮自动发送  
 - LLM：`--policy llm`（需 `DEEPSEEK_API_KEY`）同样支持 `--tui`
 
@@ -170,6 +171,17 @@ cargo run -p archon-embodied-cli -- \
 | `DEEPSEEK_API_KEY` / `--llm-api-key` | API Key |
 | `LLM_BASE_URL` / `--llm-base-url` | 默认 `https://api.deepseek.com` |
 | `LLM_MODEL` / `--llm-model` | 默认 `deepseek-chat` |
+
+## Headless MuJoCo smoke（CI / 本机）
+
+```bash
+python3 -m venv .venv-mujoco
+.venv-mujoco/bin/pip install -r python/requirements-mujoco.txt
+export ARCHON_PYTHON="$(pwd)/.venv-mujoco/bin/python"
+# Linux 无显示器时：
+# export MUJOCO_GL=egl
+bash scripts/mujoco_smoke.sh
+```
 
 ## ROS2 话题契约（sim 与 real 共用）
 

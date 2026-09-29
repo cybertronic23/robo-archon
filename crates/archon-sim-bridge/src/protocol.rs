@@ -62,6 +62,11 @@ pub enum ClientMsg {
     Estop {
         reason: String,
     },
+    /// Change where observation RGB frames are written (per-turn episode bundles).
+    SetMediaRoot {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        media_root: Option<String>,
+    },
     Shutdown,
 }
 

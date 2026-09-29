@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use anyhow::Result;
 use async_trait::async_trait;
 
@@ -38,6 +40,12 @@ pub trait RobotBackend: Send + Sync {
 
     /// Immediate stop — highest priority.
     async fn estop(&mut self) -> Result<()>;
+
+    /// Retarget where the backend writes episode media frames (multi-turn TUI).
+    /// Default: no-op. Bridged MuJoCo workers honor this via `set_media_root`.
+    async fn set_media_root(&mut self, _root: Option<&Path>) -> Result<()> {
+        Ok(())
+    }
 }
 
 /// Optional helper: run a full interpolated command stream until done or cancelled.

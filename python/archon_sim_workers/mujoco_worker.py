@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import select
 import sys
 import time
 import traceback
@@ -69,6 +70,8 @@ class MujocoSession:
         self.video_frame_seq = 0
         self.record_every_n = 2  # subsample for smoother file size
         self.hold_viewer_on_shutdown = True
+        # Estop consumed mid-command already applied; next estop only needs ack.
+        self._estop_applied = False
 
     def load(self, hello: Dict[str, Any]) -> None:
         try:
@@ -127,6 +130,11 @@ class MujocoSession:
 
         is_car = any(n.startswith("root_") for n in self.joint_names)
 
+        # Offscreen renderer before viewer — more reliable on macOS when both are needed.
+        need_renderer = self.render or self.record_dir is not None
+        if need_renderer:
+            self._init_renderer()
+
         if self.want_viewer:
             try:
                 import mujoco.viewer
@@ -151,21 +159,6 @@ class MujocoSession:
                 self.viewer = None
                 self.want_viewer = False
 
-        # Always try offscreen renderer when recording video
-        need_renderer = self.render or self.record_dir is not None
-        if need_renderer:
-            try:
-                self.renderer = mujoco.Renderer(self.model, height=self.height, width=self.width)
-                self.render = True
-            except Exception as e:
-                sys.stderr.write(f"[mujoco_worker] offscreen render disabled: {e}\n")
-                self.renderer = None
-                if self.record_dir is not None:
-                    sys.stderr.write(
-                        "[mujoco_worker] WARNING: cannot record MP4 without offscreen renderer. "
-                        "Use macOS screen capture (Cmd+Shift+5) on the viewer window instead.\n"
-                    )
-
         # Pick a usable camera if configured one is missing
         if self.renderer is not None:
             cid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_CAMERA, self.camera_name)
@@ -173,6 +166,64 @@ class MujocoSession:
                 alt = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_CAMERA, 0)
                 if alt:
                     self.camera_name = alt
+
+    def _init_renderer(self) -> None:
+        """Create offscreen Renderer, trying GL backends that work on CI / macOS."""
+        import mujoco
+
+        assert self.model is not None
+        sizes = [(self.height, self.width)]
+        # Fallback smaller size if high-res offscreen fails (common on constrained CI).
+        if self.width > 320 or self.height > 240:
+            sizes.append((240, 320))
+
+        preferred = os.environ.get("MUJOCO_GL", "").strip().lower()
+        # On Linux CI without display, egl/osmesa usually work; glfw needs a display.
+        if preferred:
+            gl_candidates = [preferred]
+        elif sys.platform == "darwin":
+            gl_candidates = ["glfw", "egl", ""]
+        else:
+            gl_candidates = ["egl", "osmesa", "glfw", ""]
+
+        last_err: Optional[BaseException] = None
+        for gl in gl_candidates:
+            if gl:
+                os.environ["MUJOCO_GL"] = gl
+            for h, w in sizes:
+                try:
+                    self.renderer = mujoco.Renderer(self.model, height=h, width=w)
+                    self.width = w
+                    self.height = h
+                    self.render = True
+                    if gl or (h, w) != (self.height, self.width):
+                        sys.stderr.write(
+                            f"[mujoco_worker] offscreen renderer ok "
+                            f"(MUJOCO_GL={os.environ.get('MUJOCO_GL', '')!r} {w}x{h})\n"
+                        )
+                    return
+                except Exception as e:
+                    last_err = e
+                    self.renderer = None
+
+        sys.stderr.write(f"[mujoco_worker] offscreen render disabled: {last_err}\n")
+        self.renderer = None
+        if self.record_dir is not None:
+            sys.stderr.write(
+                "[mujoco_worker] WARNING: cannot record MP4 without offscreen renderer. "
+                "Try MUJOCO_GL=egl (Linux) or screen-capture the viewer on macOS "
+                "(Cmd+Shift+5).\n"
+            )
+
+    def set_media_root(self, media_root: Optional[str]) -> None:
+        self.media_root = Path(media_root) if media_root else None
+        self.frame_seq = 0
+        if self.media_root is not None:
+            (self.media_root / "media" / "images.primary").mkdir(parents=True, exist_ok=True)
+            # Ensure renderer exists once media is requested mid-session.
+            if self.renderer is None and self.model is not None:
+                self.render = True
+                self._init_renderer()
 
     def _sync_viewer(self) -> None:
         if self.viewer is None:
@@ -224,6 +275,67 @@ class MujocoSession:
             q.append(float(self.data.qpos[qadr]))
         return q
 
+    def apply_estop(self) -> None:
+        """Stop motion: hold pose for arm joints, zero planar/base controls."""
+        import mujoco
+
+        if self.data is None or self.model is None:
+            return
+        try:
+            for i, jname in enumerate(self.joint_names):
+                if i >= len(self.actuator_ids):
+                    break
+                aid = self.actuator_ids[i]
+                jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, jname)
+                if jid < 0:
+                    self.data.ctrl[aid] = 0.0
+                    continue
+                jtype = self.model.jnt_type[jid]
+                # Planar base / slide / free joints: zero ctrl stops translation.
+                if jname.startswith("root_") or jtype == mujoco.mjtJoint.mjJNT_SLIDE:
+                    self.data.ctrl[aid] = 0.0
+                else:
+                    qadr = self.model.jnt_qposadr[jid]
+                    self.data.ctrl[aid] = float(self.data.qpos[qadr])
+            # Zero any unused actuators.
+            for aid in range(self.model.nu):
+                if aid not in self.actuator_ids:
+                    self.data.ctrl[aid] = 0.0
+            mujoco.mj_forward(self.model, self.data)
+            self._sync_viewer()
+            self._estop_applied = True
+        except Exception as e:
+            sys.stderr.write(f"[mujoco_worker] estop failed: {e}\n")
+
+    def _poll_estop(self) -> bool:
+        """Non-blocking check for an estop line on stdin during mj_step bursts."""
+        try:
+            ready, _, _ = select.select([sys.stdin], [], [], 0)
+        except (ValueError, OSError):
+            return False
+        if not ready:
+            return False
+        line = sys.stdin.readline()
+        if not line:
+            return False
+        line = line.strip()
+        if not line:
+            return False
+        try:
+            import json
+
+            msg = json.loads(line)
+        except Exception:
+            sys.stderr.write(f"[mujoco_worker] ignored non-JSON while stepping: {line[:80]}\n")
+            return False
+        if msg.get("type") == "estop":
+            self.apply_estop()
+            return True
+        sys.stderr.write(
+            f"[mujoco_worker] unexpected mid-command msg type={msg.get('type')!r}; ignored\n"
+        )
+        return False
+
     def _maybe_record_frame(self) -> None:
         if self.record_dir is None or self.renderer is None:
             return
@@ -240,7 +352,10 @@ class MujocoSession:
         h, w, _ = pixels.shape
         idx = self.video_frame_seq // self.record_every_n
         path = self.record_dir / f"frame_{idx:06d}.ppm"
-        write_ppm(str(path), w, h, pixels.tobytes())
+        # Atomic write avoids partial frames if the process is interrupted.
+        tmp = path.with_suffix(".ppm.tmp")
+        write_ppm(str(tmp), w, h, pixels.tobytes())
+        os.replace(tmp, path)
 
     def encode_video(self) -> None:
         if self.video_out is None or self.record_dir is None:
@@ -296,7 +411,9 @@ class MujocoSession:
         self.frame_seq += 1
         rel = f"media/images.primary/{self.frame_seq:06d}.ppm"
         path = self.media_root / rel
-        write_ppm(str(path), w, h, pixels.tobytes())
+        tmp = path.with_suffix(".ppm.tmp")
+        write_ppm(str(tmp), w, h, pixels.tobytes())
+        os.replace(tmp, path)
         return {
             "key": "images.primary",
             "stamp_us": now_us(),
@@ -330,6 +447,7 @@ class MujocoSession:
         mujoco.mj_resetData(self.model, self.data)
         mujoco.mj_forward(self.model, self.data)
         self.gripper_open = 0.5
+        self._estop_applied = False
         self._sync_viewer()
         self._maybe_record_frame()
         return self.observation()
@@ -338,6 +456,7 @@ class MujocoSession:
         import mujoco
 
         assert self.model is not None and self.data is not None
+        self._estop_applied = False
         positions = list(msg.get("positions") or [])
         names = list(msg.get("names") or [])
 
@@ -366,13 +485,17 @@ class MujocoSession:
         # Headless / video-only: burst steps and capture frames.
         n_sub = 15 if self.viewer is not None else 10
         dt = float(self.model.opt.timestep)
+        cancelled = False
         for _ in range(n_sub):
+            if self._poll_estop():
+                cancelled = True
+                break
             mujoco.mj_step(self.model, self.data)
             if self.viewer is not None:
                 self._sync_viewer()
                 time.sleep(dt)
             self._maybe_record_frame()
-        if self.viewer is None:
+        if self.viewer is None and not cancelled:
             self._sync_viewer()
         return self.observation()
 
@@ -409,15 +532,21 @@ def main() -> int:
             elif t == "observe":
                 write_msg(session.observation())
             elif t == "command":
-                write_msg(session.command(msg))
+                obs = session.command(msg)
+                write_msg(obs)
+                # If estop was consumed mid-burst, ack it after the command observation
+                # so Rust can drain Obs then Ack in order.
+                if session._estop_applied:
+                    write_msg({"type": "ack"})
+                    session._estop_applied = False
+            elif t == "set_media_root":
+                root = msg.get("media_root")
+                session.set_media_root(root if root else None)
+                write_msg({"type": "ack"})
             elif t == "estop":
-                # Zero actuators so motion stops; do not latch — next turn must work.
-                if session.data is not None:
-                    try:
-                        session.data.ctrl[:] = 0.0
-                        session._sync_viewer()
-                    except Exception as e:
-                        sys.stderr.write(f"[mujoco_worker] estop ctrl zero failed: {e}\n")
+                if not session._estop_applied:
+                    session.apply_estop()
+                session._estop_applied = False
                 write_msg({"type": "ack"})
             elif t == "shutdown":
                 session.encode_video()

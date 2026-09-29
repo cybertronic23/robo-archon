@@ -66,6 +66,8 @@ def main() -> int:
             if msg.get("gripper_open") is not None:
                 st.grip = float(msg["gripper_open"])
             write_msg(st.obs())
+        elif t == "set_media_root":
+            write_msg({"type": "ack"})
         elif t in ("estop", "shutdown"):
             write_msg({"type": "ack"})
             if t == "shutdown":

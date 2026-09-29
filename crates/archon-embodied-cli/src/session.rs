@@ -47,6 +47,21 @@ pub async fn run_turn(
     executive.config.episode_id = Some(episode_id.clone());
     let bundle_dir = cfg.episode_root.join(&episode_id);
 
+    // Per-turn media root so TUI frames land in this episode's bundle, not a stale connect dir.
+    if cfg.save_frames {
+        std::fs::create_dir_all(bundle_dir.join("media/images.primary"))
+            .with_context(|| format!("create media dir {}", bundle_dir.display()))?;
+        {
+            let mut b = backend.lock().await;
+            b.set_media_root(Some(bundle_dir.as_path()))
+                .await
+                .context("backend set_media_root")?;
+        }
+        if let Some(bridge) = perception.as_mut() {
+            bridge.set_media_root(Some(bundle_dir.clone()));
+        }
+    }
+
     let task_context = serde_json::json!({
         "task_id": cfg.task_id,
         "backend": cfg.backend_name,

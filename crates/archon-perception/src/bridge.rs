@@ -36,6 +36,12 @@ impl PerceptionBridge {
         self
     }
 
+    /// Point subsequent frames at a new episode bundle (resets frame sequence).
+    pub fn set_media_root(&mut self, root: Option<PathBuf>) {
+        self.media_root = root;
+        self.frame_seq = 0;
+    }
+
     pub fn camera_name(&self) -> &str {
         self.camera.name()
     }

@@ -246,30 +246,8 @@ impl BridgedSimBackend {
         let io = guard
             .as_mut()
             .context("bridge not connected; call connect() first")?;
-
-        let line = serde_json::to_string(&msg).context("serialize client msg")?;
-        io.stdin
-            .write_all(line.as_bytes())
-            .await
-            .context("write to worker stdin")?;
-        io.stdin.write_all(b"\n").await?;
-        io.stdin.flush().await?;
-
-        let mut response = String::new();
-        let n = io
-            .stdout
-            .read_line(&mut response)
-            .await
-            .context("read worker stdout")?;
-        if n == 0 {
-            bail!("worker closed stdout (EOF)");
-        }
-        let parsed: ServerMsg =
-            serde_json::from_str(response.trim()).context("parse worker response")?;
-        if let ServerMsg::Error { message } = &parsed {
-            bail!("worker error: {message}");
-        }
-        Ok(parsed)
+        write_line(io, &msg).await?;
+        read_server_msg(io).await
     }
 
     async fn request_observation(&self) -> Result<Observation> {
@@ -283,6 +261,35 @@ impl BridgedSimBackend {
             other => bail!("unexpected response to observe: {:?}", other),
         }
     }
+}
+
+async fn write_line(io: &mut BridgeIo, msg: &ClientMsg) -> Result<()> {
+    let line = serde_json::to_string(msg).context("serialize client msg")?;
+    io.stdin
+        .write_all(line.as_bytes())
+        .await
+        .context("write to worker stdin")?;
+    io.stdin.write_all(b"\n").await?;
+    io.stdin.flush().await?;
+    Ok(())
+}
+
+async fn read_server_msg(io: &mut BridgeIo) -> Result<ServerMsg> {
+    let mut response = String::new();
+    let n = io
+        .stdout
+        .read_line(&mut response)
+        .await
+        .context("read worker stdout")?;
+    if n == 0 {
+        bail!("worker closed stdout (EOF)");
+    }
+    let parsed: ServerMsg =
+        serde_json::from_str(response.trim()).context("parse worker response")?;
+    if let ServerMsg::Error { message } = &parsed {
+        bail!("worker error: {message}");
+    }
+    Ok(parsed)
 }
 
 #[async_trait]
@@ -429,23 +436,91 @@ impl RobotBackend for BridgedSimBackend {
         if cancel.is_cancelled() {
             bail!("cancelled");
         }
-        let resp = self
-            .send_recv(ClientMsg::Command {
+        let mut guard = self.io.lock().await;
+        let io = guard
+            .as_mut()
+            .context("bridge not connected; call connect() first")?;
+
+        write_line(
+            io,
+            &ClientMsg::Command {
                 stamp_us: cmd.stamp_us,
                 names: cmd.names.clone(),
                 positions: cmd.positions.clone(),
                 gripper_open: cmd.gripper_open,
-            })
-            .await?;
-        match resp {
-            ServerMsg::Observation { .. } => {
-                let obs = resp.into_observation()?;
-                *self.last_obs.lock().await = Some(obs);
-                Ok(())
+            },
+        )
+        .await?;
+
+        // Poll for the command observation while allowing mid-burst /estop.
+        // Short read timeouts so we can inject Estop without cancelling a partial read.
+        let mut estop_sent = false;
+        let mut got_observation = false;
+        loop {
+            if !estop_sent && cancel.is_cancelled() {
+                write_line(
+                    io,
+                    &ClientMsg::Estop {
+                        reason: "cancel-mid-command".into(),
+                    },
+                )
+                .await?;
+                estop_sent = true;
             }
-            ServerMsg::Ack => Ok(()),
-            other => bail!("unexpected command response: {:?}", other),
+
+            let mut response = String::new();
+            match tokio::time::timeout(
+                std::time::Duration::from_millis(20),
+                io.stdout.read_line(&mut response),
+            )
+            .await
+            {
+                Err(_) => {
+                    // Timeout — keep polling cancel / waiting for worker.
+                    continue;
+                }
+                Ok(Ok(0)) => bail!("worker closed stdout (EOF)"),
+                Ok(Err(e)) => return Err(e).context("read worker stdout"),
+                Ok(Ok(_)) => {}
+            }
+
+            let parsed: ServerMsg =
+                serde_json::from_str(response.trim()).context("parse worker response")?;
+            match parsed {
+                ServerMsg::Error { message } => bail!("worker error: {message}"),
+                ServerMsg::Ack => {
+                    // Estop ack (may arrive before or after the command observation).
+                    if got_observation {
+                        break;
+                    }
+                    continue;
+                }
+                ServerMsg::Observation { .. } => {
+                    let obs = parsed.into_observation()?;
+                    *self.last_obs.lock().await = Some(obs);
+                    got_observation = true;
+                    if estop_sent {
+                        // Drain optional estop ack with a short window, then return.
+                        let mut ack_buf = String::new();
+                        if tokio::time::timeout(
+                            std::time::Duration::from_millis(50),
+                            io.stdout.read_line(&mut ack_buf),
+                        )
+                        .await
+                        .is_ok()
+                        {
+                            let _ = serde_json::from_str::<ServerMsg>(ack_buf.trim());
+                        }
+                    }
+                    break;
+                }
+                other => bail!("unexpected command response: {:?}", other),
+            }
         }
+
+        // Cancelled mid-burst still returns Ok so execute_stream can emit Cancelled.
+        let _ = got_observation;
+        Ok(())
     }
 
     async fn estop(&mut self) -> Result<()> {
@@ -455,6 +530,22 @@ impl RobotBackend for BridgedSimBackend {
             })
             .await;
         Ok(())
+    }
+
+    async fn set_media_root(&mut self, root: Option<&Path>) -> Result<()> {
+        self.config.media_root = root.map(|p| p.to_path_buf());
+        if self.io.lock().await.is_none() {
+            return Ok(());
+        }
+        let resp = self
+            .send_recv(ClientMsg::SetMediaRoot {
+                media_root: root.map(|p| p.to_string_lossy().into_owned()),
+            })
+            .await?;
+        match resp {
+            ServerMsg::Ack => Ok(()),
+            other => bail!("unexpected set_media_root response: {:?}", other),
+        }
     }
 }
 
@@ -571,6 +662,11 @@ mod tests {
         backend.execute_command(&cmd2, &cancel).await.unwrap();
         let obs3 = backend.read_observation().await.unwrap();
         assert!((obs3.joints().positions[0] - 0.2).abs() < 1e-9);
+        backend
+            .set_media_root(Some(Path::new("/tmp/archon-test-media")))
+            .await
+            .expect("set_media_root");
+        backend.set_media_root(None).await.expect("clear media_root");
         backend.shutdown().await.unwrap();
     }
 }
