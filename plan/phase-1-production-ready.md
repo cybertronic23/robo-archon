@@ -9,13 +9,13 @@
 
 ## 概述
 
-Phase 1 的目标是让 Archon 达到生产环境可用的状态。这意味着用户可以安全、可靠地在真实项目中使用 Archon 进行日常开发工作。
+Phase 1 的目标是让 RoboArchon 达到生产环境可用的状态。这意味着用户可以安全、可靠地在真实项目中使用 RoboArchon 进行日常开发工作。
 
 ## 关键交付物
 
 ### 1. MCP (Model Context Protocol) 客户端支持
 
-**目标**: 让 Archon 能够连接外部数据源和工具
+**目标**: 让 RoboArchon 能够连接外部数据源和工具
 
 **具体任务**:
 - [ ] 实现 MCP 客户端核心协议
@@ -24,7 +24,7 @@ Phase 1 的目标是让 Archon 达到生产环境可用的状态。这意味着�
 - [ ] 实现工具发现和执行
 - [ ] 实现资源订阅和通知
 - [ ] 实现提示模板支持
-- [ ] 添加 MCP 服务器配置管理 (`~/.archon/mcp.json`)
+- [ ] 添加 MCP 服务器配置管理（数字 CLI：`~/.archon/mcp.json`）
 
 **验证标准**:
 ```bash
@@ -41,7 +41,7 @@ archon mcp list
 
 ### 2. 向量存储集成 (RAG)
 
-**目标**: 让 Archon 具备长期记忆和文档检索能力
+**目标**: 让 RoboArchon 具备长期记忆和文档检索能力
 
 **具体任务**:
 - [ ] 集成向量数据库客户端 (Chroma/Qdrant)
@@ -66,7 +66,7 @@ session.add_context(context);
 
 ### 3. 增强 Git 集成
 
-**目标**: 让 Archon 能够更好地与 GitHub/GitLab 协作
+**目标**: 让 RoboArchon 能够更好地与 GitHub/GitLab 协作
 
 **具体任务**:
 - [ ] 实现 GitHub CLI 集成 (gh)
@@ -134,4 +134,4 @@ Phase 1 完成需要满足以下条件：
 
 *文档版本: 1.0*
 *最后更新: 2026-04-08*
-*维护者: Archon Team*
+*维护者: RoboArchon Team*

@@ -1,17 +1,64 @@
-# Archon — Architecture Design Document
+# RoboArchon — Architecture
 
-## Overview
+RoboArchon is an **embodied Agent OS** (Physical AI): model-agnostic orchestration of observation → policy proposal → deterministic safety → execution → Episode logging. Simulation and real robots share the same contracts.
 
-Archon (Greek: "ruler") is a Rust-based Agent Harness framework modeled after Claude Code. It implements a minimal, fully functional **agent loop**: user input → LLM streaming call → tool_use execution → result feedback → loop. Phase 1 ships with 3 core tools (Read, Bash, Edit) and a terminal REPL interface.
+This repository also retains a frozen **digital** Agent Harness (desktop LLM tool_use loop). Embodied is the product mainline; digital crates stay on disk as `archon-*` until they move to a separate repo.
 
-## Design Principles
+> Home dirs: embodied uses `~/.robo-archon` (episodes / asset cache). Digital CLI still defaults to `~/.archon` (sessions / config / history) — package paths remain `crates/archon-*`.
+
+## Embodied plane (mainline)
+
+```
+Observation → Policy.propose → SafetyGate → Chronos → RobotBackend → Episode
+```
+
+- One robot has one **Executive** (execution authority).
+- Policies (LLM / VLA / rules) only **propose**; they cannot bypass Safety / Arbiter / resource locks.
+- Swap `RobotBackend` (in-proc sim, MuJoCo bridge, later real ROS2) without changing the Executive.
+
+### Embodied crate map
+
+```
+robo-archon-cli          # binary: robo-archon
+  ├── robo-archon-runtime     # Executive, EventBus, locks, Arbiter
+  ├── robo-archon-policy      # Mock / ColorBlob / Instruction / LlmPolicy
+  ├── robo-archon-perception  # cameras, detectors, Observation enrich
+  ├── robo-archon-kinetic     # Chronos interpolation (≥50 Hz)
+  ├── robo-archon-sim         # in-process SimBackend
+  ├── robo-archon-sim-bridge  # NDJSON → Python MuJoCo workers
+  ├── robo-archon-ros2        # topic contract (/robo_archon/arm/…)
+  └── robo-archon-embodied    # shared types + Policy / SafetyGate / RobotBackend traits
+```
+
+Python workers: `python/robo_archon_sim_workers/`.
+
+### Embodied design principles
+
+1. **Model-agnostic** — adapters implement `Policy`; runtime never depends on a vendor SDK.
+2. **Safety is deterministic** — never an LLM.
+3. **Sim ↔ real same contract** — change Backend, not Executive.
+4. **Preemption** — EStop / UserStop via EventBus; mid-motion cancel supported on the MuJoCo bridge.
+
+Further reading: [docs/embodied-getting-started.md](docs/embodied-getting-started.md), [examples/diff-car-mujoco/](examples/diff-car-mujoco/), [plan/](plan/), [changelog/](changelog/).
+
+---
+
+## Digital plane (Agent Harness)
+
+### Overview
+
+RoboArchon's digital plane is a Rust-based Agent Harness framework modeled after Claude Code. It implements a minimal, fully functional **agent loop**: user input → LLM streaming call → tool_use execution → result feedback → loop. Phase 1 ships with 3 core tools (Read, Bash, Edit) and a terminal REPL interface.
+
+Crate directories and Cargo package names remain `archon-core` / `archon-llm` / `archon-tools` / `archon-cli` (binary name still `archon` until that code is moved).
+
+### Design Principles
 
 - **Trait-driven extensibility** — New tools and LLM providers plug in via async traits, zero changes to core logic.
 - **Streaming-first** — LLM output is printed token-by-token; SSE events are parsed incrementally.
 - **Minimal surface area** — Each crate owns exactly one concern. No framework-level magic.
 - **Explicit over implicit** — Tool results are plain strings. Session history is a flat `Vec<Message>`. No hidden state machines.
 
-## Crate Dependency Graph
+### Crate Dependency Graph
 
 ```
 archon-cli
@@ -24,9 +71,9 @@ archon-cli
 
 `archon-core` is the foundation with zero internal crate dependencies. All other crates depend on it for shared types and traits.
 
-## Crate Responsibilities
+### Crate Responsibilities
 
-### archon-core
+#### archon-core
 
 The kernel of the system. Defines all shared abstractions and orchestrates the agent loop.
 
@@ -58,7 +105,7 @@ StreamEvent
   └── Error { message }
 ```
 
-### archon-llm
+#### archon-llm
 
 Handles HTTP communication with the Anthropic Messages API and SSE stream parsing.
 
@@ -87,7 +134,7 @@ HTTP response bytes
 
 The mpsc channel (capacity 64) provides backpressure between the network reader and the agent loop consumer.
 
-### archon-tools
+#### archon-tools
 
 Concrete tool implementations, each a unit struct implementing the `Tool` trait.
 
@@ -102,7 +149,7 @@ Concrete tool implementations, each a unit struct implementing the `Tool` trait.
 - `BashTool` enforces a configurable timeout via `tokio::time::timeout`.
 - `ReadTool` clamps offset/limit to file bounds; never panics on out-of-range.
 
-### archon-cli
+#### archon-cli
 
 Binary entry point. Minimal glue code: parse args → wire components → run REPL.
 
@@ -113,7 +160,7 @@ Binary entry point. Minimal glue code: parse args → wire components → run RE
 - Auto-saves session to `~/.archon/sessions/latest.json` after each turn
 - Handles EOF (Ctrl+D) for graceful exit
 
-## Agent Loop — Detailed Flow
+### Agent Loop — Detailed Flow
 
 ```
                     ┌─────────────────┐
@@ -183,7 +230,7 @@ The agent loop maintains parallel `Vec`s indexed by content block position:
 
 On `ContentBlockStop`, the accumulated data is finalized into a `ContentBlock` and pushed to the response vector.
 
-## Session Message Protocol
+### Session Message Protocol
 
 The session maintains a strict message sequence following the Anthropic API contract:
 
@@ -200,7 +247,7 @@ User:      [Text("next question")]
 
 Key rule: **Tool results are always wrapped in User messages**, per API requirements.
 
-## Error Handling Strategy
+### Error Handling Strategy
 
 | Layer | Mechanism | Behavior |
 |-------|-----------|----------|
@@ -211,23 +258,23 @@ Key rule: **Tool results are always wrapped in User messages**, per API requirem
 
 This means tool errors are **recoverable** (the LLM can adapt), while transport/parsing errors are **fatal** to the current turn but not to the session.
 
-## Extension Points
+### Extension Points
 
-### Adding a new tool
+#### Adding a new tool
 
 1. Create a struct in `archon-tools/src/` implementing `archon_core::Tool`
 2. Register it in `main.rs`: `tools.register(Box::new(MyTool))`
 
 No changes needed to core, llm, or the agent loop.
 
-### Adding a new LLM provider
+#### Adding a new LLM provider
 
 1. Create a struct implementing `archon_core::StreamProvider`
 2. Pass it to `run_agent_loop()` instead of `AnthropicProvider`
 
 The agent loop is provider-agnostic — it only consumes `StreamEvent`s.
 
-## Dependencies
+### Dependencies
 
 | Crate | Version | Purpose |
 |-------|---------|---------|
@@ -242,11 +289,11 @@ The agent loop is provider-agnostic — it only consumes `StreamEvent`s.
 | `dirs` | 6 | Platform-native home directory resolution |
 | `eventsource-stream` | 0.2 | SSE stream utilities (declared but parsing done manually) |
 
-## Permission System
+### Permission System
 
 Phase 2 adds a permission gate before every non-Safe tool execution, preventing the LLM from running arbitrary commands without user consent.
 
-### Risk Classification
+#### Risk Classification
 
 Every tool call is classified into one of three risk levels:
 
@@ -258,7 +305,7 @@ Every tool call is classified into one of three risk levels:
 
 Classification is handled by `PermissionHandler::classify()`, which can be overridden per-implementation.
 
-### Core Abstractions (`archon-core/src/permission.rs`)
+#### Core Abstractions (`archon-core/src/permission.rs`)
 
 ```
 PermissionHandler (async trait)
@@ -276,7 +323,7 @@ Two built-in implementations:
 | `AllowAllPermissions` | `archon-core` | Always returns `Allow` — backward-compatible default |
 | `InteractivePermissionHandler` | `archon-cli` | Prompts via stdin: `y`=allow, `n`=deny, `a`=always-allow this tool |
 
-### Agent Loop Integration
+#### Agent Loop Integration
 
 In `run_agent_loop()`, before each tool execution:
 
@@ -293,14 +340,14 @@ for each ToolUse block:
 
 Denied tools still produce a `ToolResult` so the LLM can observe the denial and adjust its behavior.
 
-### CLI Flags
+#### CLI Flags
 
 | Flag | Effect |
 |------|--------|
 | `--allow-all` | Use `AllowAllPermissions` (skip all prompts) |
 | _(default)_ | Use `InteractivePermissionHandler` (prompt for Moderate/Dangerous) |
 
-### Interactive Prompt UX
+#### Interactive Prompt UX
 
 ```
 [Permission required] tool=bash risk=Dangerous
@@ -314,11 +361,11 @@ The `always` option adds the tool name to an in-memory set — subsequent calls 
 
 `spawn_blocking` is used for stdin reads to avoid blocking the tokio runtime.
 
-## Sandbox (Docker-based)
+### Sandbox (Docker-based)
 
 Phase 2 adds optional sandboxed execution for bash commands using Docker containers via the `bollard` crate.
 
-### Sandbox Modes
+#### Sandbox Modes
 
 | Mode | Network | Filesystem | Resource Limits | Use Case |
 |------|---------|-----------|----------------|----------|
@@ -326,7 +373,7 @@ Phase 2 adds optional sandboxed execution for bash commands using Docker contain
 | `Permissive` | Blocked | cwd mounted read-write | None | Block network exfiltration, allow file edits |
 | `Strict` | Blocked | cwd mounted read-only | 512MB RAM, 50% CPU, 256 PIDs, drop ALL caps | Untrusted code, maximum isolation |
 
-### Architecture
+#### Architecture
 
 ```
 BashTool
@@ -342,7 +389,7 @@ BashTool
                                └── Remove container (force)
 ```
 
-### Docker Sandbox Lifecycle
+#### Docker Sandbox Lifecycle
 
 ```
 DockerSandbox::new(mode, working_dir)
@@ -362,7 +409,7 @@ DockerSandbox::execute(command, timeout)
 
 The Docker client is lazily initialized via `tokio::sync::OnceCell` — no Docker connection is attempted when `--sandbox off` (the default).
 
-### Strict Mode Resource Limits
+#### Strict Mode Resource Limits
 
 | Resource | Limit | Rationale |
 |----------|-------|-----------|
@@ -372,13 +419,13 @@ The Docker client is lazily initialized via `tokio::sync::OnceCell` — no Docke
 | Capabilities | Drop ALL, add DAC_OVERRIDE only | Minimal privilege principle |
 | Root filesystem | Writable (container-internal only) | Commands need /tmp; cwd is read-only via bind mount |
 
-### CLI Flags
+#### CLI Flags
 
 | Flag | Values | Default | Effect |
 |------|--------|---------|--------|
 | `--sandbox` | `off`, `permissive`, `strict` | `off` | Set sandbox mode for bash tool |
 
-### Error Handling
+#### Error Handling
 
 | Scenario | Behavior |
 |----------|----------|
@@ -387,9 +434,9 @@ The Docker client is lazily initialized via `tokio::sync::OnceCell` — no Docke
 | Command timeout | Container killed + removed, timeout error returned |
 | Image not found | Docker pull needed (user responsibility, logged in error) |
 
-## Test Plan
+### Test Plan
 
-### Sandbox Integration Tests (`archon-tools/tests/sandbox_test.rs`)
+#### Sandbox Integration Tests (`archon-tools/tests/sandbox_test.rs`)
 
 | Test | Mode | Assertion |
 |------|------|-----------|
@@ -406,7 +453,7 @@ Run tests: `cargo test -p archon-tools --test sandbox_test`
 
 Prerequisites: Docker daemon running, `ubuntu:latest` image pulled.
 
-### Manual Verification
+#### Manual Verification
 
 1. **Permission system (interactive)**:
    ```bash
@@ -436,17 +483,17 @@ Prerequisites: Docker daemon running, `ubuntu:latest` image pulled.
    # Ask LLM to run curl → network blocked
    ```
 
-## REPL Enhancement
+### REPL Enhancement
 
 The CLI uses `rustyline` (v15) for an enhanced terminal experience:
 
-### Line Editing & History
+#### Line Editing & History
 
 - Full readline-compatible line editing (cursor movement, backspace, delete, etc.)
 - Persistent command history saved to `~/.archon/history`
 - Up/Down arrow keys browse previous inputs across sessions
 
-### Multi-line Input
+#### Multi-line Input
 
 Lines ending with `\` trigger continuation mode:
 
@@ -458,7 +505,7 @@ You> Write a function that\
 
 The trailing `\` is stripped and lines are joined with `\n`. Ctrl+C cancels multi-line input.
 
-### Directory Structure
+#### Directory Structure
 
 ```
 ~/.archon/
@@ -467,22 +514,22 @@ The trailing `\` is stripped and lines are joined with `\n`. Ctrl+C cancels mult
     latest.json    # most recent session auto-save
 ```
 
-## Session Persistence
+### Session Persistence
 
 Session state (system prompt, messages, token counts) is serialized to JSON for save/restore.
 
-### Serialization
+#### Serialization
 
 `Session` derives `Serialize`/`Deserialize` (all inner types already had these derives). Two methods:
 
 - `save_to_file(&self, path: &Path)` — pretty-printed JSON, creates parent directories
 - `load_from_file(path: &Path)` — deserialize from JSON file
 
-### Auto-save
+#### Auto-save
 
 After each completed agent loop turn, the session is saved to `{session_dir}/latest.json`. On exit, the final state is also saved.
 
-### Resume Flow
+#### Resume Flow
 
 ```
 cargo run -p archon-cli -- --resume
@@ -495,14 +542,14 @@ cargo run -p archon-cli -- --resume
 
 If loading fails, a warning is printed and a fresh session is created.
 
-### CLI Flags
+#### CLI Flags
 
 | Flag | Default | Effect |
 |------|---------|--------|
 | `--session-dir <PATH>` | `~/.archon/sessions` | Override session storage directory |
 | `--resume` | `false` | Load `latest.json` and resume conversation |
 
-## Future Phases
+### Future Phases
 
 - **Context window management** — message compression / summarization on overflow
 - **Tool parallelism** — concurrent execution of independent tool_use blocks

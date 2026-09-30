@@ -1,10 +1,12 @@
-# Archon 迭代计划与路线图
+# RoboArchon 迭代计划与路线图
 
-本文档记录 Archon 项目的长期规划、版本里程碑和各阶段迭代计划。
+本文档记录 RoboArchon 项目的长期规划、版本里程碑和各阶段迭代计划。
+
+> 下方里程碑最初面向 **数字平面** Agent Harness（crate 仍为 `archon-*`）。具身主线优先级与已完成项见根 [README.md](../README.md)；架构见 [ARCHITECTURE.md](../ARCHITECTURE.md)。
 
 ## 版本策略
 
-Archon 使用 [语义化版本](https://semver.org/lang/zh-CN/) (SemVer)：
+RoboArchon 使用 [语义化版本](https://semver.org/lang/zh-CN/) (SemVer)：
 - **主版本号 (X.y.z)**：不兼容的 API 更改
 - **次版本号 (x.Y.z)**：向后兼容的功能添加
 - **修订号 (x.y.Z)**：向后兼容的问题修复
@@ -55,8 +57,8 @@ Archon 使用 [语义化版本](https://semver.org/lang/zh-CN/) (SemVer)：
 
 ## 参与贡献
 
-欢迎参与 Archon 的开发！请查看：
-- [GitHub Issues](https://github.com/your-repo/archon/issues) - 任务跟踪
+欢迎参与 RoboArchon 的开发！请查看：
+- [GitHub Issues](https://github.com/your-repo/robo_archon/issues) - 任务跟踪
 - [开发指南](../docs/development.md) - 本地开发设置
 - [代码规范](../docs/code-style.md) - 编码规范
 

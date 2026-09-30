@@ -80,126 +80,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0674a1ddeecb70197781e945de4b3b8ffb61fa939a5597bcf48503737663100"
 
 [[package]]
-name = "archon-embodied"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "futures",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "archon-embodied-cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "archon-embodied",
- "archon-kinetic",
- "archon-perception",
- "archon-policy",
- "archon-runtime",
- "archon-sim",
- "archon-sim-bridge",
- "clap",
- "crossterm",
- "futures",
- "ratatui",
- "serde_json",
- "tokio",
- "tui-textarea",
-]
-
-[[package]]
-name = "archon-kinetic"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "archon-embodied",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "archon-perception"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "archon-embodied",
- "async-trait",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "archon-policy"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "archon-embodied",
- "archon-kinetic",
- "async-trait",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "archon-ros2"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "archon-embodied",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "archon-runtime"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "archon-embodied",
- "archon-kinetic",
- "archon-perception",
- "async-trait",
- "futures",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "archon-sim"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "archon-embodied",
- "archon-ros2",
- "async-trait",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
-name = "archon-sim-bridge"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "archon-embodied",
- "async-trait",
- "serde",
- "serde_json",
- "tokio",
-]
-
-[[package]]
 name = "async-trait"
 version = "0.1.92"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -743,6 +623,126 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed2bf2547551a7053d6fdfafda3f938979645c44812fbfcda098faae3f1a362d"
 dependencies = [
  "bitflags",
+]
+
+[[package]]
+name = "robo-archon-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "crossterm",
+ "futures",
+ "ratatui",
+ "robo-archon-embodied",
+ "robo-archon-kinetic",
+ "robo-archon-perception",
+ "robo-archon-policy",
+ "robo-archon-runtime",
+ "robo-archon-sim",
+ "robo-archon-sim-bridge",
+ "serde_json",
+ "tokio",
+ "tui-textarea",
+]
+
+[[package]]
+name = "robo-archon-embodied"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "robo-archon-kinetic"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "robo-archon-embodied",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "robo-archon-perception"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "robo-archon-embodied",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "robo-archon-policy"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "robo-archon-embodied",
+ "robo-archon-kinetic",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "robo-archon-ros2"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "robo-archon-embodied",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "robo-archon-runtime"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures",
+ "robo-archon-embodied",
+ "robo-archon-kinetic",
+ "robo-archon-perception",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "robo-archon-sim"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "robo-archon-embodied",
+ "robo-archon-ros2",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "robo-archon-sim-bridge"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "robo-archon-embodied",
+ "serde",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]

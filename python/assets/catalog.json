@@ -2,7 +2,7 @@
   "version": 1,
   "builtins": {
     "desktop_arm": {
-      "description": "Simplified 6-DoF desktop arm + table + red blob (Archon default)",
+      "description": "Simplified 6-DoF desktop arm + table + red blob (RoboArchon default)",
       "mjcf": "models/desktop_arm_red_blob.xml",
       "camera": "scene",
       "default_instruction": "wave"

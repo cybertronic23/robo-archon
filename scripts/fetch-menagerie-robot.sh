@@ -67,7 +67,7 @@ if [[ -f "$OUT/scene.xml" || -f "$OUT/mjx_scene.xml" ]]; then
 fi
 
 mkdir -p "$DEST_ROOT"
-TMP="$(mktemp -d "${TMPDIR:-/tmp}/archon-menagerie.XXXXXX")"
+TMP="$(mktemp -d "${TMPDIR:-/tmp}/robo-archon-menagerie.XXXXXX")"
 cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT
 
@@ -85,9 +85,9 @@ mv "$TMP/menagerie/$ROBOT" "$OUT"
 
 echo "[ok] installed → $OUT"
 if [[ -f "$OUT/scene.xml" ]]; then
-  echo "run: cargo run -p archon-embodied-cli -- --backend mujoco --model $OUT/scene.xml --viewer --step-ms 0"
+  echo "run: cargo run -p robo-archon-cli -- --backend mujoco --model $OUT/scene.xml --viewer --step-ms 0"
 elif [[ -f "$OUT/mjx_scene.xml" ]]; then
-  echo "run: cargo run -p archon-embodied-cli -- --backend mujoco --model $OUT/mjx_scene.xml --viewer --step-ms 0"
+  echo "run: cargo run -p robo-archon-cli -- --backend mujoco --model $OUT/mjx_scene.xml --viewer --step-ms 0"
 else
   echo "note: no scene.xml; pick an xml under $OUT"
   ls "$OUT"/*.xml 2>/dev/null | head -10 || true

@@ -1,0 +1,14 @@
+[package]
+name = "robo-archon-policy"
+version = "0.1.0"
+edition = "2021"
+description = "Embodied policies (MockPolicy) and deterministic SafetyGate"
+
+[dependencies]
+robo-archon-embodied = { path = "../robo-archon-embodied" }
+robo-archon-kinetic = { path = "../robo-archon-kinetic" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+anyhow = { workspace = true }
+tokio = { workspace = true, features = ["process"] }

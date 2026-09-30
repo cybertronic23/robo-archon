@@ -4,7 +4,7 @@
 
 ## 它是什么
 
-Archon 具身平面是一个 **模型无关** 的 Agent OS 运行时：把 VLA / WAM / World Model / 经典策略等产出的动作提案，经确定性安全层后下发到仿真或真机（ROS2 话题契约一致）。
+RoboArchon 具身平面是一个 **模型无关** 的 Agent OS 运行时：把 VLA / WAM / World Model / 经典策略等产出的动作提案，经确定性安全层后下发到仿真或真机（ROS2 话题契约一致）。
 
 核心闭环：
 
@@ -17,14 +17,14 @@ Observation → Policy → Safety → Chronos → RobotBackend → Episode
 ## 运行仿真 MVP（M0）
 
 ```bash
-# 完整路点演示（Episode 默认写入 ~/.archon/episodes）
-cargo run -p archon-embodied-cli -- --task-id demo_waypoints --step-ms 0
+# 完整路点演示（Episode 默认写入 ~/.robo-archon/episodes）
+cargo run -p robo-archon-cli -- --task-id demo_waypoints --step-ms 0
 
 # 中途抢占
-cargo run -p archon-embodied-cli -- --step-ms 5 --auto-stop-ms 200
+cargo run -p robo-archon-cli -- --step-ms 5 --auto-stop-ms 200
 
 # 交互式 stop / estop（stdin）
-cargo run -p archon-embodied-cli -- --stdin-stop --step-ms 10
+cargo run -p robo-archon-cli -- --stdin-stop --step-ms 10
 ```
 
 ## 视觉门控闭环（M1）
@@ -33,14 +33,14 @@ Observation 为多模态容器：`proprio` + `modalities` + `annotations`。M1 �
 
 ```bash
 # 合成红块 → 检测 → 抓放原语 → Episode 含 media/images.primary/
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --task-id pick_red_blob_sim \
   --policy color_blob \
   --camera synthetic \
   --step-ms 0
 
 # 无目标：Safety 拒绝空路点，系统不崩溃
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --task-id pick_red_blob_sim \
   --policy color_blob \
   --camera synthetic_blank \
@@ -69,10 +69,10 @@ python3 -m venv .venv-mujoco
 .venv-mujoco/bin/pip install -r python/requirements-mujoco.txt
 
 # 2) 查看内置资产
-cargo run -p archon-embodied-cli -- --list-models
+cargo run -p robo-archon-cli -- --list-models
 
 # 3) 内置臂 + 语言指令「挥手」（加 --viewer 可弹 MuJoCo 窗口）
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco \
   --model builtin:desktop_arm \
   --policy instruction \
@@ -84,12 +84,12 @@ cargo run -p archon-embodied-cli -- \
 | 参数 | 说明 |
 |------|------|
 | `--backend mujoco` | NDJSON 桥接 MuJoCo worker |
-| `--model builtin:desktop_arm` | 内置资产；也可本地 `.xml`/目录，或 `https://…xml\|zip`（缓存到 `~/.archon/assets/cache`） |
+| `--model builtin:desktop_arm` | 内置资产；也可本地 `.xml`/目录，或 `https://…xml\|zip`（缓存到 `~/.robo-archon/assets/cache`） |
 | `--policy instruction` | 短语→运动原语（挥手/回零/伸出/点头/开合夹爪…） |
 | `--instruction` | 中英文指令文本 |
 | `--viewer` | 弹出 MuJoCo 交互窗口（macOS 会自动用 `mjpython`；建议 `--step-ms 20`） |
 | `--worker PATH` | 覆盖默认 worker 脚本 |
-| `ARCHON_PYTHON` | 指定 Python 解释器（可选） |
+| `ROBO_ARCHON_PYTHON` | 指定 Python 解释器（可选） |
 
 语言策略为**确定性原语路由**（不是完整 VLA）；自由文本需命中已知短语。远程资产需为 **MJCF（.xml）或含 MJCF 的 zip**（公开 Menagerie 等请下载后 `--model` 指向 `scene.xml`）。
 
@@ -99,13 +99,13 @@ cargo run -p archon-embodied-cli -- \
 
 ```bash
 # 查看内置 + 需拉取的社区模型
-cargo run -p archon-embodied-cli -- --list-models
+cargo run -p robo-archon-cli -- --list-models
 
 # 拉取 Menagerie（Franka / Go2 / UR5e / SO-ARM100 …）到 python/models/external/
 ./scripts/fetch-menagerie-robot.sh --list
 ./scripts/fetch-menagerie-robot.sh franka
 
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco --model builtin:franka_panda --viewer --step-ms 0
 
 # 自制 / Microduck：直接指路径，或拷到 external/ 并改 catalog.json
@@ -122,18 +122,18 @@ cargo run -p archon-embodied-cli -- \
 export DEEPSEEK_API_KEY=sk-...
 
 # A：桌面臂
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco --model builtin:desktop_arm \
   --policy llm --instruction "向右边挥一下手" --viewer --step-ms 0
 
 # B：平面小车
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco --model builtin:diff_car \
   --policy llm --instruction "向前走一点再左转" --viewer --step-ms 0
 
 # 录一段演示 MP4（需 ffmpeg；可不开 viewer）
 brew install ffmpeg   # 若尚未安装
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco --model builtin:diff_car \
   --policy instruction --instruction "向前走一点再左转180度" \
   --record-video ./tmp-episodes/car-demo.mp4 --step-ms 0
@@ -149,9 +149,9 @@ cargo run -p archon-embodied-cli -- \
 单次 `--instruction` 跑完即退出。若要**连续下达指令**且保持 MuJoCo 会话/本体状态：
 
 ```bash
-export ARCHON_PYTHON="$(pwd)/.venv-mujoco/bin/python"
+export ROBO_ARCHON_PYTHON="$(pwd)/.venv-mujoco/bin/python"
 
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco --model builtin:diff_car \
   --policy instruction \
   --viewer --tui --step-ms 0
@@ -172,12 +172,14 @@ cargo run -p archon-embodied-cli -- \
 | `LLM_BASE_URL` / `--llm-base-url` | 默认 `https://api.deepseek.com` |
 | `LLM_MODEL` / `--llm-model` | 默认 `deepseek-chat` |
 
-## Headless MuJoCo smoke（CI / 本机）
+## Headless MuJoCo smoke（本机可选）
+
+开发阶段不做自动 CI；需要时本机手动跑：
 
 ```bash
 python3 -m venv .venv-mujoco
 .venv-mujoco/bin/pip install -r python/requirements-mujoco.txt
-export ARCHON_PYTHON="$(pwd)/.venv-mujoco/bin/python"
+export ROBO_ARCHON_PYTHON="$(pwd)/.venv-mujoco/bin/python"
 # Linux 无显示器时：
 # export MUJOCO_GL=egl
 bash scripts/mujoco_smoke.sh
@@ -185,7 +187,7 @@ bash scripts/mujoco_smoke.sh
 
 ## ROS2 话题契约（sim 与 real 共用）
 
-默认命名空间：`/archon/arm`
+默认命名空间：`/robo_archon/arm`
 
 | 话题 | 用途 |
 |------|------|
@@ -200,4 +202,4 @@ bash scripts/mujoco_smoke.sh
 
 ## 相关 crates
 
-`archon-embodied` · `archon-runtime` · `archon-kinetic` · `archon-policy` · `archon-perception` · `archon-sim` · `archon-sim-bridge` · `archon-ros2` · `archon-embodied-cli`
+`robo-archon-embodied` · `robo-archon-runtime` · `robo-archon-kinetic` · `robo-archon-policy` · `robo-archon-perception` · `robo-archon-sim` · `robo-archon-sim-bridge` · `robo-archon-ros2` · `robo-archon-cli`

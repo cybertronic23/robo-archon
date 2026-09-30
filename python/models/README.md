@@ -1,6 +1,6 @@
 # MuJoCo 资产说明
 
-Archon **不绑定** MuJoCo 安装包自带模型。资产分三类，均可由 `--model` 指定。
+RoboArchon **不绑定** MuJoCo 安装包自带模型。资产分三类，均可由 `--model` 指定。
 
 ## 目录约定
 
@@ -21,16 +21,16 @@ python/
 | **仓库 demo** | `python/models/*.xml` | 小 | ✅ 提交 |
 | **社区 / 自研** | `python/models/external/<name>/` | 常很大（mesh） | ❌ gitignore |
 | **任意本地** | 你电脑任意路径 | — | 不进本仓库 |
-| **URL** | 自动缓存到 `~/.archon/assets/cache/` | — | 不进本仓库 |
+| **URL** | 自动缓存到 `~/.robo-archon/assets/cache/` | — | 不进本仓库 |
 
 ## 怎么用（三种方式）
 
 ### 1）内置名（catalog）
 
 ```bash
-cargo run -p archon-embodied-cli -- --list-models
+cargo run -p robo-archon-cli -- --list-models
 
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco --model builtin:desktop_arm \
   --policy instruction --instruction "挥手" --viewer --step-ms 0
 ```
@@ -39,7 +39,7 @@ cargo run -p archon-embodied-cli -- \
 
 ```bash
 # 指向 scene.xml 或任意入口 MJCF
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco \
   --model /path/to/my_robot/scene.xml \
   --viewer --step-ms 0
@@ -57,7 +57,7 @@ cargo run -p archon-embodied-cli -- \
 ./scripts/fetch-menagerie-robot.sh --list   # 看常用短名
 
 # 拉完后可用 catalog 名或路径
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco --model builtin:franka_panda --viewer --step-ms 0
 
 # 等价

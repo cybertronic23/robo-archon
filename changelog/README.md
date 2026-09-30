@@ -1,6 +1,8 @@
-# Archon Changelog
+# RoboArchon Changelog
 
-本文档记录 Archon 的所有版本变更历史。
+本文档记录 RoboArchon 的所有版本变更历史。
+
+> v0.1.x 条目描述的是仓库早期的 **数字平面** Agent Harness（包名仍为 `archon-cli` / `crates/archon-*`，配置目录仍为 `~/.archon`）。产品名现统一为 RoboArchon；具身主线见根 [README.md](../README.md)。
 
 ## 版本格式
 
@@ -47,20 +49,23 @@
 ### 使用 Cargo
 
 ```bash
-# 安装/更新到最新版本
-cargo install archon-cli
+# 数字平面 CLI（crate 包名仍为 archon-cli）
+cargo install --path crates/archon-cli
 
-# 安装特定版本
+# 或指定版本（若已发布到 crates.io）
 cargo install archon-cli --version 0.1.0
 ```
+
+具身 CLI：`cargo run -p robo-archon-cli -- …`（见根 README）。
 
 ### 从源码
 
 ```bash
-git clone https://github.com/your-repo/archon.git
-cd archon
+git clone https://github.com/your-repo/robo-archon.git
+cd robo-archon
 git checkout v0.1.0
-cargo build --release
+# 数字平面（需在 Cargo.toml 启用 archon-* members）
+cargo build -p archon-cli --release
 ```
 
 ## 迁移指南
@@ -88,18 +93,18 @@ cargo build --release
 
 ## 贡献者
 
-感谢所有为 Archon 做出贡献的人！
+感谢所有为 RoboArchon 做出贡献的人！
 
 - [贡献者列表](../../CONTRIBUTORS.md)
 
 ## 反馈与支持
 
-- 🐛 [提交 Bug](https://github.com/your-repo/archon/issues/new?template=bug_report.md)
-- 💡 [功能建议](https://github.com/your-repo/archon/issues/new?template=feature_request.md)
-- 💬 [Discussions](https://github.com/your-repo/archon/discussions)
+- 🐛 [提交 Bug](https://github.com/your-repo/robo_archon/issues/new?template=bug_report.md)
+- 💡 [功能建议](https://github.com/your-repo/robo_archon/issues/new?template=feature_request.md)
+- 💬 [Discussions](https://github.com/your-repo/robo_archon/discussions)
 
 ---
 
 *最后更新: 2026-04-08*
-*维护者: Archon Team*
+*维护者: RoboArchon Team*
 *许可证: MIT*

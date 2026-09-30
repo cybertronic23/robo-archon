@@ -1,15 +1,15 @@
 [workspace]
 members = [
     # Embodied Agent OS (physical plane) — M0/M1
-    "crates/archon-embodied",
-    "crates/archon-runtime",
-    "crates/archon-kinetic",
-    "crates/archon-policy",
-    "crates/archon-perception",
-    "crates/archon-sim-bridge",
-    "crates/archon-ros2",
-    "crates/archon-sim",
-    "crates/archon-embodied-cli",
+    "crates/robo-archon-embodied",
+    "crates/robo-archon-runtime",
+    "crates/robo-archon-kinetic",
+    "crates/robo-archon-policy",
+    "crates/robo-archon-perception",
+    "crates/robo-archon-sim-bridge",
+    "crates/robo-archon-ros2",
+    "crates/robo-archon-sim",
+    "crates/robo-archon-cli",
     # Digital plane (re-add when crates.io/mirror is reachable):
     # "crates/archon-core",
     # "crates/archon-llm",

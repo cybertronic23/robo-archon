@@ -1,0 +1,26 @@
+[package]
+name = "robo-archon-cli"
+version = "0.1.0"
+edition = "2021"
+description = "CLI entry for RoboArchon Agent OS MVP (sim loop + episode)"
+
+[[bin]]
+name = "robo-archon"
+path = "src/main.rs"
+
+[dependencies]
+robo-archon-embodied = { path = "../robo-archon-embodied" }
+robo-archon-runtime = { path = "../robo-archon-runtime" }
+robo-archon-kinetic = { path = "../robo-archon-kinetic" }
+robo-archon-policy = { path = "../robo-archon-policy" }
+robo-archon-perception = { path = "../robo-archon-perception" }
+robo-archon-sim = { path = "../robo-archon-sim" }
+robo-archon-sim-bridge = { path = "../robo-archon-sim-bridge" }
+anyhow = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+serde_json = { workspace = true }
+futures = { workspace = true }
+ratatui = "0.29"
+crossterm = { version = "0.28", features = ["event-stream"] }
+tui-textarea = "0.7"

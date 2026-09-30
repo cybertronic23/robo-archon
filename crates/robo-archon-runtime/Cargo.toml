@@ -1,0 +1,17 @@
+[package]
+name = "robo-archon-runtime"
+version = "0.1.0"
+edition = "2021"
+description = "Embodied executive: state machine, event bus, resource locks, arbiter"
+
+[dependencies]
+robo-archon-embodied = { path = "../robo-archon-embodied" }
+robo-archon-kinetic = { path = "../robo-archon-kinetic" }
+robo-archon-perception = { path = "../robo-archon-perception" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+futures = { workspace = true }

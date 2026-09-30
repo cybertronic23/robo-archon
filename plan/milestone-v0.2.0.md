@@ -9,7 +9,7 @@
 
 ## 概述
 
-v0.2.0 的核心目标是让 Archon 能够连接外部世界，通过 MCP (Model Context Protocol) 协议与各种数据源和工具集成，同时引入向量存储支持，赋予 Archon 长期记忆能力。
+v0.2.0 的核心目标是让 RoboArchon 能够连接外部世界，通过 MCP (Model Context Protocol) 协议与各种数据源和工具集成，同时引入向量存储支持，赋予 RoboArchon 长期记忆能力。
 
 ---
 
@@ -17,7 +17,7 @@ v0.2.0 的核心目标是让 Archon 能够连接外部世界，通过 MCP (Model
 
 ### 1. MCP 客户端支持
 
-**目标**: 实现 MCP 协议客户端，允许 Archon 连接和使用 MCP 服务器
+**目标**: 实现 MCP 协议客户端，允许 RoboArchon 连接和使用 MCP 服务器
 
 **详细任务**:
 - [ ] **MCP-001**: 研究 MCP 协议规范
@@ -42,7 +42,7 @@ v0.2.0 的核心目标是让 Archon 能够连接外部世界，通过 MCP (Model
   - 支持认证
   - 预估工作量: 4 天
 
-- [ ] **MCP-005**: 集成到 Archon
+- [ ] **MCP-005**: 集成到 RoboArchon
   - 在 ToolRegistry 中支持 MCP 工具
   - 实现资源订阅和通知
   - 添加 MCP 配置管理
@@ -99,7 +99,7 @@ archon chat "请读取 /home/user/docs/readme.md 的内容"
   - 上下文注入
   - 预估工作量: 4 天
 
-- [ ] **RAG-006**: 集成到 Archon
+- [ ] **RAG-006**: 集成到 RoboArchon
   - 添加 `rag` 命令
   - 实现文档索引工作流
   - 在对话中自动使用 RAG
@@ -239,4 +239,4 @@ Week 7-8:  日志系统 + 测试/文档
 ---
 
 *最后更新: 2026-04-08*
-*维护者: Archon Team*
+*维护者: RoboArchon Team*

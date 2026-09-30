@@ -1,40 +1,43 @@
-# Archon
+# RoboArchon
 
-Rust agent harness framework. Workspace with 4 crates.
+Rust embodied Agent OS (Physical AI). Workspace focused on the embodied plane.
 
 ## Build & Run
 
 ```bash
 cargo build
-cargo run -p archon-cli -- --api-key $ANTHROPIC_API_KEY
-# or
-ANTHROPIC_API_KEY=sk-... cargo run -p archon-cli
+cargo run -p robo-archon-cli -- --backend sim --step-ms 0
+# MuJoCo (needs .venv-mujoco):
+export ROBO_ARCHON_PYTHON="$(pwd)/.venv-mujoco/bin/python"
+cargo run -p robo-archon-cli -- \
+  --backend mujoco --model builtin:diff_car \
+  --policy instruction --viewer --tui --step-ms 0
 ```
 
-CLI flags: `--model` (default `claude-sonnet-4-20250514`), `--max-tokens` (default 8192).
+Binary name: `robo-archon`.
 
 ## Project Structure
 
 ```
 crates/
-  archon-core/    — Types, Tool trait, ToolRegistry, Session, agent loop (StreamProvider trait + run_agent_loop)
-  archon-llm/     — AnthropicProvider, SSE stream parser, Provider trait
-  archon-tools/   — ReadTool, BashTool, EditTool implementations
-  archon-cli/     — Binary entry point, clap args, REPL loop
+  robo-archon-embodied/     — Types, Policy/SafetyGate/RobotBackend traits
+  robo-archon-runtime/      — Executive, EventBus, locks, Arbiter
+  robo-archon-kinetic/      — Chronos interpolation
+  robo-archon-policy/       — Mock / ColorBlob / Instruction / LlmPolicy
+  robo-archon-perception/   — Camera, detectors, Observation enrich
+  robo-archon-ros2/         — Topic contract (/robo_archon/arm/…)
+  robo-archon-sim/          — In-process SimBackend
+  robo-archon-sim-bridge/   — NDJSON bridge to Python MuJoCo workers
+  robo-archon-cli/          — Binary `robo-archon`
+python/robo_archon_sim_workers/  — MuJoCo / mock workers
 ```
 
-Dependency direction: `cli → {core, llm, tools}`, `llm → core`, `tools → core`. `core` has no internal deps.
+Digital-plane crates (`archon-core/llm/tools/cli`) remain in-tree but are not workspace members; iterate them in the separate `archon` repo later.
 
 ## Key Conventions
 
-- All tools implement `archon_core::Tool` async trait (name, description, input_schema, execute).
-- Tools are registered in `ToolRegistry` (HashMap-based). Adding a tool = implement trait + register in main.rs.
-- LLM providers implement `archon_core::StreamProvider` returning `BoxStream<StreamEvent>`.
-- Session messages follow Anthropic API format: tool results go in User messages.
-- Agent loop is in `archon-core/src/agent_loop.rs` — the while-tool_use loop.
-- SSE parsing is manual line-buffered in `archon-llm/src/anthropic.rs`, with event→struct mapping in `streaming.rs`.
-- Error handling: tool errors → `ToolResult { is_error: true }` (LLM can retry). Transport errors → abort turn.
+- Tools/policies implement traits in `robo_archon_embodied`.
+- LLM/strategies only propose; Safety + Executive authorize motion.
+- Env: prefer `ROBO_ARCHON_*` (`ARCHON_*` still accepted as compat for Python/mjpython).
 
-## Architecture Reference
-
-See `ARCHITECTURE.md` for detailed design doc with data flow diagrams.
+See `ARCHITECTURE.md` and `docs/embodied-getting-started.md`.

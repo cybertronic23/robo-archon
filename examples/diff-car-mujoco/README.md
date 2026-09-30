@@ -24,9 +24,9 @@
 **读图说明：**
 
 1. **视口中央**：蓝车停在棋盘上；旁侧绿柱是 goal 标记。
-2. **左侧 Simulation**：运行中时 `Run` 高亮；可 `Pause` / `Reset`。Archon 驱动时不必手点这些按钮。
+2. **左侧 Simulation**：运行中时 `Run` 高亮；可 `Pause` / `Reset`。RoboArchon 驱动时不必手点这些按钮。
 3. **左侧 Option**：可调字体大小、垂直同步等显示选项。
-4. **右侧 Joint / Control**：可展开查看关节与执行器；语言策略下由 Archon 写控制量。
+4. **右侧 Joint / Control**：可展开查看关节与执行器；语言策略下由 RoboArchon 写控制量。
 5. **结束后**：默认会 **保持窗口**，方便你调视角或截图；关掉窗口后进程才退出。
 
 录像不入库；需要成片时用下面的 `--record-video` 本地导出即可。
@@ -51,7 +51,7 @@ pip install -r python/requirements-mujoco.txt
 在仓库根目录执行后续命令，并建议设置：
 
 ```bash
-export ARCHON_PYTHON="$(pwd)/.venv-mujoco/bin/python"
+export ROBO_ARCHON_PYTHON="$(pwd)/.venv-mujoco/bin/python"
 ```
 
 ---
@@ -63,7 +63,7 @@ export ARCHON_PYTHON="$(pwd)/.venv-mujoco/bin/python"
 不调用云端 LLM，短语表直接映射运动原语：
 
 ```bash
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco \
   --model builtin:diff_car \
   --policy instruction \
@@ -83,7 +83,7 @@ cargo run -p archon-embodied-cli -- \
 ```bash
 mkdir -p tmp-episodes
 
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco \
   --model builtin:diff_car \
   --policy instruction \
@@ -96,7 +96,7 @@ cargo run -p archon-embodied-cli -- \
 成功时 stderr 会出现类似：
 
 ```text
-[archon-embodied] recording video → ./tmp-episodes/car-demo.mp4
+[robo-archon] recording video → ./tmp-episodes/car-demo.mp4
 ...
 [mujoco_worker] video saved: tmp-episodes/car-demo.mp4
 ```
@@ -107,7 +107,7 @@ cargo run -p archon-embodied-cli -- \
 ### C. 多轮 TUI（推荐日常调试）
 
 ```bash
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco \
   --model builtin:diff_car \
   --policy instruction \
@@ -123,7 +123,7 @@ cargo run -p archon-embodied-cli -- \
 ```bash
 export DEEPSEEK_API_KEY=sk-...
 
-cargo run -p archon-embodied-cli -- \
+cargo run -p robo-archon-cli -- \
   --backend mujoco \
   --model builtin:diff_car \
   --policy llm \
@@ -154,9 +154,9 @@ LLM 只负责把自然语言编译成运动原语，仍经 Safety，不直连电
 |------|------|
 | `python/models/diff_car.xml` | 小车 MJCF（含 `scene` / `chase` 相机） |
 | `python/assets/catalog.json` | `builtin:diff_car` 解析 |
-| `python/archon_sim_workers/mujoco_worker.py` | MuJoCo worker |
-| `crates/archon-policy/` | `instruction` / `llm` 策略 |
-| `crates/archon-embodied-cli/` | CLI 入口 |
+| `python/robo_archon_sim_workers/mujoco_worker.py` | MuJoCo worker |
+| `crates/robo-archon-policy/` | `instruction` / `llm` 策略 |
+| `crates/robo-archon-cli/` | CLI 入口 |
 
 ---
 
@@ -177,7 +177,7 @@ LLM 只负责把自然语言编译成运动原语，仍经 Safety，不直连电
 列出内置模型：
 
 ```bash
-cargo run -p archon-embodied-cli -- --list-models
+cargo run -p robo-archon-cli -- --list-models
 ```
 
 ---
@@ -186,7 +186,7 @@ cargo run -p archon-embodied-cli -- --list-models
 
 | 现象 | 处理 |
 |------|------|
-| macOS 开窗口失败 / Cocoa 报错 | 确认 `.venv-mujoco/bin/mjpython` 存在；设置 `ARCHON_PYTHON` 指向该 venv |
+| macOS 开窗口失败 / Cocoa 报错 | 确认 `.venv-mujoco/bin/mjpython` 存在；设置 `ROBO_ARCHON_PYTHON` 指向该 venv |
 | `video saved` 没有出现 | 安装 `ffmpeg`；确认 stderr 无 `offscreen render disabled` |
 | 沙箱 / CI 无图形 | 不要开 `--viewer`；录像也需本机 GPU/显示服务，纯无头环境可能失败 |
 | 动作太快看不清 | 加 `--viewer`，或适当增大 `--step-ms`（如 `20`） |

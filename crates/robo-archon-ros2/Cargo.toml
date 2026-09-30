@@ -1,0 +1,11 @@
+[package]
+name = "robo-archon-ros2"
+version = "0.1.0"
+edition = "2021"
+description = "ROS2 topic/message contract for Archon embodied backends (sim↔real)"
+
+[dependencies]
+robo-archon-embodied = { path = "../robo-archon-embodied" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
