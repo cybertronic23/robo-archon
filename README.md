@@ -40,6 +40,10 @@ User → LLM stream → tool_use → ToolRegistry → 结果回传 → 循环至
 
 ---
 
+## Robot Gallery
+
+Franka Panda / SO101 已支持固定版本资产安装、归位、摆动与夹爪开合。运行步骤见 [Robot Gallery](docs/robot-gallery.md)。其他仿真平台及 Go2/Microduck 仍在计划中。
+
 ## 快速开始（具身）
 
 ```bash
@@ -164,7 +168,7 @@ robo-archon/
 | **M2b** | ⏳ ManiSkill worker（可置于 M2d 之后） |
 | **M2c** | ✅ DeepSeek 等 LLM 编译自然语言 → 原语；平面小车 `diff_car` |
 | **M2d** | ✅ 会话常驻 + ratatui TUI（`--tui`；per-turn media / 中途 estop；待本机 viewer 手测；网页 Chat → 以后 M2e） |
-| **M2f** | 🚧 本体资料包与跨平台机器人接入：M2f.1 元数据/校验/CLI 已实现；资产与控制适配待实现，见 [设计](docs/body-packages-design.md) |
+| **M2f** | 🚧 本体资料包与跨平台机器人接入：M2f.1 元数据/校验/CLI 已实现；M2f.2 已接入 Franka/SO101 安装与基础控制，抓取与第二平台待实现，见 [设计](docs/body-packages-design.md) |
 | **M3** | Isaac Sim（次优先） |
 | **M4** | Gazebo 等其它平台 |
 | **M5** | 真机 SO101 / Microduck 等 `RobotBackend` |

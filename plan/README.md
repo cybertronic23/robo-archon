@@ -7,7 +7,7 @@
 ## 具身主线 M2f：本体资料包与跨平台机器人接入
 
 - M2f.1：已实现平台无关元数据、关系校验、四款计划资料包与 CLI 查询。
-- M2f.2：待实现资产安装、Franka/SO101 控制与任务、第二仿真平台验证。
+- M2f.2：资产固定版本安装与 Franka/SO101 基础控制已实现；抓取任务与第二仿真平台验证待实现。见 [M2f.2a spec](../docs/specs/m2f-2-arm-bindings.md)。
 - M2f.3：待实现 Go2/Microduck 持续控制与策略接入。
 
 M2e 保留原网页 Chat 规划。见 [设计](../docs/body-packages-design.md) 与 [spec](../docs/specs/m2f-1-body-packages.md)。下方版本路线属于历史数字平面。

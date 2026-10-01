@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "robot_id": "so101",
+  "source_revision": "5f6d2b876a53a4872e405b991dd925556c9e38a4",
+  "joint_names": [
+    "shoulder_pan",
+    "shoulder_lift",
+    "elbow_flex",
+    "wrist_flex",
+    "wrist_roll"
+  ],
+  "actuator_names": [
+    "shoulder_pan",
+    "shoulder_lift",
+    "elbow_flex",
+    "wrist_flex",
+    "wrist_roll"
+  ],
+  "home": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "lower": [
+    -1.9198621771937616,
+    -1.7453292519943224,
+    -1.69,
+    -1.6580628494556928,
+    -2.7438472969992493
+  ],
+  "upper": [
+    1.9198621771937634,
+    1.7453292519943366,
+    1.69,
+    1.6580627293335335,
+    2.841206309382605
+  ],
+  "gripper": {
+    "actuator_name": "gripper",
+    "open_ctrl": 1.5,
+    "closed_ctrl": 0,
+    "joint_names": [
+      "gripper"
+    ],
+    "open_positions": [
+      1.5
+    ],
+    "closed_positions": [
+      0
+    ]
+  },
+  "keyframe": null
+}

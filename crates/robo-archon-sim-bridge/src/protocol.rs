@@ -48,6 +48,8 @@ pub enum ClientMsg {
         /// (one-shot demos). Multi-turn TUI sets false so `/quit` returns immediately.
         #[serde(default = "default_true")]
         hold_viewer_on_shutdown: bool,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        arm_profile: Option<robo_archon_embodied::arm_profile::ArmProfile>,
     },
     Reset,
     /// Return current observation without advancing physics.
@@ -186,6 +188,7 @@ mod tests {
             record_width: None,
             record_height: None,
             hold_viewer_on_shutdown: true,
+            arm_profile: None,
         };
         let s = serde_json::to_string(&msg).unwrap();
         let back: ClientMsg = serde_json::from_str(&s).unwrap();

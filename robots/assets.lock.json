@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "assets": {
+    "franka_panda": {
+      "repository": "https://github.com/google-deepmind/mujoco_menagerie.git",
+      "revision": "4d038b3feae26ec82b46a4d586379114012a8ac7",
+      "subdirectory": "franka_emika_panda",
+      "directory": "franka_emika_panda",
+      "entrypoint": "scene.xml"
+    },
+    "so101": {
+      "repository": "https://github.com/TheRobotStudio/SO-ARM100.git",
+      "revision": "5f6d2b876a53a4872e405b991dd925556c9e38a4",
+      "subdirectory": "Simulation/SO101",
+      "directory": "so101",
+      "entrypoint": "scene.xml"
+    }
+  }
+}

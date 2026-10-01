@@ -75,7 +75,7 @@ pub async fn run_tui(
     let worker_cfg = cfg.clone();
     let worker_backend = backend.clone();
     let worker = tokio::spawn(async move {
-        let safety = session::default_safety(worker_cfg.robot);
+        let safety = session::session_safety(&worker_cfg);
         while let Some(cmd) = cmd_rx.recv().await {
             match cmd {
                 WorkerCmd::Turn(text) => {

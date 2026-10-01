@@ -1,0 +1,3 @@
+# Versions used for M2f.2a CPU physics acceptance on 2026-10-01.
+mujoco==3.14.0
+numpy==2.4.6

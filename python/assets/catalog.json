@@ -20,7 +20,7 @@
       "default_instruction": "forward"
     },
     "franka_panda": {
-      "description": "Franka Emika Panda (Menagerie). Fetch: ./scripts/fetch-menagerie-robot.sh franka",
+      "description": "Franka Panda; install with python3 scripts/install_robot_assets.py franka_panda",
       "mjcf": "models/external/franka_emika_panda/scene.xml",
       "optional": true,
       "default_instruction": "home"
@@ -42,11 +42,17 @@
       "mjcf": "models/external/trs_so_arm100/scene.xml",
       "optional": true,
       "default_instruction": "home"
+    },
+    "so101": {
+      "description": "SO101 new-calibration follower; install with python3 scripts/install_robot_assets.py so101",
+      "mjcf": "models/external/so101/scene.xml",
+      "optional": true,
+      "default_instruction": "home"
     }
   },
   "remote_presets": {
     "menagerie": {
-      "description": "Google DeepMind MuJoCo Menagerie — run scripts/fetch-menagerie-robot.sh",
+      "description": "Google DeepMind MuJoCo Menagerie \u2014 run scripts/fetch-menagerie-robot.sh",
       "url": "https://github.com/google-deepmind/mujoco_menagerie",
       "note": "Installs into python/models/external/<robot>/; then use builtin:* or --model path."
     }

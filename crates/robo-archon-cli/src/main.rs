@@ -9,6 +9,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
+use clap::Parser;
 use robo_archon_kinetic::Chronos;
 use robo_archon_perception::{ColorBlobDetector, PerceptionBridge, SyntheticColorCamera};
 use robo_archon_policy::{ColorBlobPolicy, RobotKind};
@@ -18,7 +19,6 @@ use robo_archon_sim_bridge::{
     default_catalog_path, default_worker_script, ensure_script_exists, list_builtins_status,
     load_catalog, resolve_model_spec, workspace_python_root, BridgeConfig, BridgedSimBackend,
 };
-use clap::Parser;
 use tokio::sync::Mutex;
 
 use session::{SessionConfig, TurnOutcome};
@@ -41,9 +41,21 @@ struct Args {
     #[arg(long, default_value = "builtin:desktop_arm")]
     model: String,
 
+    /// Select an installed, explicitly adapted robot (franka_panda | so101)
+    #[arg(long)]
+    robot: Option<String>,
+
     /// List builtin models and exit
     #[arg(long, default_value_t = false)]
     list_models: bool,
+
+    /// Install pinned official model assets and exit (franka_panda | so101)
+    #[arg(long, conflicts_with_all = ["doctor_robot", "inspect_robot", "list_robots", "list_models", "robot"])]
+    install_robot: Option<String>,
+
+    /// Validate an installed MuJoCo robot without rendering and exit
+    #[arg(long, conflicts_with_all = ["inspect_robot", "list_robots", "list_models", "robot"])]
+    doctor_robot: Option<String>,
 
     /// List simulator-independent body packages and exit
     #[arg(long, conflicts_with = "inspect_robot")]
@@ -86,7 +98,7 @@ struct Args {
     camera: String,
 
     /// Persist RGB frames under episode bundle media/
-    #[arg(long, default_value_t = true)]
+    #[arg(long, default_value_t = true, num_args = 0..=1, default_missing_value = "true", action = clap::ArgAction::Set)]
     save_frames: bool,
 
     /// Open MuJoCo interactive viewer window (needs local GUI / display)
@@ -122,7 +134,38 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args = Args::parse();
+    let mut args = Args::parse();
+
+    if args.install_robot.is_some() || args.doctor_robot.is_some() {
+        let id = args
+            .install_robot
+            .as_ref()
+            .or(args.doctor_robot.as_ref())
+            .unwrap();
+        if !matches!(id.as_str(), "franka_panda" | "so101") {
+            anyhow::bail!("robot installation/doctor supports franka_panda | so101");
+        }
+        let python_root =
+            workspace_python_root().context("repository Python directory not found")?;
+        let script = python_root
+            .parent()
+            .context("repository root missing")?
+            .join("scripts")
+            .join(if args.install_robot.is_some() {
+                "install_robot_assets.py"
+            } else {
+                "doctor_robot.py"
+            });
+        let python = std::env::var("ROBO_ARCHON_PYTHON").unwrap_or_else(|_| "python3".into());
+        let status = std::process::Command::new(python)
+            .arg(script)
+            .arg(id)
+            .status()?;
+        if !status.success() {
+            anyhow::bail!("robot asset command failed");
+        }
+        return Ok(());
+    }
 
     if args.list_robots || args.inspect_robot.is_some() {
         let catalog = robo_archon_embodied::body::BodyCatalog::load(&args.body_catalog)?;
@@ -160,12 +203,51 @@ async fn main() -> Result<()> {
         anyhow::bail!("--tui does not support --policy color_blob yet; use instruction or llm");
     }
 
+    let arm_profile = if let Some(id) = &args.robot {
+        if args.backend != "mujoco" || args.policy != "instruction" {
+            anyhow::bail!("--robot currently requires --backend mujoco --policy instruction");
+        }
+        let catalog = robo_archon_embodied::body::BodyCatalog::load(&args.body_catalog)?;
+        let body = catalog.body(id)?;
+        body.check_policy("mujoco", "profile_instruction")?;
+        let binding = body
+            .bindings
+            .get("mujoco")
+            .context("MuJoCo binding missing")?;
+        args.model = binding
+            .model_spec
+            .clone()
+            .context("robot not yet adapted")?;
+        let root = args
+            .body_catalog
+            .parent()
+            .unwrap_or(std::path::Path::new("robots"));
+        let profile: robo_archon_embodied::arm_profile::ArmProfile = serde_json::from_slice(
+            &std::fs::read(root.join("profiles").join(format!("{id}.json")))?,
+        )?;
+        profile.validate()?;
+        if profile.robot_id != *id {
+            anyhow::bail!("profile robot identity mismatch");
+        }
+        Some(profile)
+    } else {
+        None
+    };
+    // Prevent named third-party arms from using the generic six-joint motion/safety profile.
+    if arm_profile.is_none() && (args.model.contains("franka") || args.model.contains("so101")) {
+        anyhow::bail!(
+            "use --robot franka_panda or --robot so101 with --backend mujoco --policy instruction"
+        );
+    }
     let robot = RobotKind::parse_model_hint(&args.model);
     // One-shot defaults a phrase; TUI starts empty unless --instruction is given.
     let instruction = if args.tui {
         args.instruction.clone()
     } else {
         args.instruction.clone().or_else(|| {
+            if arm_profile.is_some() {
+                return Some("归位".into());
+            }
             if args.policy == "instruction" || args.policy == "llm" {
                 Some(match robot {
                     RobotKind::DiffCar => "向前走一点".into(),
@@ -227,6 +309,8 @@ async fn main() -> Result<()> {
             } else {
                 BridgeConfig::mujoco(&script)
             };
+            cfg.arm_profile = arm_profile.clone();
+            cfg.render = args.save_frames || args.record_video.is_some();
             if args.save_frames {
                 // One-shot: frames go under the CLI-allocated episode bundle from hello.
                 // TUI: per-turn SetMediaRoot in session::run_turn (no fixed hello media_root).
@@ -300,6 +384,12 @@ async fn main() -> Result<()> {
         let obs = b.read_observation().await.context("read observation")?;
         if !obs.joints().names.is_empty() {
             joint_names = obs.joints().names.clone();
+        }
+    }
+
+    if let Some(profile) = &arm_profile {
+        if joint_names != profile.joint_names {
+            anyhow::bail!("backend joint mapping differs from profile");
         }
     }
 
@@ -391,6 +481,7 @@ async fn main() -> Result<()> {
         camera: camera.clone(),
         model: args.model.clone(),
         robot,
+        arm_profile: arm_profile.clone(),
         joint_names: joint_names.clone(),
         episode_root: episode_root.clone(),
         save_frames: args.save_frames,
@@ -406,10 +497,22 @@ async fn main() -> Result<()> {
 
     println!(
         "Running embodied loop: task={} backend={} policy={} model={} robot={} instruction={:?}",
-        args.task_id, args.backend, args.policy, args.model, robot.as_str(), instruction
+        args.task_id,
+        args.backend,
+        args.policy,
+        args.model,
+        robot.as_str(),
+        instruction
     );
 
-    let safety = session::default_safety(robot);
+    let safety = if let Some(profile) = &arm_profile {
+        robo_archon_policy::LimitSafetyGate::new(robo_archon_kinetic::JointLimits {
+            lower: profile.lower.clone(),
+            upper: profile.upper.clone(),
+        })
+    } else {
+        session::default_safety(robot)
+    };
     let mut perception = perception;
 
     let outcome: TurnOutcome = match args.policy.as_str() {

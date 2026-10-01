@@ -12,3 +12,6 @@ pub use instruction::{InstructionPolicy, MotionPrimitive, RobotKind};
 pub use llm_policy::{LlmPolicy, LlmPolicyConfig};
 pub use mock::{MockPolicy, VlaAdapterStub, WamAdapterStub};
 pub use safety::LimitSafetyGate;
+
+pub mod profile_policy;
+pub use profile_policy::ProfilePolicy;

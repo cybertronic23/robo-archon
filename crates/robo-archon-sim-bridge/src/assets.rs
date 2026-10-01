@@ -97,6 +97,9 @@ pub fn resolve_model_spec(spec: &str, catalog: &AssetCatalog, catalog_path: &Pat
         let path = python_root.join(&entry.mjcf);
         if !path.exists() {
             if entry.optional {
+                if matches!(name, "franka_panda" | "so101") {
+                    bail!("robot '{name}' not installed; run --install-robot {name}, then --robot {name} --backend mujoco --policy instruction. See docs/robot-gallery.md");
+                }
                 bail!(
                     "optional builtin '{name}' not installed (expected {}).\n\
                      Fetch Menagerie robots with:\n\

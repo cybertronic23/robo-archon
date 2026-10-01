@@ -1,6 +1,6 @@
 # M2f 本体资料包与跨平台机器人接入设计
 
-日期：2026-10-01。状态：M2f.1 已实现基础元数据；M2f.2/M2f.3 规划中。
+日期：2026-10-01。状态：M2f.1 已实现基础元数据；M2f.2a 资产安装和机械臂基础控制已实现；抓取、第二平台与 M2f.3 待实现。
 
 ## 问题与目标
 
@@ -65,3 +65,7 @@ MuJoCo 原生 MJCF，也能导入 URDF；ManiSkill 导入 URDF/MJCF 但控制器
 - https://github.com/pollen-robotics/microduck_rl
 - https://maniskill.readthedocs.io/en/latest/user_guide/tutorials/custom_robots.html
 - https://docs.isaacsim.omniverse.nvidia.com/latest/importer_exporter/importers_exporters.html
+
+## M2f.2a 进展
+
+固定上游资产安装、内容指纹、显式控制 profile、CLI install/doctor/robot 已实现。Franka/SO101 MuJoCo binding 为 controlled，其他绑定保持 planned。详见 [spec](specs/m2f-2-arm-bindings.md)。

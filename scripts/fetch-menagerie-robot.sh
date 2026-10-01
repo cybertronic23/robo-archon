@@ -15,18 +15,11 @@ DEST_ROOT="$ROOT/python/models/external"
 MENAGERIE_URL="${MENAGERIE_URL:-https://github.com/google-deepmind/mujoco_menagerie.git}"
 
 # Short names → upstream folder names
-declare -A ALIASES=(
-  [franka]=franka_emika_panda
-  [franka_panda]=franka_emika_panda
-  [panda]=franka_emika_panda
-  [go2]=unitree_go2
-  [unitree_go2]=unitree_go2
-  [aloha]=aloha
-  [ur5e]=universal_robots_ur5e
-  [ur5]=universal_robots_ur5e
-  [so100]=trs_so_arm100
-  [so_arm100]=trs_so_arm100
-)
+# Franka/SO101 use pinned assets and explicit control profiles.
+case "${1:-}" in
+  franka|franka_panda|panda) exec python3 "$ROOT/scripts/install_robot_assets.py" franka_panda ;;
+  so101) exec python3 "$ROOT/scripts/install_robot_assets.py" so101 ;;
+esac
 
 list_common() {
   cat <<'EOF'
@@ -39,6 +32,7 @@ Common Menagerie robots (pass folder name or alias):
   aloha                          →  aloha
   ur5e / ur5                     →  universal_robots_ur5e
   so100 / so_arm100              →  trs_so_arm100
+  so101                          →  official SO101 (pinned installer)
 
 Full list: https://github.com/google-deepmind/mujoco_menagerie
 After fetch: --model builtin:<catalog_name>  or  --model python/models/external/<folder>/scene.xml
@@ -57,7 +51,12 @@ if [[ "${1}" == "--list" ]]; then
 fi
 
 KEY="$1"
-ROBOT="${ALIASES[$KEY]:-$KEY}"
+case "$KEY" in
+  go2|unitree_go2) ROBOT=unitree_go2 ;;
+  ur5|ur5e) ROBOT=universal_robots_ur5e ;;
+  so100|so_arm100) ROBOT=trs_so_arm100 ;;
+  *) ROBOT="$KEY" ;;
+esac
 OUT="$DEST_ROOT/$ROBOT"
 
 if [[ -f "$OUT/scene.xml" || -f "$OUT/mjx_scene.xml" ]]; then

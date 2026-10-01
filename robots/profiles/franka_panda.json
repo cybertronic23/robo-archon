@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "robot_id": "franka_panda",
+  "source_revision": "4d038b3feae26ec82b46a4d586379114012a8ac7",
+  "joint_names": [
+    "joint1",
+    "joint2",
+    "joint3",
+    "joint4",
+    "joint5",
+    "joint6",
+    "joint7"
+  ],
+  "actuator_names": [
+    "actuator1",
+    "actuator2",
+    "actuator3",
+    "actuator4",
+    "actuator5",
+    "actuator6",
+    "actuator7"
+  ],
+  "home": [
+    0.0,
+    0.0,
+    0.0,
+    -1.57079,
+    0.0,
+    1.57079,
+    -0.7853
+  ],
+  "lower": [
+    -2.8973,
+    -1.7628,
+    -2.8973,
+    -3.0718,
+    -2.8973,
+    -0.0175,
+    -2.8973
+  ],
+  "upper": [
+    2.8973,
+    1.7628,
+    2.8973,
+    -0.0698,
+    2.8973,
+    3.7525,
+    2.8973
+  ],
+  "gripper": {
+    "actuator_name": "actuator8",
+    "open_ctrl": 255,
+    "closed_ctrl": 0,
+    "joint_names": [
+      "finger_joint1",
+      "finger_joint2"
+    ],
+    "open_positions": [
+      0.04,
+      0.04
+    ],
+    "closed_positions": [
+      0,
+      0
+    ]
+  },
+  "keyframe": "home"
+}

@@ -35,6 +35,7 @@ pub struct BridgeConfig {
     /// Keep interactive viewer open until the user closes it on `shutdown` (one-shot demos).
     /// Set false for multi-turn TUI so `/quit` does not block on the window.
     pub hold_viewer_on_shutdown: bool,
+    pub arm_profile: Option<robo_archon_embodied::arm_profile::ArmProfile>,
 }
 
 impl BridgeConfig {
@@ -58,6 +59,7 @@ impl BridgeConfig {
             record_width: 1280,
             record_height: 720,
             hold_viewer_on_shutdown: true,
+            arm_profile: None,
         }
     }
 
@@ -367,6 +369,7 @@ impl RobotBackend for BridgedSimBackend {
             record_width: Some(self.config.record_width),
             record_height: Some(self.config.record_height),
             hold_viewer_on_shutdown: self.config.hold_viewer_on_shutdown,
+            arm_profile: self.config.arm_profile.clone(),
         };
         let line = serde_json::to_string(&hello)?;
         io.stdin.write_all(line.as_bytes()).await?;
@@ -638,6 +641,7 @@ mod tests {
             record_width: 1280,
             record_height: 720,
             hold_viewer_on_shutdown: false,
+            arm_profile: None,
         };
         let mut backend = BridgedSimBackend::new(cfg);
         backend.connect().await.expect("connect mock worker");

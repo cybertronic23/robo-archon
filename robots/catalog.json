@@ -7,28 +7,39 @@
       "revision": "0.1.0",
       "definition": {
         "category": "arm",
-        "capabilities": [],
-        "coordinate_convention": null
+        "capabilities": [
+          "joint_position",
+          "gripper_position"
+        ],
+        "coordinate_convention": "Joint angles in radians; normalized gripper openness [0,1]. World coordinates follow MuJoCo binding."
       },
       "sources": [
         {
           "url": "https://github.com/google-deepmind/mujoco_menagerie/tree/main/franka_emika_panda",
           "description": "Upstream model source; revision must be pinned before installation",
-          "revision": null,
+          "revision": "4d038b3feae26ec82b46a4d586379114012a8ac7",
           "license": "Apache-2.0"
         }
       ],
       "manufacturing_links": [],
       "bindings": {
         "mujoco": {
-          "status": "planned",
+          "status": "controlled",
           "model_format": "mjcf",
-          "model_spec": null,
-          "controller": null,
-          "observation_contract": null,
-          "action_contract": null,
-          "joint_mapping": {},
-          "notes": "Not installed or validated; runtime adapter and controller required."
+          "model_spec": "builtin:franka_panda",
+          "controller": "profile_position_v1",
+          "observation_contract": "franka_panda.arm_proprio.v1",
+          "action_contract": "franka_panda.arm_position_gripper.v1",
+          "joint_mapping": {
+            "joint1": "joint1",
+            "joint2": "joint2",
+            "joint3": "joint3",
+            "joint4": "joint4",
+            "joint5": "joint5",
+            "joint6": "joint6",
+            "joint7": "joint7"
+          },
+          "notes": "Pinned MuJoCo model; home/open/close supported. No IK, grasp task, collision guarantee or real hardware validation."
         },
         "maniskill": {
           "status": "planned",
@@ -61,7 +72,18 @@
           "notes": "Not installed or validated; runtime adapter and controller required."
         }
       },
-      "policies": {},
+      "policies": {
+        "profile_instruction": {
+          "bindings": [
+            "mujoco"
+          ],
+          "observation_contract": "franka_panda.arm_proprio.v1",
+          "action_contract": "franka_panda.arm_position_gripper.v1",
+          "weights": null,
+          "normalization": "arm radians; gripper openness [0,1]",
+          "rate_hz": 50
+        }
+      },
       "tasks": {},
       "devices": {},
       "validations": []
@@ -72,14 +94,17 @@
       "revision": "0.1.0",
       "definition": {
         "category": "arm",
-        "capabilities": [],
-        "coordinate_convention": null
+        "capabilities": [
+          "joint_position",
+          "gripper_position"
+        ],
+        "coordinate_convention": "Joint angles in radians; normalized gripper openness [0,1]. World coordinates follow MuJoCo binding."
       },
       "sources": [
         {
           "url": "https://github.com/TheRobotStudio/SO-ARM100/tree/main/Simulation/SO101",
           "description": "Upstream model source; revision must be pinned before installation",
-          "revision": null,
+          "revision": "5f6d2b876a53a4872e405b991dd925556c9e38a4",
           "license": null
         }
       ],
@@ -93,14 +118,20 @@
       ],
       "bindings": {
         "mujoco": {
-          "status": "planned",
+          "status": "controlled",
           "model_format": "mjcf",
-          "model_spec": null,
-          "controller": null,
-          "observation_contract": null,
-          "action_contract": null,
-          "joint_mapping": {},
-          "notes": "Not installed or validated; runtime adapter and controller required."
+          "model_spec": "builtin:so101",
+          "controller": "profile_position_v1",
+          "observation_contract": "so101.arm_proprio.v1",
+          "action_contract": "so101.arm_position_gripper.v1",
+          "joint_mapping": {
+            "shoulder_pan": "shoulder_pan",
+            "shoulder_lift": "shoulder_lift",
+            "elbow_flex": "elbow_flex",
+            "wrist_flex": "wrist_flex",
+            "wrist_roll": "wrist_roll"
+          },
+          "notes": "Pinned MuJoCo model; home/open/close supported. No IK, grasp task, collision guarantee or real hardware validation."
         },
         "maniskill": {
           "status": "planned",
@@ -133,7 +164,18 @@
           "notes": "Not installed or validated; runtime adapter and controller required."
         }
       },
-      "policies": {},
+      "policies": {
+        "profile_instruction": {
+          "bindings": [
+            "mujoco"
+          ],
+          "observation_contract": "so101.arm_proprio.v1",
+          "action_contract": "so101.arm_position_gripper.v1",
+          "weights": null,
+          "normalization": "arm radians; gripper openness [0,1]",
+          "rate_hz": 50
+        }
+      },
       "tasks": {},
       "devices": {},
       "validations": []

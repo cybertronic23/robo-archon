@@ -8,6 +8,7 @@ import select
 import sys
 import time
 import traceback
+import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -15,6 +16,7 @@ _HERE = Path(__file__).resolve().parent
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
+from asset_integrity import tree_hash
 from protocol import PROTOCOL_VERSION, now_us, read_msg, write_error, write_msg, write_ppm  # noqa: E402
 
 
@@ -60,6 +62,7 @@ class MujocoSession:
         self.frame_seq = 0
         self.gripper_open = 0.5
         self.camera_name = "scene"
+        self.render_camera = None
         self.width = 64
         self.height = 48
         self.model_path: Optional[Path] = None
@@ -72,6 +75,8 @@ class MujocoSession:
         self.hold_viewer_on_shutdown = True
         # Estop consumed mid-command already applied; next estop only needs ack.
         self._estop_applied = False
+        self.arm_profile = None
+        self.gripper_actuator_id = None
 
     def load(self, hello: Dict[str, Any]) -> None:
         try:
@@ -124,6 +129,9 @@ class MujocoSession:
         else:
             self.joint_names = requested
             self.actuator_ids = list(range(min(len(requested), self.model.nu)))
+        self.arm_profile = hello.get("arm_profile")
+        if self.arm_profile is not None:
+            self._configure_arm_profile(self.arm_profile)
         self.dof = len(self.joint_names)
         if self.dof == 0:
             raise RuntimeError("no actuated joints found in model")
@@ -158,6 +166,16 @@ class MujocoSession:
                 sys.stderr.write(f"[mujoco_worker] viewer failed to open: {e}\n")
                 self.viewer = None
                 self.want_viewer = False
+
+        if self.arm_profile is not None:
+            self.render_camera = mujoco.MjvCamera()
+            self.render_camera.lookat[:] = [0.25, 0, 0.4] if self.arm_profile["robot_id"] == "franka_panda" else [0, 0, 0.15]
+            self.render_camera.distance = 1.8 if self.arm_profile["robot_id"] == "franka_panda" else 0.8
+            self.render_camera.azimuth = 140
+            self.render_camera.elevation = -25
+            if self.viewer is not None:
+                self.viewer.cam.lookat[:] = self.render_camera.lookat
+                self.viewer.cam.distance = self.render_camera.distance
 
         # Pick a usable camera if configured one is missing
         if self.renderer is not None:
@@ -261,6 +279,79 @@ class MujocoSession:
             pass
         self.viewer = None
 
+    def _configure_arm_profile(self, profile):
+        import mujoco
+        import math
+        stamp = self.model_path.parent / ".robo-archon-install.json"
+        metadata = json.loads(stamp.read_text())
+        if metadata["sha256"] != tree_hash(self.model_path.parent):
+            raise RuntimeError("installed asset checksum mismatch; reinstall assets")
+        if metadata["revision"] != profile["source_revision"] or metadata["robot"] != profile["robot_id"]:
+            raise RuntimeError("installed model does not match profile revision/identity")
+        names = profile["joint_names"]
+        arrays = [profile[k] for k in ("actuator_names", "home", "lower", "upper")]
+        if not names or any(len(v) != len(names) for v in arrays):
+            raise RuntimeError("profile dimension mismatch")
+        self.joint_names = names
+        self.actuator_ids = []
+        for i, (joint, actuator) in enumerate(zip(names, profile["actuator_names"])):
+            jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, joint)
+            aid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, actuator)
+            if jid < 0 or aid < 0 or self.model.actuator_trnid[aid, 0] != jid:
+                raise RuntimeError("profile joint/actuator mapping missing or mismatched")
+            lo, hi = self.model.jnt_range[jid]
+            if abs(lo-profile["lower"][i]) > 1e-6 or abs(hi-profile["upper"][i]) > 1e-6:
+                raise RuntimeError("profile limits differ from compiled model")
+            value = profile["home"][i]
+            if not math.isfinite(value) or not lo <= value <= hi:
+                raise RuntimeError("invalid profile home")
+            self.actuator_ids.append(aid)
+        g = profile["gripper"]
+        self.gripper_actuator_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, g["actuator_name"])
+        if self.gripper_actuator_id < 0:
+            raise RuntimeError("gripper actuator missing")
+        if not (len(g["joint_names"]) == len(g["open_positions"]) == len(g["closed_positions"])):
+            raise RuntimeError("gripper dimension mismatch")
+        for name, opened, closed in zip(g["joint_names"], g["open_positions"], g["closed_positions"]):
+            jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, name)
+            if jid < 0 or not all(math.isfinite(v) for v in (opened, closed)) or opened == closed:
+                raise RuntimeError("invalid gripper joint mapping")
+            lo, hi = self.model.jnt_range[jid]
+            if not lo <= opened <= hi or not lo <= closed <= hi:
+                raise RuntimeError("gripper positions outside model limits")
+        for value in (g["open_ctrl"], g["closed_ctrl"]):
+            lo, hi = self.model.actuator_ctrlrange[self.gripper_actuator_id]
+            if not math.isfinite(value) or not lo <= value <= hi:
+                raise RuntimeError("gripper control outside actuator limits")
+        if profile.get("keyframe"):
+            kid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_KEY, profile["keyframe"])
+            if kid < 0: raise RuntimeError("profile keyframe missing")
+            mujoco.mj_resetDataKeyframe(self.model, self.data, kid)
+        else:
+            for name, value in zip(names, profile["home"]):
+                jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, name)
+                self.data.qpos[self.model.jnt_qposadr[jid]] = value
+            for name, value in zip(g["joint_names"], g["open_positions"]):
+                jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, name)
+                self.data.qpos[self.model.jnt_qposadr[jid]] = value
+        for aid, value in zip(self.actuator_ids, profile["home"]):
+            self.data.ctrl[aid] = value
+        self.data.ctrl[self.gripper_actuator_id] = g["open_ctrl"]
+        self.gripper_open = 1.0
+        mujoco.mj_forward(self.model, self.data)
+
+    def _measured_gripper_open(self):
+        if self.arm_profile is None:
+            return self.gripper_open
+        import mujoco
+        g = self.arm_profile["gripper"]
+        fractions = []
+        for name, opened, closed in zip(g["joint_names"], g["open_positions"], g["closed_positions"]):
+            jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, name)
+            value = self.data.qpos[self.model.jnt_qposadr[jid]]
+            fractions.append((value - closed)/(opened - closed))
+        return max(0.0, min(1.0, sum(fractions)/len(fractions)))
+
     def _joint_positions(self) -> List[float]:
         import mujoco
 
@@ -282,6 +373,15 @@ class MujocoSession:
         if self.data is None or self.model is None:
             return
         try:
+            if self.arm_profile is not None:
+                for aid, value in zip(self.actuator_ids, self._joint_positions()):
+                    self.data.ctrl[aid] = value
+                g = self.arm_profile["gripper"]
+                self.gripper_open = self._measured_gripper_open()
+                self.data.ctrl[self.gripper_actuator_id] = g["closed_ctrl"] + self.gripper_open*(g["open_ctrl"]-g["closed_ctrl"])
+                self._sync_viewer()
+                self._estop_applied = True
+                return
             for i, jname in enumerate(self.joint_names):
                 if i >= len(self.actuator_ids):
                     break
@@ -341,7 +441,7 @@ class MujocoSession:
             return
         assert self.model is not None and self.data is not None
         try:
-            self.renderer.update_scene(self.data, camera=self.camera_name)
+            self.renderer.update_scene(self.data, camera=self.render_camera if self.render_camera is not None else self.camera_name)
             pixels = self.renderer.render()
         except Exception as e:
             sys.stderr.write(f"[mujoco_worker] record frame skipped: {e}\n")
@@ -402,7 +502,7 @@ class MujocoSession:
             return None
         assert self.model is not None and self.data is not None
         try:
-            self.renderer.update_scene(self.data, camera=self.camera_name)
+            self.renderer.update_scene(self.data, camera=self.render_camera if self.render_camera is not None else self.camera_name)
             pixels = self.renderer.render()
         except Exception as e:
             sys.stderr.write(f"[mujoco_worker] render frame skipped: {e}\n")
@@ -417,7 +517,7 @@ class MujocoSession:
         return {
             "key": "images.primary",
             "stamp_us": now_us(),
-            "frame_id": self.camera_name,
+            "frame_id": "overview" if self.render_camera is not None else self.camera_name,
             "encoding": "rgb8",
             "width": w,
             "height": h,
@@ -435,7 +535,7 @@ class MujocoSession:
             "proprio": {
                 "joint_names": self.joint_names,
                 "positions": self._joint_positions(),
-                "gripper_open": self.gripper_open,
+                "gripper_open": self._measured_gripper_open(),
             },
             "modalities": modalities,
         }
@@ -447,6 +547,8 @@ class MujocoSession:
         mujoco.mj_resetData(self.model, self.data)
         mujoco.mj_forward(self.model, self.data)
         self.gripper_open = 0.5
+        if self.arm_profile is not None:
+            self._configure_arm_profile(self.arm_profile)
         self._estop_applied = False
         self._sync_viewer()
         self._maybe_record_frame()
@@ -459,6 +561,16 @@ class MujocoSession:
         self._estop_applied = False
         positions = list(msg.get("positions") or [])
         names = list(msg.get("names") or [])
+
+        if self.arm_profile is not None:
+            import math
+            if names != self.joint_names or len(positions) != len(names):
+                raise RuntimeError("command joint layout differs from profile")
+            for value, lo, hi in zip(positions, self.arm_profile["lower"], self.arm_profile["upper"]):
+                if not math.isfinite(value) or not lo <= value <= hi:
+                    raise RuntimeError("command position outside profile limits")
+            if msg.get("gripper_open") is not None and not 0 <= msg["gripper_open"] <= 1:
+                raise RuntimeError("gripper openness outside [0,1]")
 
         # Map by name when possible
         name_to_pos = {}
@@ -480,6 +592,11 @@ class MujocoSession:
 
         if msg.get("gripper_open") is not None:
             self.gripper_open = float(msg["gripper_open"])
+            if self.arm_profile is not None:
+                if not 0.0 <= self.gripper_open <= 1.0:
+                    raise RuntimeError("gripper openness outside [0,1]")
+                g = self.arm_profile["gripper"]
+                self.data.ctrl[self.gripper_actuator_id] = g["closed_ctrl"] + self.gripper_open*(g["open_ctrl"]-g["closed_ctrl"])
 
         # With a viewer: step near real-time so motion is visible.
         # Headless / video-only: burst steps and capture frames.

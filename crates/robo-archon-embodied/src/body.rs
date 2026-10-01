@@ -239,6 +239,7 @@ mod tests {
     fn controlled() -> BodyCatalog {
         let mut c = catalog();
         let body = &mut c.bodies[0];
+        body.policies.clear();
         let b = body.bindings.get_mut("mujoco").unwrap();
         b.status = BindingStatus::Controlled;
         b.model_spec = Some("fixture.xml".into());

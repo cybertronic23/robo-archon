@@ -20,6 +20,7 @@ pub struct SessionConfig {
     pub camera: String,
     pub model: String,
     pub robot: RobotKind,
+    pub arm_profile: Option<robo_archon_embodied::arm_profile::ArmProfile>,
     pub joint_names: Vec<String>,
     pub episode_root: PathBuf,
     pub save_frames: bool,
@@ -68,68 +69,85 @@ pub async fn run_turn(
         "policy": cfg.policy_name,
         "camera": cfg.camera,
         "model": cfg.model,
+        "arm_profile": cfg.arm_profile,
         "instruction": instruction,
         "robot": cfg.robot.as_str(),
     });
 
-    let (result, episode) = match cfg.policy_name.as_str() {
-        "mock" => {
-            let policy = MockPolicy::new();
-            run_with_optional_perception(
-                executive,
-                &policy,
-                safety,
-                backend,
-                perception.as_mut(),
-                task_context,
-            )
-            .await?
+    let (result, episode) = if let Some(profile) = &cfg.arm_profile {
+        let policy = robo_archon_policy::ProfilePolicy {
+            profile: profile.clone(),
+            instruction: instruction.into(),
+        };
+        run_with_optional_perception(
+            executive,
+            &policy,
+            safety,
+            backend,
+            perception.as_mut(),
+            task_context,
+        )
+        .await?
+    } else {
+        match cfg.policy_name.as_str() {
+            "mock" => {
+                let policy = MockPolicy::new();
+                run_with_optional_perception(
+                    executive,
+                    &policy,
+                    safety,
+                    backend,
+                    perception.as_mut(),
+                    task_context,
+                )
+                .await?
+            }
+            "instruction" => {
+                let policy = InstructionPolicy::new(instruction)
+                    .with_joint_names(cfg.joint_names.clone())
+                    .with_robot(cfg.robot);
+                run_with_optional_perception(
+                    executive,
+                    &policy,
+                    safety,
+                    backend,
+                    perception.as_mut(),
+                    task_context,
+                )
+                .await?
+            }
+            "llm" => {
+                let api_key = cfg
+                    .llm_api_key
+                    .clone()
+                    .or_else(|| std::env::var("OPENAI_API_KEY").ok())
+                    .context(
+                        "LLM policy needs DEEPSEEK_API_KEY or OPENAI_API_KEY (or --llm-api-key)",
+                    )?;
+                let base_url = cfg
+                    .llm_base_url
+                    .clone()
+                    .unwrap_or_else(|| "https://api.deepseek.com".into());
+                let llm_cfg = LlmPolicyConfig {
+                    api_key,
+                    base_url,
+                    model: cfg.llm_model.clone(),
+                    robot: cfg.robot,
+                    fallback_rules: true,
+                };
+                let policy = LlmPolicy::new(llm_cfg, instruction);
+                run_with_optional_perception(
+                    executive,
+                    &policy,
+                    safety,
+                    backend,
+                    perception.as_mut(),
+                    task_context,
+                )
+                .await?
+            }
+            other => anyhow::bail!("TUI/session does not support policy '{other}'"),
         }
-        "instruction" => {
-            let policy = InstructionPolicy::new(instruction)
-                .with_joint_names(cfg.joint_names.clone())
-                .with_robot(cfg.robot);
-            run_with_optional_perception(
-                executive,
-                &policy,
-                safety,
-                backend,
-                perception.as_mut(),
-                task_context,
-            )
-            .await?
-        }
-        "llm" => {
-            let api_key = cfg
-                .llm_api_key
-                .clone()
-                .or_else(|| std::env::var("OPENAI_API_KEY").ok())
-                .context(
-                    "LLM policy needs DEEPSEEK_API_KEY or OPENAI_API_KEY (or --llm-api-key)",
-                )?;
-            let base_url = cfg
-                .llm_base_url
-                .clone()
-                .unwrap_or_else(|| "https://api.deepseek.com".into());
-            let llm_cfg = LlmPolicyConfig {
-                api_key,
-                base_url,
-                model: cfg.llm_model.clone(),
-                robot: cfg.robot,
-                fallback_rules: true,
-            };
-            let policy = LlmPolicy::new(llm_cfg, instruction);
-            run_with_optional_perception(
-                executive,
-                &policy,
-                safety,
-                backend,
-                perception.as_mut(),
-                task_context,
-            )
-            .await?
-        }
-        other => anyhow::bail!("TUI/session does not support policy '{other}'"),
     };
 
     let bridged = matches!(cfg.backend_name.as_str(), "mujoco" | "maniskill");
@@ -176,5 +194,16 @@ async fn run_with_optional_perception(
         executive
             .run_once(policy, safety, backend, task_context)
             .await
+    }
+}
+
+pub fn session_safety(cfg: &SessionConfig) -> LimitSafetyGate {
+    if let Some(profile) = &cfg.arm_profile {
+        LimitSafetyGate::new(robo_archon_kinetic::JointLimits {
+            lower: profile.lower.clone(),
+            upper: profile.upper.clone(),
+        })
+    } else {
+        default_safety(cfg.robot)
     }
 }

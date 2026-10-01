@@ -1,0 +1,29 @@
+name: Embodied checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: cargo test --workspace --locked
+      - run: python -m unittest discover -s scripts/tests -p test_robot_assets.py
+      - run: cargo run --locked -p robo-archon-cli -- --list-robots
+  arm-physics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r python/requirements-mujoco-tested.txt
+      - run: python scripts/install_robot_assets.py franka_panda
+      - run: python scripts/install_robot_assets.py so101
+      - run: python -m unittest discover -s scripts/tests -p test_arm_bindings.py

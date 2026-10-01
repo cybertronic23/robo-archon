@@ -139,10 +139,13 @@ impl JointLimits {
     }
 
     pub fn contains(&self, positions: &[f64]) -> Result<(), String> {
+        if positions.len() != self.lower.len() || self.lower.len() != self.upper.len() {
+            return Err("joint limit dimension mismatch".into());
+        }
         for (i, &p) in positions.iter().enumerate() {
             let lo = self.lower.get(i).copied().unwrap_or(f64::NEG_INFINITY);
             let hi = self.upper.get(i).copied().unwrap_or(f64::INFINITY);
-            if p < lo || p > hi {
+            if !p.is_finite() || !lo.is_finite() || !hi.is_finite() || lo >= hi || p < lo || p > hi {
                 return Err(format!(
                     "joint[{i}]={p:.4} outside limits [{lo:.4}, {hi:.4}]"
                 ));
@@ -176,6 +179,14 @@ mod tests {
         assert!(cmds.len() >= 10);
         assert!((cmds[0].positions[0] - 0.0).abs() < 1e-6);
         assert!((cmds.last().unwrap().positions[0] - 1.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn limits_reject_nonfinite_and_wrong_dimensions() {
+        let limits = JointLimits::desktop_arm_6dof();
+        assert!(limits.contains(&[f64::NAN; 6]).is_err());
+        assert!(limits.contains(&[0.0; 5]).is_err());
+        assert!(limits.contains(&[f64::INFINITY; 6]).is_err());
     }
 
     #[test]

@@ -1,5 +1,7 @@
 # MuJoCo 资产说明
 
+Franka/SO101 请优先使用固定版本安装器及 `--robot` 控制入口，见 [Robot Gallery](../../docs/robot-gallery.md)。旧的通用六关节策略不适用这两款模型。
+
 RoboArchon **不绑定** MuJoCo 安装包自带模型。资产分三类，均可由 `--model` 指定。
 
 ## 目录约定
@@ -52,13 +54,13 @@ cargo run -p robo-archon-cli -- \
 
 ```bash
 # 仓库根目录执行
-./scripts/fetch-menagerie-robot.sh franka_emika_panda
+python3 scripts/install_robot_assets.py franka_panda
 ./scripts/fetch-menagerie-robot.sh unitree_go2
 ./scripts/fetch-menagerie-robot.sh --list   # 看常用短名
 
 # 拉完后可用 catalog 名或路径
 cargo run -p robo-archon-cli -- \
-  --backend mujoco --model builtin:franka_panda --viewer --step-ms 0
+  --backend mujoco --robot franka_panda --policy instruction --instruction "归位" --viewer --step-ms 0
 
 # 等价
 --model python/models/external/franka_emika_panda/scene.xml
@@ -87,5 +89,5 @@ cargo run -p robo-archon-cli -- \
 ## 注意
 
 - 需要的是 **MJCF（.xml）**，不是裸 URDF（除非你先转成 MJCF）。  
-- Worker 会自动发现执行器；`--policy instruction` 的「挥手」等短语是按简化臂/小车写的，Franka 等先用 `--viewer` 看关节，或 `--policy llm` / 后续为具体机器人加原语。  
+- 自定义模型仍使用通用执行器发现；Franka/SO101 必须通过 `--robot` 使用经过验证的显式映射。LLM 不会自动适配新机器人。
 - 大 mesh **不要** 提交进 git；只提交 catalog 条目与轻量 demo。
