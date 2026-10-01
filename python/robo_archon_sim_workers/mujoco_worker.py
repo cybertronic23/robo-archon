@@ -17,7 +17,14 @@ if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
 from asset_integrity import tree_hash
-from protocol import PROTOCOL_VERSION, now_us, read_msg, write_error, write_msg, write_ppm  # noqa: E402
+from protocol import (
+    PROTOCOL_VERSION,
+    now_us,
+    read_msg,
+    write_error,
+    write_msg,
+    write_ppm,
+)  # noqa: E402
 
 
 def _default_model_path() -> Path:
@@ -44,7 +51,10 @@ def discover_actuated_joints(model) -> Tuple[List[str], List[int]]:
         # Fall back to all hinge joints
         for j in range(model.njnt):
             if model.jnt_type[j] == mujoco.mjtJoint.mjJNT_HINGE:
-                name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, j) or f"joint_{j}"
+                name = (
+                    mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, j)
+                    or f"joint_{j}"
+                )
                 names.append(name)
     return names, acts
 
@@ -77,6 +87,10 @@ class MujocoSession:
         self._estop_applied = False
         self.arm_profile = None
         self.gripper_actuator_id = None
+        self.task_config = None
+        self.task_evaluator = None
+        self.ik = None
+        self.collision_guard = None
 
     def load(self, hello: Dict[str, Any]) -> None:
         try:
@@ -99,7 +113,9 @@ class MujocoSession:
         if hello.get("video_out"):
             self.video_out = Path(hello["video_out"])
             if self.record_dir is None:
-                self.record_dir = self.video_out.parent / f".frames_{self.video_out.stem}"
+                self.record_dir = (
+                    self.video_out.parent / f".frames_{self.video_out.stem}"
+                )
                 self.record_dir.mkdir(parents=True, exist_ok=True)
         if hello.get("camera"):
             self.camera_name = str(hello["camera"])
@@ -108,7 +124,11 @@ class MujocoSession:
             self.width = int(hello.get("record_width") or 1280)
             self.height = int(hello.get("record_height") or 720)
 
-        model_path = hello.get("model_path") or os.environ.get("ROBO_ARCHON_MUJOCO_MODEL") or os.environ.get("ARCHON_MUJOCO_MODEL")
+        model_path = (
+            hello.get("model_path")
+            or os.environ.get("ROBO_ARCHON_MUJOCO_MODEL")
+            or os.environ.get("ARCHON_MUJOCO_MODEL")
+        )
         if model_path:
             self.model_path = Path(model_path)
         else:
@@ -117,7 +137,24 @@ class MujocoSession:
             raise RuntimeError(f"MJCF not found: {self.model_path}")
 
         # Load relative mesh assets from model directory
-        self.model = mujoco.MjModel.from_xml_path(str(self.model_path))
+        if hello.get("task") == "pick_place":
+            if hello.get("arm_profile") is None:
+                raise RuntimeError("pick_place requires arm profile")
+            from pick_place import (
+                scene_model,
+                CartesianIK,
+                TaskEvaluator,
+                CollisionGuard,
+            )
+
+            self.model, self.task_config = scene_model(
+                self.model_path, hello["arm_profile"], hello.get("seed", 0)
+            )
+            self.ik = CartesianIK(self.model, hello["arm_profile"])
+            self.collision_guard = CollisionGuard(self.model, self.task_config)
+            self.task_evaluator = TaskEvaluator(self.model, self.task_config)
+        else:
+            self.model = mujoco.MjModel.from_xml_path(str(self.model_path))
         self.data = mujoco.MjData(self.model)
         mujoco.mj_resetData(self.model, self.data)
         mujoco.mj_forward(self.model, self.data)
@@ -169,8 +206,14 @@ class MujocoSession:
 
         if self.arm_profile is not None:
             self.render_camera = mujoco.MjvCamera()
-            self.render_camera.lookat[:] = [0.25, 0, 0.4] if self.arm_profile["robot_id"] == "franka_panda" else [0, 0, 0.15]
-            self.render_camera.distance = 1.8 if self.arm_profile["robot_id"] == "franka_panda" else 0.8
+            self.render_camera.lookat[:] = (
+                [0.25, 0, 0.4]
+                if self.arm_profile["robot_id"] == "franka_panda"
+                else [0.13, 0.025, 0.13]
+            )
+            self.render_camera.distance = (
+                1.8 if self.arm_profile["robot_id"] == "franka_panda" else 0.65
+            )
             self.render_camera.azimuth = 140
             self.render_camera.elevation = -25
             if self.viewer is not None:
@@ -179,7 +222,9 @@ class MujocoSession:
 
         # Pick a usable camera if configured one is missing
         if self.renderer is not None:
-            cid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_CAMERA, self.camera_name)
+            cid = mujoco.mj_name2id(
+                self.model, mujoco.mjtObj.mjOBJ_CAMERA, self.camera_name
+            )
             if cid < 0 and self.model.ncam > 0:
                 alt = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_CAMERA, 0)
                 if alt:
@@ -190,6 +235,12 @@ class MujocoSession:
         import mujoco
 
         assert self.model is not None
+        self.model.vis.global_.offwidth = max(
+            self.width, self.model.vis.global_.offwidth
+        )
+        self.model.vis.global_.offheight = max(
+            self.height, self.model.vis.global_.offheight
+        )
         sizes = [(self.height, self.width)]
         # Fallback smaller size if high-res offscreen fails (common on constrained CI).
         if self.width > 320 or self.height > 240:
@@ -237,7 +288,9 @@ class MujocoSession:
         self.media_root = Path(media_root) if media_root else None
         self.frame_seq = 0
         if self.media_root is not None:
-            (self.media_root / "media" / "images.primary").mkdir(parents=True, exist_ok=True)
+            (self.media_root / "media" / "images.primary").mkdir(
+                parents=True, exist_ok=True
+            )
             # Ensure renderer exists once media is requested mid-session.
             if self.renderer is None and self.model is not None:
                 self.render = True
@@ -282,12 +335,18 @@ class MujocoSession:
     def _configure_arm_profile(self, profile):
         import mujoco
         import math
+
         stamp = self.model_path.parent / ".robo-archon-install.json"
         metadata = json.loads(stamp.read_text())
         if metadata["sha256"] != tree_hash(self.model_path.parent):
             raise RuntimeError("installed asset checksum mismatch; reinstall assets")
-        if metadata["revision"] != profile["source_revision"] or metadata["robot"] != profile["robot_id"]:
-            raise RuntimeError("installed model does not match profile revision/identity")
+        if (
+            metadata["revision"] != profile["source_revision"]
+            or metadata["robot"] != profile["robot_id"]
+        ):
+            raise RuntimeError(
+                "installed model does not match profile revision/identity"
+            )
         names = profile["joint_names"]
         arrays = [profile[k] for k in ("actuator_names", "home", "lower", "upper")]
         if not names or any(len(v) != len(names) for v in arrays):
@@ -298,23 +357,40 @@ class MujocoSession:
             jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, joint)
             aid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, actuator)
             if jid < 0 or aid < 0 or self.model.actuator_trnid[aid, 0] != jid:
-                raise RuntimeError("profile joint/actuator mapping missing or mismatched")
+                raise RuntimeError(
+                    "profile joint/actuator mapping missing or mismatched"
+                )
             lo, hi = self.model.jnt_range[jid]
-            if abs(lo-profile["lower"][i]) > 1e-6 or abs(hi-profile["upper"][i]) > 1e-6:
+            if (
+                abs(lo - profile["lower"][i]) > 1e-6
+                or abs(hi - profile["upper"][i]) > 1e-6
+            ):
                 raise RuntimeError("profile limits differ from compiled model")
             value = profile["home"][i]
             if not math.isfinite(value) or not lo <= value <= hi:
                 raise RuntimeError("invalid profile home")
             self.actuator_ids.append(aid)
         g = profile["gripper"]
-        self.gripper_actuator_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, g["actuator_name"])
+        self.gripper_actuator_id = mujoco.mj_name2id(
+            self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, g["actuator_name"]
+        )
         if self.gripper_actuator_id < 0:
             raise RuntimeError("gripper actuator missing")
-        if not (len(g["joint_names"]) == len(g["open_positions"]) == len(g["closed_positions"])):
+        if not (
+            len(g["joint_names"])
+            == len(g["open_positions"])
+            == len(g["closed_positions"])
+        ):
             raise RuntimeError("gripper dimension mismatch")
-        for name, opened, closed in zip(g["joint_names"], g["open_positions"], g["closed_positions"]):
+        for name, opened, closed in zip(
+            g["joint_names"], g["open_positions"], g["closed_positions"]
+        ):
             jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, name)
-            if jid < 0 or not all(math.isfinite(v) for v in (opened, closed)) or opened == closed:
+            if (
+                jid < 0
+                or not all(math.isfinite(v) for v in (opened, closed))
+                or opened == closed
+            ):
                 raise RuntimeError("invalid gripper joint mapping")
             lo, hi = self.model.jnt_range[jid]
             if not lo <= opened <= hi or not lo <= closed <= hi:
@@ -324,8 +400,11 @@ class MujocoSession:
             if not math.isfinite(value) or not lo <= value <= hi:
                 raise RuntimeError("gripper control outside actuator limits")
         if profile.get("keyframe"):
-            kid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_KEY, profile["keyframe"])
-            if kid < 0: raise RuntimeError("profile keyframe missing")
+            kid = mujoco.mj_name2id(
+                self.model, mujoco.mjtObj.mjOBJ_KEY, profile["keyframe"]
+            )
+            if kid < 0:
+                raise RuntimeError("profile keyframe missing")
             mujoco.mj_resetDataKeyframe(self.model, self.data, kid)
         else:
             for name, value in zip(names, profile["home"]):
@@ -344,13 +423,16 @@ class MujocoSession:
         if self.arm_profile is None:
             return self.gripper_open
         import mujoco
+
         g = self.arm_profile["gripper"]
         fractions = []
-        for name, opened, closed in zip(g["joint_names"], g["open_positions"], g["closed_positions"]):
+        for name, opened, closed in zip(
+            g["joint_names"], g["open_positions"], g["closed_positions"]
+        ):
             jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, name)
             value = self.data.qpos[self.model.jnt_qposadr[jid]]
-            fractions.append((value - closed)/(opened - closed))
-        return max(0.0, min(1.0, sum(fractions)/len(fractions)))
+            fractions.append((value - closed) / (opened - closed))
+        return max(0.0, min(1.0, sum(fractions) / len(fractions)))
 
     def _joint_positions(self) -> List[float]:
         import mujoco
@@ -378,7 +460,9 @@ class MujocoSession:
                     self.data.ctrl[aid] = value
                 g = self.arm_profile["gripper"]
                 self.gripper_open = self._measured_gripper_open()
-                self.data.ctrl[self.gripper_actuator_id] = g["closed_ctrl"] + self.gripper_open*(g["open_ctrl"]-g["closed_ctrl"])
+                self.data.ctrl[self.gripper_actuator_id] = g[
+                    "closed_ctrl"
+                ] + self.gripper_open * (g["open_ctrl"] - g["closed_ctrl"])
                 self._sync_viewer()
                 self._estop_applied = True
                 return
@@ -426,7 +510,9 @@ class MujocoSession:
 
             msg = json.loads(line)
         except Exception:
-            sys.stderr.write(f"[mujoco_worker] ignored non-JSON while stepping: {line[:80]}\n")
+            sys.stderr.write(
+                f"[mujoco_worker] ignored non-JSON while stepping: {line[:80]}\n"
+            )
             return False
         if msg.get("type") == "estop":
             self.apply_estop()
@@ -440,14 +526,22 @@ class MujocoSession:
         if self.record_dir is None or self.renderer is None:
             return
         assert self.model is not None and self.data is not None
+        self.video_frame_seq += 1
+        self.record_every_n = max(1, round(1 / (30 * self.model.opt.timestep)))
+        if self.video_frame_seq % self.record_every_n != 0:
+            return
         try:
-            self.renderer.update_scene(self.data, camera=self.render_camera if self.render_camera is not None else self.camera_name)
+            self.renderer.update_scene(
+                self.data,
+                camera=(
+                    self.render_camera
+                    if self.render_camera is not None
+                    else self.camera_name
+                ),
+            )
             pixels = self.renderer.render()
         except Exception as e:
             sys.stderr.write(f"[mujoco_worker] record frame skipped: {e}\n")
-            return
-        self.video_frame_seq += 1
-        if self.video_frame_seq % self.record_every_n != 0:
             return
         h, w, _ = pixels.shape
         idx = self.video_frame_seq // self.record_every_n
@@ -462,15 +556,14 @@ class MujocoSession:
             return
         frames = sorted(self.record_dir.glob("frame_*.ppm"))
         if not frames:
-            sys.stderr.write("[mujoco_worker] no frames to encode\n")
-            return
+            raise RuntimeError("video requested but no rendered frames available")
         self.video_out.parent.mkdir(parents=True, exist_ok=True)
         pattern = str(self.record_dir / "frame_%06d.ppm")
         cmd = [
             "ffmpeg",
             "-y",
             "-framerate",
-            "30",
+            str(1 / (self.record_every_n * self.model.opt.timestep)),
             "-i",
             pattern,
             "-c:v",
@@ -487,22 +580,25 @@ class MujocoSession:
             subprocess.run(cmd, check=True, capture_output=True)
             sys.stderr.write(f"[mujoco_worker] video saved: {self.video_out}\n")
         except FileNotFoundError:
-            sys.stderr.write(
-                "[mujoco_worker] ffmpeg not found. Install with: brew install ffmpeg\n"
-                f"Frames are in: {self.record_dir}\n"
-            )
+            raise RuntimeError("ffmpeg is required to encode the requested video")
         except subprocess.CalledProcessError as e:
-            sys.stderr.write(
-                f"[mujoco_worker] ffmpeg failed: {e.stderr.decode('utf-8', errors='ignore')}\n"
-                f"Frames are in: {self.record_dir}\n"
-            )
+            raise RuntimeError(
+                f"video encoding failed: {e.stderr.decode(errors='replace')}"
+            ) from e
 
     def _maybe_render(self) -> Optional[Dict[str, Any]]:
         if not self.render or self.renderer is None or self.media_root is None:
             return None
         assert self.model is not None and self.data is not None
         try:
-            self.renderer.update_scene(self.data, camera=self.render_camera if self.render_camera is not None else self.camera_name)
+            self.renderer.update_scene(
+                self.data,
+                camera=(
+                    self.render_camera
+                    if self.render_camera is not None
+                    else self.camera_name
+                ),
+            )
             pixels = self.renderer.render()
         except Exception as e:
             sys.stderr.write(f"[mujoco_worker] render frame skipped: {e}\n")
@@ -517,7 +613,9 @@ class MujocoSession:
         return {
             "key": "images.primary",
             "stamp_us": now_us(),
-            "frame_id": "overview" if self.render_camera is not None else self.camera_name,
+            "frame_id": (
+                "overview" if self.render_camera is not None else self.camera_name
+            ),
             "encoding": "rgb8",
             "width": w,
             "height": h,
@@ -538,6 +636,31 @@ class MujocoSession:
                 "gripper_open": self._measured_gripper_open(),
             },
             "modalities": modalities,
+            "annotations": self.task_annotations(),
+        }
+
+    def task_annotations(self):
+        if self.task_evaluator is None:
+            return []
+        return [
+            {
+                "kind": "task_state",
+                "stamp_us": now_us(),
+                "payload": self.task_evaluator.state(
+                    self.model, self.data, self._measured_gripper_open()
+                ),
+            }
+        ]
+
+    def solve_ik(self, target, down=True):
+        if self.ik is None:
+            raise RuntimeError("Cartesian IK requires pick_place scene")
+        result = self.ik.solve(self.data.qpos, target, down)
+        self.collision_guard.path(self.data.qpos, self.ik.qadr, result)
+        return {
+            "type": "ik_solution",
+            "joint_names": self.joint_names,
+            "positions": result,
         }
 
     def reset(self) -> Dict[str, Any]:
@@ -550,6 +673,10 @@ class MujocoSession:
         if self.arm_profile is not None:
             self._configure_arm_profile(self.arm_profile)
         self._estop_applied = False
+        if self.task_config is not None:
+            from pick_place import TaskEvaluator
+
+            self.task_evaluator = TaskEvaluator(self.model, self.task_config)
         self._sync_viewer()
         self._maybe_record_frame()
         return self.observation()
@@ -564,13 +691,22 @@ class MujocoSession:
 
         if self.arm_profile is not None:
             import math
+
             if names != self.joint_names or len(positions) != len(names):
                 raise RuntimeError("command joint layout differs from profile")
-            for value, lo, hi in zip(positions, self.arm_profile["lower"], self.arm_profile["upper"]):
+            for value, lo, hi in zip(
+                positions, self.arm_profile["lower"], self.arm_profile["upper"]
+            ):
                 if not math.isfinite(value) or not lo <= value <= hi:
                     raise RuntimeError("command position outside profile limits")
-            if msg.get("gripper_open") is not None and not 0 <= msg["gripper_open"] <= 1:
+            if (
+                msg.get("gripper_open") is not None
+                and not 0 <= msg["gripper_open"] <= 1
+            ):
                 raise RuntimeError("gripper openness outside [0,1]")
+
+        if self.collision_guard is not None:
+            self.collision_guard.path(self.data.qpos, self.ik.qadr, positions)
 
         # Map by name when possible
         name_to_pos = {}
@@ -596,11 +732,13 @@ class MujocoSession:
                 if not 0.0 <= self.gripper_open <= 1.0:
                     raise RuntimeError("gripper openness outside [0,1]")
                 g = self.arm_profile["gripper"]
-                self.data.ctrl[self.gripper_actuator_id] = g["closed_ctrl"] + self.gripper_open*(g["open_ctrl"]-g["closed_ctrl"])
+                self.data.ctrl[self.gripper_actuator_id] = g[
+                    "closed_ctrl"
+                ] + self.gripper_open * (g["open_ctrl"] - g["closed_ctrl"])
 
         # With a viewer: step near real-time so motion is visible.
         # Headless / video-only: burst steps and capture frames.
-        n_sub = 15 if self.viewer is not None else 10
+        n_sub = 10
         dt = float(self.model.opt.timestep)
         cancelled = False
         for _ in range(n_sub):
@@ -608,6 +746,14 @@ class MujocoSession:
                 cancelled = True
                 break
             mujoco.mj_step(self.model, self.data)
+            if self.task_evaluator is not None:
+                self.task_evaluator.update(self.model, self.data)
+            if self.collision_guard is not None:
+                try:
+                    self.collision_guard.check(self.data)
+                except ValueError:
+                    self.apply_estop()
+                    raise
             if self.viewer is not None:
                 self._sync_viewer()
                 time.sleep(dt)
@@ -648,8 +794,18 @@ def main() -> int:
                 write_msg(session.reset())
             elif t == "observe":
                 write_msg(session.observation())
+            elif t == "solve_ik":
+                try:
+                    write_msg(session.solve_ik(msg["target"], msg.get("down", True)))
+                except (ValueError, RuntimeError) as error:
+                    write_error(str(error))
             elif t == "command":
-                obs = session.command(msg)
+                try:
+                    obs = session.command(msg)
+                except (ValueError, RuntimeError) as error:
+                    session.apply_estop()
+                    write_error(str(error))
+                    continue
                 write_msg(obs)
                 # If estop was consumed mid-burst, ack it after the command observation
                 # so Rust can drain Obs then Ack in order.

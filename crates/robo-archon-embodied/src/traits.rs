@@ -38,6 +38,11 @@ pub trait RobotBackend: Send + Sync {
     /// Execute a single high-rate joint command (or a short burst handled by the backend).
     async fn execute_command(&mut self, cmd: &JointCommand, cancel: &CancelToken) -> Result<()>;
 
+    /// Query a binding's kinematic solver; returned targets still pass SafetyGate.
+    async fn solve_ik(&self, _target: [f64; 3], _down: bool) -> Result<Vec<f64>> {
+        anyhow::bail!("backend does not support Cartesian IK")
+    }
+
     /// Immediate stop — highest priority.
     async fn estop(&mut self) -> Result<()>;
 
@@ -67,7 +72,22 @@ pub trait RobotBackendExt: RobotBackend {
                     "cancelled",
                 ));
             }
-            self.execute_command(cmd, cancel).await?;
+            if let Err(error) = self.execute_command(cmd, cancel).await {
+                if cancel.is_cancelled() {
+                    return Ok(ExecutionResult::cancelled(
+                        sent,
+                        start.elapsed().as_millis() as u64,
+                        "cancelled",
+                    ));
+                }
+                return Ok(ExecutionResult {
+                    status: crate::types::ExecutionStatus::Fault,
+                    message: format!("{error:#}"),
+                    commands_sent: sent,
+                    duration_ms: start.elapsed().as_millis() as u64,
+                    final_joints: None,
+                });
+            }
             sent += 1;
             if step_delay_ms > 0 {
                 tokio::time::sleep(std::time::Duration::from_millis(step_delay_ms)).await;

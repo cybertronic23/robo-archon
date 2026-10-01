@@ -1,5 +1,6 @@
 //! RoboArchon CLI — sim / MuJoCo assets / language instructions / TUI.
 
+mod pick_place;
 mod session;
 mod tui_app;
 
@@ -44,6 +45,14 @@ struct Args {
     /// Select an installed, explicitly adapted robot (franka_panda | so101)
     #[arg(long)]
     robot: Option<String>,
+
+    /// Execute a measured physical task: pick-place (requires --robot).
+    #[arg(long, value_parser = ["pick-place"], conflicts_with_all = ["tui", "instruction", "policy", "camera"])]
+    demo: Option<String>,
+
+    /// Reproducible task variation (initial cube position).
+    #[arg(long, default_value_t = 0)]
+    seed: u64,
 
     /// List builtin models and exit
     #[arg(long, default_value_t = false)]
@@ -204,17 +213,29 @@ async fn main() -> Result<()> {
     }
 
     let arm_profile = if let Some(id) = &args.robot {
-        if args.backend != "mujoco" || args.policy != "instruction" {
-            anyhow::bail!("--robot currently requires --backend mujoco --policy instruction");
+        if !matches!(args.backend.as_str(), "mujoco" | "maniskill")
+            || (args.demo.is_none() && args.policy != "instruction")
+        {
+            anyhow::bail!("--robot requires --backend mujoco|maniskill and --policy instruction or --demo pick-place");
         }
         let catalog = robo_archon_embodied::body::BodyCatalog::load(&args.body_catalog)?;
         let body = catalog.body(id)?;
-        body.check_policy("mujoco", "profile_instruction")?;
+        body.check_policy(
+            &args.backend,
+            if args.demo.is_some() {
+                "cartesian_pick_place"
+            } else {
+                "profile_instruction"
+            },
+        )?;
         let binding = body
             .bindings
+            .get(&args.backend)
+            .context("simulation binding missing")?;
+        args.model = body
+            .bindings
             .get("mujoco")
-            .context("MuJoCo binding missing")?;
-        args.model = binding
+            .unwrap_or(binding)
             .model_spec
             .clone()
             .context("robot not yet adapted")?;
@@ -238,6 +259,9 @@ async fn main() -> Result<()> {
         anyhow::bail!(
             "use --robot franka_panda or --robot so101 with --backend mujoco --policy instruction"
         );
+    }
+    if args.demo.is_some() && (arm_profile.is_none() || args.rate_hz != 50.0) {
+        anyhow::bail!("pick-place requires --robot and 50 Hz control rate");
     }
     let robot = RobotKind::parse_model_hint(&args.model);
     // One-shot defaults a phrase; TUI starts empty unless --instruction is given.
@@ -310,6 +334,8 @@ async fn main() -> Result<()> {
                 BridgeConfig::mujoco(&script)
             };
             cfg.arm_profile = arm_profile.clone();
+            cfg.task = args.demo.as_ref().map(|_| "pick_place".into());
+            cfg.seed = args.seed;
             cfg.render = args.save_frames || args.record_video.is_some();
             if args.save_frames {
                 // One-shot: frames go under the CLI-allocated episode bundle from hello.
@@ -399,7 +425,7 @@ async fn main() -> Result<()> {
             task_id: args.task_id.clone(),
             control_step_ms: args.step_ms,
             episode_id: Some(episode_id.clone()),
-            keep_backend_alive: args.tui,
+            keep_backend_alive: args.tui || args.demo.is_some(),
             ..Default::default()
         },
         chronos,
@@ -513,6 +539,17 @@ async fn main() -> Result<()> {
     } else {
         session::default_safety(robot)
     };
+    if args.demo.is_some() {
+        return pick_place::run(
+            &mut executive,
+            backend,
+            &safety,
+            arm_profile.as_ref().unwrap(),
+            args.seed,
+            &bundle_dir,
+        )
+        .await;
+    }
     let mut perception = perception;
 
     let outcome: TurnOutcome = match args.policy.as_str() {

@@ -240,6 +240,9 @@ mod tests {
         let mut c = catalog();
         let body = &mut c.bodies[0];
         body.policies.clear();
+        body.validations.clear();
+        body.tasks.clear();
+        body.bindings.retain(|id, _| id == "mujoco");
         let b = body.bindings.get_mut("mujoco").unwrap();
         b.status = BindingStatus::Controlled;
         b.model_spec = Some("fixture.xml".into());

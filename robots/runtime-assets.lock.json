@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "assets": {
+    "maniskill_panda": {
+      "package": "mani_skill",
+      "version": "3.0.1",
+      "directory": "robots/panda",
+      "entrypoint": "panda_v2.urdf",
+      "sha256": "5bc306ed2c562932205be9810e95b68ade117d17f19341d322f17b331066106f",
+      "runtime_versions": {
+        "mani_skill": "3.0.1",
+        "sapien": "3.0.3",
+        "torch": "2.8.0",
+        "mujoco": "3.14.0",
+        "numpy": "2.4.6"
+      },
+      "source": "https://github.com/haosulab/ManiSkill/tree/v3.0.1/mani_skill/assets/robots/panda",
+      "license_note": "Runtime package LICENSE and LICENSE-3RD-PARTY remain installed; package asset terms may differ from code license."
+    }
+  }
+}

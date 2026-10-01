@@ -40,7 +40,7 @@
   "gripper": {
     "actuator_name": "gripper",
     "open_ctrl": 1.5,
-    "closed_ctrl": 0,
+    "closed_ctrl": -0.17,
     "joint_names": [
       "gripper"
     ],
@@ -48,7 +48,7 @@
       1.5
     ],
     "closed_positions": [
-      0
+      -0.17
     ]
   },
   "keyframe": null

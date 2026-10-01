@@ -1,8 +1,8 @@
 //! NDJSON bridge protocol v1 (Rust ↔ Python sim workers).
 
 use robo_archon_embodied::{
-    modality_keys, MediaLayout, MediaRef, MediaStorageKind, ModalitySample, Observation,
-    ProprioState, JointState,
+    modality_keys, JointState, MediaLayout, MediaRef, MediaStorageKind, ModalitySample,
+    Observation, ProprioState,
 };
 use serde::{Deserialize, Serialize};
 
@@ -50,6 +50,14 @@ pub enum ClientMsg {
         hold_viewer_on_shutdown: bool,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         arm_profile: Option<robo_archon_embodied::arm_profile::ArmProfile>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        task: Option<String>,
+        #[serde(default)]
+        seed: u64,
+    },
+    SolveIk {
+        target: [f64; 3],
+        down: bool,
     },
     Reset,
     /// Return current observation without advancing physics.
@@ -90,6 +98,12 @@ pub enum ServerMsg {
         proprio: ProprioWire,
         #[serde(default)]
         modalities: Vec<ModalityWire>,
+        #[serde(default)]
+        annotations: Vec<robo_archon_embodied::Annotation>,
+    },
+    IkSolution {
+        joint_names: Vec<String>,
+        positions: Vec<f64>,
     },
     Ack,
     Error {
@@ -125,12 +139,14 @@ impl ServerMsg {
                 stamp_us,
                 proprio,
                 modalities,
+                annotations,
             } => {
                 let mut obs = Observation::from_proprio(ProprioState::new(
                     JointState::new(proprio.joint_names, proprio.positions),
                     proprio.gripper_open,
                 ));
                 obs.stamp_us = stamp_us;
+                obs.annotations = annotations;
                 for m in modalities {
                     let key = if m.key.is_empty() {
                         modality_keys::IMAGES_PRIMARY.to_string()
@@ -189,6 +205,8 @@ mod tests {
             record_height: None,
             hold_viewer_on_shutdown: true,
             arm_profile: None,
+            task: None,
+            seed: 0,
         };
         let s = serde_json::to_string(&msg).unwrap();
         let back: ClientMsg = serde_json::from_str(&s).unwrap();
@@ -198,6 +216,12 @@ mod tests {
     #[test]
     fn observation_roundtrip() {
         let msg = ServerMsg::Observation {
+            annotations: vec![robo_archon_embodied::Annotation {
+                kind: "task_state".into(),
+                stamp_us: 42,
+                modality_key: None,
+                payload: serde_json::json!({"success":true}),
+            }],
             stamp_us: 42,
             proprio: ProprioWire {
                 joint_names: vec!["joint_1".into()],
@@ -216,6 +240,7 @@ mod tests {
         };
         let obs = msg.into_observation().unwrap();
         assert_eq!(obs.stamp_us, 42);
+        assert_eq!(obs.annotations[0].payload["success"], true);
         assert!(obs.modalities.contains_key(modality_keys::IMAGES_PRIMARY));
     }
 }

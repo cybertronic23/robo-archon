@@ -1,0 +1,382 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-01",
+  "environment": {
+    "os": "Darwin",
+    "machine": "arm64",
+    "python": "3.11.9"
+  },
+  "task": "pick_place.v1",
+  "source_sha256": {
+    "python/robo_archon_sim_workers/pick_place.py": "0e4d2abb800af157ad3a173217eae398564dd6d091c5401ab8992269d9b6ba4b",
+    "python/robo_archon_sim_workers/mujoco_worker.py": "f2952a7c5774d9794f414f3613dfa7b75d5d5417ad3479b386790478cc781383",
+    "python/robo_archon_sim_workers/maniskill_worker.py": "1a8e3c594fdf8823648ee2998bcfa362da65eabc9216666ed8fe9fcf95613914",
+    "crates/robo-archon-cli/src/pick_place.rs": "54dc630bd5d5cefc71613f237218ae606c5e05379d78eba5162a6671d8927ce1",
+    "robots/profiles/franka_panda.json": "20f8b02628621abe689956d52385255e097c6cc848f23402bb5ad674bd66e6a0",
+    "robots/profiles/so101.json": "78c73a73296153e4881880c686daded85800fe699038f458869324d0d5ab5a0a",
+    "robots/runtime-assets.lock.json": "6f359b03ca806976a0bf0843d98593e1028c44ecc64725e86cf92de27f5168b6"
+  },
+  "cases": [
+    {
+      "robot": "franka_panda",
+      "backend": "maniskill",
+      "seed": 0,
+      "task": "pick_place.v1",
+      "source_revision": "4d038b3feae26ec82b46a4d586379114012a8ac7",
+      "episode_id": "ep-1790867528505328",
+      "episode_sha256": "1692ffcdc42a458f79c45815ae986e002729ac33651e0e9e0e32e3fc01b1400e",
+      "phases": 11,
+      "evaluation": {
+        "goal_position": [
+          0.45,
+          0.15,
+          0.028
+        ],
+        "grasp_seen": true,
+        "lifted": true,
+        "object_position": [
+          0.45031896233558655,
+          0.1491275280714035,
+          0.025999998673796657
+        ],
+        "peak_height": 0.13761427998542786,
+        "released": true,
+        "runtime_asset": {
+          "directory": "robots/panda",
+          "entrypoint": "panda_v2.urdf",
+          "license_note": "Runtime package LICENSE and LICENSE-3RD-PARTY remain installed; package asset terms may differ from code license.",
+          "package": "mani_skill",
+          "runtime_versions": {
+            "mani_skill": "3.0.1",
+            "mujoco": "3.14.0",
+            "numpy": "2.4.6",
+            "sapien": "3.0.3",
+            "torch": "2.8.0"
+          },
+          "sha256": "5bc306ed2c562932205be9810e95b68ade117d17f19341d322f17b331066106f",
+          "source": "https://github.com/haosulab/ManiSkill/tree/v3.0.1/mani_skill/assets/robots/panda",
+          "version": "3.0.1"
+        },
+        "speed": 0.0,
+        "success": true,
+        "version": "pick_place.v1"
+      }
+    },
+    {
+      "robot": "franka_panda",
+      "backend": "maniskill",
+      "seed": 1,
+      "task": "pick_place.v1",
+      "source_revision": "4d038b3feae26ec82b46a4d586379114012a8ac7",
+      "episode_id": "ep-1790867535019627",
+      "episode_sha256": "3888ebd990b0a94bc2f61ab9a7a2c004d8fc22dc8dab42fe9f1c6fc73523d61e",
+      "phases": 11,
+      "evaluation": {
+        "goal_position": [
+          0.45,
+          0.15,
+          0.028
+        ],
+        "grasp_seen": true,
+        "lifted": true,
+        "object_position": [
+          0.4501243829727173,
+          0.14947409927845,
+          0.025999996811151505
+        ],
+        "peak_height": 0.13762861490249634,
+        "released": true,
+        "runtime_asset": {
+          "directory": "robots/panda",
+          "entrypoint": "panda_v2.urdf",
+          "license_note": "Runtime package LICENSE and LICENSE-3RD-PARTY remain installed; package asset terms may differ from code license.",
+          "package": "mani_skill",
+          "runtime_versions": {
+            "mani_skill": "3.0.1",
+            "mujoco": "3.14.0",
+            "numpy": "2.4.6",
+            "sapien": "3.0.3",
+            "torch": "2.8.0"
+          },
+          "sha256": "5bc306ed2c562932205be9810e95b68ade117d17f19341d322f17b331066106f",
+          "source": "https://github.com/haosulab/ManiSkill/tree/v3.0.1/mani_skill/assets/robots/panda",
+          "version": "3.0.1"
+        },
+        "speed": 0.0,
+        "success": true,
+        "version": "pick_place.v1"
+      }
+    },
+    {
+      "robot": "franka_panda",
+      "backend": "maniskill",
+      "seed": 2,
+      "task": "pick_place.v1",
+      "source_revision": "4d038b3feae26ec82b46a4d586379114012a8ac7",
+      "episode_id": "ep-1790867540678088",
+      "episode_sha256": "4f1bff88548ef15ff7c9f9a74845b938e508d6ef396b7f5f1f32aed4780418f4",
+      "phases": 11,
+      "evaluation": {
+        "goal_position": [
+          0.45,
+          0.15,
+          0.028
+        ],
+        "grasp_seen": true,
+        "lifted": true,
+        "object_position": [
+          0.45032984018325806,
+          0.14974088966846466,
+          0.026000000536441803
+        ],
+        "peak_height": 0.13763992488384247,
+        "released": true,
+        "runtime_asset": {
+          "directory": "robots/panda",
+          "entrypoint": "panda_v2.urdf",
+          "license_note": "Runtime package LICENSE and LICENSE-3RD-PARTY remain installed; package asset terms may differ from code license.",
+          "package": "mani_skill",
+          "runtime_versions": {
+            "mani_skill": "3.0.1",
+            "mujoco": "3.14.0",
+            "numpy": "2.4.6",
+            "sapien": "3.0.3",
+            "torch": "2.8.0"
+          },
+          "sha256": "5bc306ed2c562932205be9810e95b68ade117d17f19341d322f17b331066106f",
+          "source": "https://github.com/haosulab/ManiSkill/tree/v3.0.1/mani_skill/assets/robots/panda",
+          "version": "3.0.1"
+        },
+        "speed": 0.0,
+        "success": true,
+        "version": "pick_place.v1"
+      }
+    },
+    {
+      "robot": "franka_panda",
+      "backend": "mujoco",
+      "seed": 0,
+      "task": "pick_place.v1",
+      "source_revision": "4d038b3feae26ec82b46a4d586379114012a8ac7",
+      "episode_id": "ep-1790867545873510",
+      "episode_sha256": "0d73d696fc8982367ac4c2f539365630ea076888927a328fccd9fad40972f36b",
+      "phases": 11,
+      "evaluation": {
+        "goal_position": [
+          0.45,
+          0.15,
+          0.028
+        ],
+        "grasp_seen": true,
+        "lifted": true,
+        "object_position": [
+          0.4430398822415307,
+          0.14766721559000226,
+          0.025957398275963012
+        ],
+        "peak_height": 0.14318700873789625,
+        "released": true,
+        "speed": 8.458414431230803e-11,
+        "success": true,
+        "version": "pick_place.v1"
+      }
+    },
+    {
+      "robot": "franka_panda",
+      "backend": "mujoco",
+      "seed": 1,
+      "task": "pick_place.v1",
+      "source_revision": "4d038b3feae26ec82b46a4d586379114012a8ac7",
+      "episode_id": "ep-1790867548051659",
+      "episode_sha256": "7985290c24283ba0790db98d26ec7590ecb6aa5705e11b6130d930cd0b73c7de",
+      "phases": 11,
+      "evaluation": {
+        "goal_position": [
+          0.45,
+          0.15,
+          0.028
+        ],
+        "grasp_seen": true,
+        "lifted": true,
+        "object_position": [
+          0.4433619816612599,
+          0.14754263285683464,
+          0.02595739827596301
+        ],
+        "peak_height": 0.14310150269963928,
+        "released": true,
+        "speed": 1.0590041806727323e-10,
+        "success": true,
+        "version": "pick_place.v1"
+      }
+    },
+    {
+      "robot": "franka_panda",
+      "backend": "mujoco",
+      "seed": 2,
+      "task": "pick_place.v1",
+      "source_revision": "4d038b3feae26ec82b46a4d586379114012a8ac7",
+      "episode_id": "ep-1790867550168704",
+      "episode_sha256": "2e4627b064576dfc2fa6e9ff9050a545e5fb525d00e74123c9960f349c9182a8",
+      "phases": 11,
+      "evaluation": {
+        "goal_position": [
+          0.45,
+          0.15,
+          0.028
+        ],
+        "grasp_seen": true,
+        "lifted": true,
+        "object_position": [
+          0.443208662200178,
+          0.1472854734021162,
+          0.025957398275963047
+        ],
+        "peak_height": 0.14327694396455978,
+        "released": true,
+        "speed": 4.377327614136595e-11,
+        "success": true,
+        "version": "pick_place.v1"
+      }
+    },
+    {
+      "robot": "so101",
+      "backend": "mujoco",
+      "seed": 0,
+      "task": "pick_place.v1",
+      "source_revision": "5f6d2b876a53a4872e405b991dd925556c9e38a4",
+      "episode_id": "ep-1790867552333769",
+      "episode_sha256": "6d1e61307b2dd6d4f38a2c2450c904b5d01f58bdbf27516f704033dbeddd390f",
+      "phases": 11,
+      "evaluation": {
+        "goal_position": [
+          0.2,
+          0.06,
+          0.02
+        ],
+        "grasp_seen": true,
+        "lifted": true,
+        "object_position": [
+          0.20421475419084767,
+          0.05755522424802206,
+          0.01795739827596303
+        ],
+        "peak_height": 0.07757178521277149,
+        "released": true,
+        "speed": 1.052223314881621e-10,
+        "success": true,
+        "version": "pick_place.v1"
+      }
+    },
+    {
+      "robot": "so101",
+      "backend": "mujoco",
+      "seed": 1,
+      "task": "pick_place.v1",
+      "source_revision": "5f6d2b876a53a4872e405b991dd925556c9e38a4",
+      "episode_id": "ep-1790867553969675",
+      "episode_sha256": "786bd430f7414c21989cbe58aff385de6082c7ac6f82a3f9c9b892905981990b",
+      "phases": 11,
+      "evaluation": {
+        "goal_position": [
+          0.2,
+          0.06,
+          0.02
+        ],
+        "grasp_seen": true,
+        "lifted": true,
+        "object_position": [
+          0.2035807980222466,
+          0.060984952334115335,
+          0.017957398275963033
+        ],
+        "peak_height": 0.07759460535776787,
+        "released": true,
+        "speed": 5.95554424870914e-11,
+        "success": true,
+        "version": "pick_place.v1"
+      }
+    },
+    {
+      "robot": "so101",
+      "backend": "mujoco",
+      "seed": 2,
+      "task": "pick_place.v1",
+      "source_revision": "5f6d2b876a53a4872e405b991dd925556c9e38a4",
+      "episode_id": "ep-1790867555550938",
+      "episode_sha256": "cc9ca1f8e75c17ca6fdeb0ca2f9bf10185dd189115968c4539c72ff169fec380",
+      "phases": 11,
+      "evaluation": {
+        "goal_position": [
+          0.2,
+          0.06,
+          0.02
+        ],
+        "grasp_seen": true,
+        "lifted": true,
+        "object_position": [
+          0.2018052341730075,
+          0.06432437393068806,
+          0.017957398275963023
+        ],
+        "peak_height": 0.07757757298687462,
+        "released": true,
+        "speed": 8.182089093334121e-11,
+        "success": true,
+        "version": "pick_place.v1"
+      }
+    }
+  ],
+  "media": [
+    {
+      "path": "docs/media/franka-panda-pick-place.mp4",
+      "sha256": "2b442f8f6a011238ad28125d18b0438b316fe25f83f6f0dfd096a07315e6b697",
+      "metadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1280,
+            "height": 720,
+            "nb_frames": "565"
+          }
+        ],
+        "format": {
+          "duration": "19.210000"
+        }
+      },
+      "visual_checked": true
+    },
+    {
+      "path": "docs/media/so101-pick-place.mp4",
+      "sha256": "185836fbdb5ebfc5da8897c65e5412353d8c4b44fd3a362d50ffc84e200b8490",
+      "metadata": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1280,
+            "height": 720,
+            "nb_frames": "565"
+          }
+        ],
+        "format": {
+          "duration": "19.210000"
+        }
+      },
+      "visual_checked": true
+    }
+  ],
+  "negative_checks": [
+    "unreachable/nonfinite IK leaves live scene unchanged",
+    "floor collision rejected without execution",
+    "stuck-open physical actuator fails before lift",
+    "task-wide stop prevents subsequent phases on both platforms",
+    "missing any measured condition cannot pass",
+    "runtime version/asset mutation rejected",
+    "proposal timeout / actuator fault stops, closes and releases resource locks"
+  ],
+  "reproduction": "See docs/robot-gallery.md and .github/workflows/embodied.yml; ROBO_ARCHON_ACCEPTANCE_DIR captures the full CLI episodes. Episode hashes are original local acceptance runs, not interchangeable with future reruns."
+}

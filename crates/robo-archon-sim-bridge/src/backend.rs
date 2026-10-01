@@ -5,8 +5,8 @@ use std::process::Stdio;
 use std::sync::Arc;
 
 use anyhow::{bail, Context, Result};
-use robo_archon_embodied::{CancelToken, JointCommand, Observation, RobotBackend};
 use async_trait::async_trait;
+use robo_archon_embodied::{CancelToken, JointCommand, Observation, RobotBackend};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, ChildStdin, ChildStdout, Command};
 use tokio::sync::Mutex;
@@ -36,6 +36,8 @@ pub struct BridgeConfig {
     /// Set false for multi-turn TUI so `/quit` does not block on the window.
     pub hold_viewer_on_shutdown: bool,
     pub arm_profile: Option<robo_archon_embodied::arm_profile::ArmProfile>,
+    pub task: Option<String>,
+    pub seed: u64,
 }
 
 impl BridgeConfig {
@@ -60,6 +62,8 @@ impl BridgeConfig {
             record_height: 720,
             hold_viewer_on_shutdown: true,
             arm_profile: None,
+            task: None,
+            seed: 0,
         }
     }
 
@@ -99,7 +103,10 @@ impl BridgeConfig {
         if viewer {
             // macOS: MuJoCo launch_passive must run under mjpython (Cocoa main thread).
             if let Some(cmd) = mjpython_worker_cmd(&self.worker_cmd) {
-                eprintln!("[robo-archon-sim-bridge] using mjpython for viewer: {}", cmd[0]);
+                eprintln!(
+                    "[robo-archon-sim-bridge] using mjpython for viewer: {}",
+                    cmd[0]
+                );
                 self.worker_cmd = cmd;
             } else if cfg!(target_os = "macos") {
                 eprintln!(
@@ -113,15 +120,10 @@ impl BridgeConfig {
 
     pub fn with_record_video(mut self, out: impl Into<PathBuf>) -> Self {
         let out = out.into();
-        let dir = out
-            .parent()
-            .unwrap_or_else(|| Path::new("."))
-            .join(format!(
-                ".robo_archon_frames_{}",
-                out.file_stem()
-                    .and_then(|s| s.to_str())
-                    .unwrap_or("demo")
-            ));
+        let dir = out.parent().unwrap_or_else(|| Path::new(".")).join(format!(
+            ".robo_archon_frames_{}",
+            out.file_stem().and_then(|s| s.to_str()).unwrap_or("demo")
+        ));
         self.record_dir = Some(dir);
         self.video_out = Some(out);
         self.render = true;
@@ -199,11 +201,7 @@ fn mjpython_worker_cmd(worker_cmd: &[String]) -> Option<Vec<String>> {
 
     for c in candidates.into_iter().flatten() {
         if c.exists() {
-            return Some(vec![
-                c.to_string_lossy().into_owned(),
-                "-u".into(),
-                script,
-            ]);
+            return Some(vec![c.to_string_lossy().into_owned(), "-u".into(), script]);
         }
     }
     None
@@ -252,7 +250,9 @@ impl BridgedSimBackend {
             .as_mut()
             .context("bridge not connected; call connect() first")?;
         write_line(io, &msg).await?;
-        read_server_msg(io).await
+        tokio::time::timeout(std::time::Duration::from_secs(30), read_server_msg(io))
+            .await
+            .context("worker response timeout")?
     }
 
     async fn request_observation(&self) -> Result<Observation> {
@@ -319,14 +319,12 @@ impl RobotBackend for BridgedSimBackend {
             .stderr(Stdio::inherit())
             .kill_on_drop(true);
 
-        let mut child = cmd
-            .spawn()
-            .with_context(|| {
-                format!(
-                    "spawn worker {:?}. Install platform deps and check --worker path.",
-                    self.config.worker_cmd
-                )
-            })?;
+        let mut child = cmd.spawn().with_context(|| {
+            format!(
+                "spawn worker {:?}. Install platform deps and check --worker path.",
+                self.config.worker_cmd
+            )
+        })?;
 
         let stdin = child.stdin.take().context("worker stdin")?;
         let stdout = child.stdout.take().context("worker stdout")?;
@@ -370,6 +368,8 @@ impl RobotBackend for BridgedSimBackend {
             record_height: Some(self.config.record_height),
             hold_viewer_on_shutdown: self.config.hold_viewer_on_shutdown,
             arm_profile: self.config.arm_profile.clone(),
+            task: self.config.task.clone(),
+            seed: self.config.seed,
         };
         let line = serde_json::to_string(&hello)?;
         io.stdin.write_all(line.as_bytes()).await?;
@@ -377,7 +377,12 @@ impl RobotBackend for BridgedSimBackend {
         io.stdin.flush().await?;
 
         let mut response = String::new();
-        io.stdout.read_line(&mut response).await?;
+        tokio::time::timeout(
+            std::time::Duration::from_secs(120),
+            io.stdout.read_line(&mut response),
+        )
+        .await
+        .context("worker hello timeout")??;
         let parsed: ServerMsg = serde_json::from_str(response.trim())
             .with_context(|| format!("hello response: {response}"))?;
         match parsed {
@@ -426,9 +431,14 @@ impl RobotBackend for BridgedSimBackend {
 
     async fn shutdown(&mut self) -> Result<()> {
         if self.io.lock().await.is_some() {
-            let _ = self.send_recv(ClientMsg::Shutdown).await;
+            let result = self.send_recv(ClientMsg::Shutdown).await;
             if let Some(mut io) = self.io.lock().await.take() {
                 let _ = io.child.kill().await;
+                let _ = io.child.wait().await;
+            }
+            match result? {
+                ServerMsg::Ack => {}
+                other => bail!("unexpected shutdown response: {other:?}"),
             }
         }
         Ok(())
@@ -436,6 +446,23 @@ impl RobotBackend for BridgedSimBackend {
 
     async fn read_observation(&self) -> Result<Observation> {
         self.request_observation().await
+    }
+
+    async fn solve_ik(&self, target: [f64; 3], down: bool) -> Result<Vec<f64>> {
+        let response = self.send_recv(ClientMsg::SolveIk { target, down }).await?;
+        match response {
+            ServerMsg::IkSolution {
+                joint_names,
+                positions,
+            } if joint_names == self.config.joint_names
+                && positions.len() == joint_names.len()
+                && positions.iter().all(|v| v.is_finite()) =>
+            {
+                Ok(positions)
+            }
+            ServerMsg::Error { message } => bail!("IK failed: {message}"),
+            other => bail!("unexpected IK response: {other:?}"),
+        }
     }
 
     async fn execute_command(&mut self, cmd: &JointCommand, cancel: &CancelToken) -> Result<()> {
@@ -461,8 +488,13 @@ impl RobotBackend for BridgedSimBackend {
         // Poll for the command observation while allowing mid-burst /estop.
         // Short read timeouts so we can inject Estop without cancelling a partial read.
         let mut estop_sent = false;
+        let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(30);
         let mut got_observation = false;
+        let mut response = Vec::new();
         loop {
+            if tokio::time::Instant::now() >= deadline {
+                bail!("worker command timeout");
+            }
             if !estop_sent && cancel.is_cancelled() {
                 write_line(
                     io,
@@ -474,10 +506,9 @@ impl RobotBackend for BridgedSimBackend {
                 estop_sent = true;
             }
 
-            let mut response = String::new();
             match tokio::time::timeout(
                 std::time::Duration::from_millis(20),
-                io.stdout.read_line(&mut response),
+                io.stdout.read_until(b'\n', &mut response),
             )
             .await
             {
@@ -491,7 +522,8 @@ impl RobotBackend for BridgedSimBackend {
             }
 
             let parsed: ServerMsg =
-                serde_json::from_str(response.trim()).context("parse worker response")?;
+                serde_json::from_slice(&response).context("parse worker response")?;
+            response.clear();
             match parsed {
                 ServerMsg::Error { message } => bail!("worker error: {message}"),
                 ServerMsg::Ack => {
@@ -608,11 +640,7 @@ mod tests {
         let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let workspace = manifest.join("../..");
         let script = workspace.join("python/robo_archon_sim_workers/mock_worker.py");
-        assert!(
-            script.exists(),
-            "missing {}",
-            script.display()
-        );
+        assert!(script.exists(), "missing {}", script.display());
         script
     }
 
@@ -642,6 +670,8 @@ mod tests {
             record_height: 720,
             hold_viewer_on_shutdown: false,
             arm_profile: None,
+            task: None,
+            seed: 0,
         };
         let mut backend = BridgedSimBackend::new(cfg);
         backend.connect().await.expect("connect mock worker");
@@ -673,7 +703,10 @@ mod tests {
             .set_media_root(Some(Path::new("/tmp/archon-test-media")))
             .await
             .expect("set_media_root");
-        backend.set_media_root(None).await.expect("clear media_root");
+        backend
+            .set_media_root(None)
+            .await
+            .expect("clear media_root");
         backend.shutdown().await.unwrap();
     }
 }

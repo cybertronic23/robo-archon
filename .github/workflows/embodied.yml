@@ -15,6 +15,7 @@ jobs:
           python-version: '3.11'
       - run: cargo test --workspace --locked
       - run: python -m unittest discover -s scripts/tests -p test_robot_assets.py
+      - run: python -m unittest discover -s scripts/tests -p test_runtime_assets.py
       - run: cargo run --locked -p robo-archon-cli -- --list-robots
   arm-physics:
     runs-on: ubuntu-latest
@@ -27,3 +28,54 @@ jobs:
       - run: python scripts/install_robot_assets.py franka_panda
       - run: python scripts/install_robot_assets.py so101
       - run: python -m unittest discover -s scripts/tests -p test_arm_bindings.py
+  cross-sim-task:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ROBO_ARCHON_TEST_MANISKILL: '1'
+      MPLCONFIGDIR: /tmp/robo-archon-mpl
+      ROBO_ARCHON_ACCEPTANCE_DIR: artifacts/episodes
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: sudo apt-get update && sudo apt-get install -y libvulkan1
+      - run: pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -r python/requirements-maniskill-tested.txt
+      - run: python scripts/install_robot_assets.py franka_panda
+      - run: python scripts/install_robot_assets.py so101
+      - run: cargo build --locked -p robo-archon-cli
+      - run: python -m unittest discover -s scripts/tests -p test_pick_place.py -v
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m2f2-cross-sim-episodes
+          path: artifacts/episodes
+  demo-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MUJOCO_GL: osmesa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: sudo apt-get update && sudo apt-get install -y libosmesa6 ffmpeg
+      - run: pip install -r python/requirements-mujoco-tested.txt
+      - run: python scripts/install_robot_assets.py franka_panda
+      - run: python scripts/install_robot_assets.py so101
+      - run: cargo build --locked -p robo-archon-cli
+      - name: Export physical task media
+        run: |
+          export ROBO_ARCHON_PYTHON="$(command -v python)"
+          target/debug/robo-archon --robot franka_panda --backend mujoco --demo pick-place --seed 1 --record-video artifacts/franka_panda.mp4 --episode-dir artifacts/episodes --save-frames false
+          target/debug/robo-archon --robot so101 --backend mujoco --demo pick-place --seed 1 --record-video artifacts/so101.mp4 --episode-dir artifacts/episodes --save-frames false
+          test -s artifacts/franka_panda.mp4
+          test -s artifacts/so101.mp4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m2f2-physical-demos
+          path: artifacts

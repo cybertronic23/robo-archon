@@ -1,3 +1,2 @@
-# ManiSkill worker for Archon M2b (install when implementing)
-# mani_skill>=3.0.0
-# torch  # often required by ManiSkill stacks
+# Fixed acceptance environment. Revalidate before changing versions.
+-r requirements-maniskill-tested.txt

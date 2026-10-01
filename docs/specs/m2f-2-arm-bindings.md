@@ -1,53 +1,67 @@
-# M2f.2a：固定资产安装与机械臂基础控制
+# M2f.2：机械臂物理抓放与第二平台验证
 
-日期：2026-10-01。M2f.2 的第一个交付切片；不代表抓取及第二平台已完成。
+日期：2026-10-01。M2f.2a 的固定资产安装和基础控制保留；M2f.2 交付 Franka Panda、SO101 的 MuJoCo 抓放，以及 Franka 的 ManiSkill 同任务绑定。Go2/Microduck 控制属于 M2f.3；Isaac Sim 和真机绑定继续为 planned。
 
-## 目标
+## 资产与运行环境
 
-Franka Panda 与 SO101 能从固定官方 Git commit 安装，在 MuJoCo 中用显式控制配置运行归位、受限基座摆动（wave/demo）、夹爪开合。无需 API Key。保留通用本体根节点与现有 demo 入口。
+- `robots/assets.lock.json`：MuJoCo 官方来源、40 位 commit、模型入口、子目录。安装器固定版本、验证 LFS 实体、保留许可证，临时目录完成后原子发布；已有未知或被修改内容拒绝覆盖。
+- 安装清单的 SHA256 检测意外内容修改；不是发布者签名。下载 mesh 保留在被忽略的 `python/models/external/`。
+- `robots/runtime-assets.lock.json`：ManiSkill 3.0.1 自带 Panda URDF/mesh 的内容指纹，以及 ManiSkill/SAPIEN/Torch/MuJoCo/NumPy 的精确版本。连接时检查版本和指纹。
+- `python/requirements-*-tested.txt`：Python 3.11 的验收依赖固定版本。ManiSkill 在 Linux 先安装 Torch CPU wheel，防止默认拉取 CUDA 运行时；详见 Gallery。
+- 本体制造文件只保留可选链接，运行不要求 CAD/STL/3MF 制造原件。
 
-## 安装与完整性
+## 控制与 IK
 
-robots/assets.lock.json 固定仓库、40 位 commit、子目录和模型入口。安装器 sparse checkout 指定版本，验证入口与 Git LFS 实体文件，保留模型及仓库 LICENSE，临时目录完成后原子发布。不覆盖已有未知/不同版本内容；重复安装校验本地内容 SHA256。指纹用于检测意外修改，不是发布者签名。
+`robots/profiles/*.json` 固定 source_revision、关节/执行器顺序、限位、初始姿态和夹爪映射。连接时验证实际模型、安装身份与映射一致性；错误维度、关节顺序、非有限值、越界和非法开度均拒绝。
 
-制造文件仍只保留链接。下载 mesh 和安装清单在 external/ 下被 Git 忽略。
+Franka 为 7 臂关节及独立 tendon 夹爪。SO101 为 new calibration 的 5 臂关节及独立夹爪，物理闭合目标更新为 -0.17rad（在上游限位内）。上层关节单位 rad、夹爪开度 [0,1]；它不是 LeRobot 真机校准或夹持力接口。
 
-## 控制配置
+新增 `RobotBackend::solve_ik` 与 NDJSON `solve_ik/ik_solution`，旧后端默认明确拒绝。求解基于绑定的 TCP 与雅可比，采用阻尼最小二乘，限制关节范围，最大 400 次迭代。位置误差小于 1mm；工具轴朝 -Z，轴误差小于 0.015。只约束工具方向、保留绕工具轴的自由度，以支持 SO101。目标不可达或非法时，不推进场景或修改实际 qpos/ctrl。
 
-robots/profiles/*.json 包含 schema、robot_id、source_revision、显式关节/执行器、home、lower/upper、夹爪执行器及开合映射、可选 keyframe。
+每个任务阶段为 Policy 提案，IK 返回关节目标后仍经过 `SafetyGate → Chronos → Executive → RobotBackend`。执行频率固定 50Hz，物理频率 500Hz。路径为受检的关节插值；不是任意障碍环境的绕障规划器。保持物体时持续保留闭合目标，不把被物体撑开的测量开度当作新的松爪目标。
 
-- Panda：7 个臂关节与独立 tendon 夹爪执行器，夹爪 ctrl 0..255，两手指各 0..0.04m。
-- SO101：5 个臂关节与独立夹爪角度；使用官方 new calibration。归位为臂关节零角，开度演示目标 1.5rad，闭合演示目标 0rad；不是 LeRobot 校准后的 0..100 映射，也不是实际夹持力控制。
-- 臂动作单位 rad；夹爪对上层暴露 [0,1]。观测开度来自实际关节位置。
-- 连接验证安装 identity/revision/content hash，编译后的关节限位、执行器映射和夹爪端点；失败即拒绝连接。
-- 命令执行前拒绝错误维度/关节顺序、NaN、越界和非法夹爪开度。
-- reset 恢复 profile 初始姿态；停止持有当前臂与夹爪目标，不把 Panda 夹爪 tendon 索引当关节索引。
-- 不沿用简化机械臂的 reach/nod 轨迹；未知能力报错。当前没有自碰撞规划、IK 或抓取控制。
+## 场景、接触与碰撞
 
-## CLI
+`python/robo_archon_sim_workers/pick_place.py` 生成机器人、地面、动态红色方块和绿色托盘。seed 0/1/2 改变方块初始 Y 位置，其他 seed 按模 3 复用这三种布局。Franka 方块边长 4cm/质量 40g，SO101 方块边长 2.4cm/质量 8g；场景按机器人工作空间分别配置。不同机器人不宣称相同物体尺度。
 
---install-robot ID / --doctor-robot ID：独立操作，退出后不进入任务循环。
---robot ID --backend mujoco --policy instruction：根据本体 binding 选模型，校验策略契约，传输 profile 到 worker，并加载对应安全限位。TUI 同样使用 profile 安全门。
---save-frames false：关闭无关离屏渲染；旧 --save-frames 无值调用仍兼容。
+SO101 上游凸包碰撞网格填满了夹爪空腔。任务场景保留外观，将两侧指尖碰撞改为显式盒形 contact pads；这属于任务绑定的物理适配，不能宣称已验证制造模型的真实接触几何。
 
-可通过 ROBO_ARCHON_PYTHON 指定 worker/doctor 的 Python。目录默认要求仓库运行；自定义本体目录通过 --body-catalog 指定。命名 Franka/SO101 模型不能绕过 --robot 退回通用六关节策略。
+方块移动完全来自引擎接触、摩擦和重力。运行中不焊接夹爪与方块、不瞬移物体。路径预检在独立 scratch 数据中预测已夹持物体跟随末端的位姿；不会修改执行场景。
 
-## 追溯与成熟度
+接触白名单允许方块与两指/地面/托盘、固定基座与地面、相邻连杆及两指接触。其他深于 0.5mm 的穿透拒绝，包含非相邻自碰撞和手臂/夹爪与地面/托盘碰撞。预检关节采样间隔不大于 0.02rad，MuJoCo 运行中每 2ms 再检查；ManiSkill 运行中每 20ms 检查实际 SAPIEN 接触并检查参考几何。非法轨迹与运行中碰撞使任务停止并保存失败。
 
-策略提案 metadata 保存固定模型版本和完整控制配置，随 Episode 持久化。Franka/SO101 的 MuJoCo binding 为 controlled；没有 task_verified 抓取声明。ManiSkill/Isaac Sim/real 以及 Go2/Microduck 保持 planned。
+## 任务与成功判定
 
-## 验收与结果
+CLI：`--robot ID --backend mujoco|maniskill --demo pick-place --seed N`，无需 API Key；MuJoCo 保留基础 instruction/TUI 控制。
 
-- 本地 Git fixture 验证固定 commit（即使 HEAD 已变）、许可证、重复安装校验、篡改拒绝、失败不发布半成品。
-- Rust 验证 profile 维度、初始限位、动作轨迹约束、拒绝通用 reach、非有限值和限位维度。
-- CPU MuJoCo 分别验证臂关节实际运动与归位、夹爪实际开合、reset/stop、错版本拒绝、非法命令不改变 ctrl。
-- 两款机械臂 CLI 挥动+关闭夹爪，均 Completed，生成 Episode。
-- GitHub 工作流覆盖 Rust、离线安装器及下载官方固定模型后的 CPU 物理测试。
+11 个阶段：approach → descend → close → grasp_settle → lift → lift_settle → transfer → place → release → retract → settle。关闭后检查实际双指接触，抬起后检查物体高度；失败不进入后续阶段。
 
-viewer/TUI 交互、离屏图像与视频未做本机视觉验收。CI 定义已提交，远端运行结果需在推送后确认。
+两平台共享 `pick_place.v1` 成功条件，必须全部成立：
 
-## M2f.2 剩余工作
+1. 曾出现双指抓持接触（ManiSkill 使用 Panda 的双指接触力/方向判定）。
+2. 物体峰值高度 > 初始中心高度 + 5cm。
+3. 最终 XY 与目标误差 < 2.5cm，Z 误差 < 1.5cm。
+4. 测得夹爪开度 > 0.8，物体速度 < 0.05m/s。
 
-末端目标与 IK、碰撞/接触、抓取物体与成功条件、演示媒体、第二平台的同任务实现与验证、其他平台依赖版本锁定。真机标定和部署另行验收。
+命令发送完成不等于任务成功。失败、碰撞、IK 不可达、停止或媒体导出失败均使任务 CLI 非零退出。Episode 聚合所有阶段、提案中的完整 profile、物理反馈、最终评估和结果。
 
-CPU 验收环境：MuJoCo 3.14.0、NumPy 2.4.6，记录于 python/requirements-mujoco-tested.txt。原 requirements-mujoco.txt 保留宽版本入口；其他版本需要重新验证。
+任务级停止锁存覆盖阶段边界，不会因 Executive 重置单轮 token 而恢复下一阶段。超时/故障释放资源锁、停止机器人、关闭工作进程；桥接有握手/响应超时，并使用取消安全的 NDJSON 读取。视频请求无渲染帧或编码失败会报错。
+
+## 第二平台
+
+Franka 的 ManiSkill 绑定实际使用包内 `panda_v2.urdf`、SAPIEN CPU 物理和 `pd_joint_pos`。显式映射 `joint1..7 → panda_joint1..7`；归一化夹爪映射为控制器的物理目标，观测由实际关节读取。
+
+共享锁定 MJCF 仅作为 IK/保守几何参考，执行、物体位置、接触和成功反馈全部来自 SAPIEN；启动比较 URDF 与参考模型 TCP，位置偏差大于 3mm 拒绝连接。不是把 MuJoCo 改名成 ManiSkill。
+
+ManiSkill 3.0.1 在 macOS 会强制启用 renderer 且 `can_render(None)` 返回 true；无渲染模式有局部兼容修复。原生 Vulkan/PhysX 日志送 stderr，NDJSON 独占 stdout。macOS 下本次验收为 CPU headless；ManiSkill 图像输出需要可用 Vulkan 环境。SO101 的第二平台和 Isaac Sim 本次不宣称已接入。
+
+## 验收与证据
+
+- Rust：目录/契约、关节限位、profile、NDJSON annotation 保留，以及 proposal 超时/执行故障的停止、关闭和资源释放。
+- 安装器：固定 commit、许可证、重复安装、篡改拒绝和失败原子性。
+- MuJoCo 基础控制：两臂实际运动/归位、开合、reset/stop、非法命令和错版本拒绝。
+- 完整 CLI 物理矩阵：Franka/MuJoCo、SO101/MuJoCo、Franka/ManiSkill，各 seed 0/1/2。
+- 负向验收：不可达/非法目标、地面碰撞拒绝且不修改场景、夹爪 stuck-open 的真实物理抓取失败、两平台停止不恢复下一阶段、成功条件逐项缺失不判成功。
+- 高清真实 MuJoCo MP4 与 GIF，检查抓取、抬起和最终放置画面。CI 自动生成视频和 Episode artifacts。
+
+证据：[验证报告](../validation/m2f-2-report.json)、[Gallery 与运行命令](../robot-gallery.md)、[工作流](../../.github/workflows/embodied.yml)。本体中三条验证过的绑定标记 task_verified；成熟度仅覆盖这个任务与固定环境，不是通用安全保证或真机部署授权。
