@@ -1,0 +1,119 @@
+{
+  "model_commit": "8d0db74916a4f833d1d9b95d6a1d7f4d13b9d5ec",
+  "policy_revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+  "bam_revision": "62bd8ce12154340be97e06f7f41a0ca8f116d967",
+  "weights_sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+  "python": "3.12.12",
+  "numpy": "2.5.3",
+  "actuator_delay_ticks": 0,
+  "scope": "Low-command limitation probe; not a successful locomotion rollout",
+  "policy": "velstand.onnx",
+  "mujoco": "3.10.0",
+  "simulation_seconds": 16,
+  "wall_seconds": 0.3900987920060288,
+  "phases": [
+    {
+      "phase": "stand",
+      "seconds": 3,
+      "command": [
+        0,
+        0,
+        0
+      ],
+      "start_xyz": [
+        0.0,
+        0.0,
+        0.125
+      ],
+      "end_xyz": [
+        0.0028214323518733616,
+        -4.930754524270411e-05,
+        0.11651983173302329
+      ],
+      "xy_displacement_m": 0.0028218631700023143,
+      "min_trunk_height_m": 0.11478313772088018,
+      "max_tilt_deg": 1.0799216032028198,
+      "mean_forward_speed_m_s": -4.021986230446583e-06,
+      "mean_yaw_rate_rad_s": 0.0009782277631347825
+    },
+    {
+      "phase": "forward",
+      "seconds": 6,
+      "command": [
+        0.15,
+        0,
+        0
+      ],
+      "start_xyz": [
+        0.0028214323518733616,
+        -4.930754524270411e-05,
+        0.11651983173302329
+      ],
+      "end_xyz": [
+        0.007157416658289335,
+        0.0024679218990268335,
+        0.11556117459011413
+      ],
+      "xy_displacement_m": 0.0050137016246066275,
+      "min_trunk_height_m": 0.11555525081136918,
+      "max_tilt_deg": 1.0644080638885498,
+      "mean_forward_speed_m_s": 9.373849930439249e-05,
+      "mean_yaw_rate_rad_s": 0.001044384539956809
+    },
+    {
+      "phase": "turn",
+      "seconds": 4,
+      "command": [
+        0.1,
+        0,
+        0.5
+      ],
+      "start_xyz": [
+        0.007157416658289335,
+        0.0024679218990268335,
+        0.11556117459011413
+      ],
+      "end_xyz": [
+        0.007154078244325349,
+        0.003917428710547339,
+        0.11557442813663114
+      ],
+      "xy_displacement_m": 0.0014495106559291443,
+      "min_trunk_height_m": 0.1153933876254749,
+      "max_tilt_deg": 0.893943190574646,
+      "mean_forward_speed_m_s": 4.886536756866779e-05,
+      "mean_yaw_rate_rad_s": 0.005668435607415935
+    },
+    {
+      "phase": "stop",
+      "seconds": 3,
+      "command": [
+        0,
+        0,
+        0
+      ],
+      "start_xyz": [
+        0.007154078244325349,
+        0.003917428710547339,
+        0.11557442813663114
+      ],
+      "end_xyz": [
+        0.002007171853742771,
+        0.003993291722961793,
+        0.11647875186244441
+      ],
+      "xy_displacement_m": 0.00514746545302369,
+      "min_trunk_height_m": 0.11567598062037943,
+      "max_tilt_deg": 0.9739781022071838,
+      "mean_forward_speed_m_s": -0.00015773978480606438,
+      "mean_yaw_rate_rad_s": -0.0024399189502332776
+    }
+  ],
+  "smoke_checks": {
+    "upright": true,
+    "forward_progress": false,
+    "turn_response": false,
+    "settled_stop": true
+  },
+  "smoke_passed": false
+}
