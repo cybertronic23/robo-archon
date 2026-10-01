@@ -39,7 +39,7 @@ Maximum trunk tilt was approximately 4.18 degrees; minimum trunk height approxim
 
 A separate probe at vx 0.15 m/s moved only approximately 5 mm in 6 seconds, with mean body-forward speed approximately 0.00009 m/s. This low-command behavior is unresolved: a small command can settle into a stationary state. Do not claim that the requested speed is the achieved speed or silently remap it. The first user-facing demo should expose measured motion and use the demonstrated command presets.
 
-Evidence: `docs/validation/m2f-3-microduck-probe.json`, `docs/validation/m2f-3-microduck-low-command.json`, and `docs/media/microduck-official-policy-probe.mp4`.
+Evidence: `docs/validation/m2f-3-microduck-probe.json`, `docs/validation/m2f-3-microduck-low-command.json`, and `docs/media/microduck-official-policy-probe.gif`.
 
 ## Reproduce the probe
 

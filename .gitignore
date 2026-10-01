@@ -74,5 +74,4 @@ venv/
 __pycache__/
 *.pyc
 
-# Curated, small physical simulation demos for the public gallery
-!/docs/media/*.mp4
+# Public gallery previews use size-limited GIFs; full videos stay local or in CI artifacts.

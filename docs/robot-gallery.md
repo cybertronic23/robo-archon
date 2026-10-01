@@ -5,7 +5,6 @@ Franka Panda 和 SO101 在 MuJoCo 中支持归位、基础关节动作、夹爪�
 | Franka Panda / MuJoCo | SO101 / MuJoCo |
 | --- | --- |
 | ![Franka 物理抓放](media/franka-panda-pick-place.gif) | ![SO101 物理抓放](media/so101-pick-place.gif) |
-| [高清 MP4](media/franka-panda-pick-place.mp4) | [高清 MP4](media/so101-pick-place.mp4) |
 
 视频中方块由真实接触和摩擦带动，没有焊接或瞬移。两平台各运行三种初始位置，使用双指接触、抬升、位置、释放和速度共同判定成功；见 [验收报告](validation/m2f-2-report.json)。SO101 场景使用适配的指尖碰撞 pads；未做真机或任意障碍环境验证。
 
