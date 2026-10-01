@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "microduck.walk",
+  "version": "0.1.0",
+  "tool_name": "microduck_walk",
+  "description": "Request bounded body-frame walking velocity for Microduck. Draft: registration only; no executable Archon binding yet. Actual speed may differ from the command.",
+  "parameters": {
+    "vx": {"description": "Requested forward velocity in m/s; low positive commands may fail to initiate walking.", "required": true, "default": null, "kind": {"type": "number", "min": -0.3, "max": 0.3}},
+    "yaw_rate": {"description": "Requested yaw rate in rad/s.", "required": false, "default": 0.0, "kind": {"type": "number", "min": -1.0, "max": 1.0}}
+  },
+  "max_duration_ms": 10000,
+  "entry_conditions": ["standing", "controller_ready"],
+  "success_description": "Record observed motion during the request and return to standing after its deadline; accurate velocity tracking is not established.",
+  "bindings": [{
+    "body": "microduck",
+    "backend": "mujoco",
+    "runner": "onnx_policy.v1",
+    "policy": "velstand",
+    "config": {"command_adapter": "microduck.twist.v1"},
+    "resources": ["whole_body"]
+  }]
+}

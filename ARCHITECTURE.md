@@ -20,6 +20,7 @@ Observation → Policy.propose → SafetyGate → Chronos → RobotBackend → E
 
 ```
 robo-archon-cli          # binary: robo-archon
+  ├── robo-archon-skills      # manifests, discovery, static call validation (no execution yet)
   ├── robo-archon-runtime     # Executive, EventBus, locks, Arbiter
   ├── robo-archon-policy      # Mock / ColorBlob / Instruction / LlmPolicy
   ├── robo-archon-perception  # cameras, detectors, Observation enrich
@@ -555,3 +556,7 @@ If loading fails, a warning is printed and a fresh session is created.
 - **Tool parallelism** — concurrent execution of independent tool_use blocks
 - **Rich terminal UI** — syntax highlighting, spinners, markdown rendering
 - **Custom tool loading** — dynamic tool registration from config or plugins
+
+## Extensible skills
+
+The first registry milestone is independent of simulator and LLM providers. Skill packages describe callable capabilities and reference body-policy bindings; future runners execute them under the single Executive. Registered metadata is not an executable tool. See [skill architecture and rollout](docs/skills-design.md).

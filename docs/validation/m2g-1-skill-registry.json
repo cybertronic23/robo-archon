@@ -1,0 +1,45 @@
+{
+  "milestone": "M2g.1",
+  "scope": "manifest registration and static call validation only; no runner execution or LLM routing",
+  "rust_workspace_tests": {
+    "passed": 44,
+    "failed": 0
+  },
+  "cli_checks": [
+    {
+      "name": "user directory discovery",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "inspect generated schema",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "compatible call metadata only",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "planned robot blocked",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "query cannot request motion",
+      "exit_code": 2,
+      "passed": true
+    },
+    {
+      "name": "exclusive query modes",
+      "exit_code": 2,
+      "passed": true
+    },
+    {
+      "name": "discovery does not start worker",
+      "exit_code": 0,
+      "passed": true
+    }
+  ]
+}

@@ -9,6 +9,7 @@ name = "robo-archon"
 path = "src/main.rs"
 
 [dependencies]
+robo-archon-skills = { path = "../robo-archon-skills" }
 robo-archon-embodied = { path = "../robo-archon-embodied" }
 robo-archon-runtime = { path = "../robo-archon-runtime" }
 robo-archon-kinetic = { path = "../robo-archon-kinetic" }

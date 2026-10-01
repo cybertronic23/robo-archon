@@ -6,6 +6,8 @@
 
 | 文档 | 说明 |
 |------|------|
+| [skills-design.md](./skills-design.md) | 可解耦 Skill、Runner、自训练策略与迭代设计 |
+| [specs/m2g-1-skill-registry.md](./specs/m2g-1-skill-registry.md) | 已实现的注册/发现/静态调用校验 |
 | [embodied-getting-started.md](./embodied-getting-started.md) | 具身平面：仿真 MVP 运行与 sim→real 契约概要 |
 | [../ARCHITECTURE.md](../ARCHITECTURE.md) | 具身 + 数字平面架构（数字 crate 路径仍为 `archon-*`） |
 | [../plan/](../plan/) | 路线图与里程碑 |

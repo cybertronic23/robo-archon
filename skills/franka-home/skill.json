@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "franka.home",
+  "version": "0.1.0",
+  "tool_name": "franka_home",
+  "description": "Return Franka Panda to its configured home pose. Manifest example; the skill runner is not installed yet.",
+  "parameters": {},
+  "max_duration_ms": 5000,
+  "entry_conditions": ["controller_ready"],
+  "success_description": "Measured joints reach the configured home pose within runner-defined tolerance.",
+  "bindings": [{
+    "body": "franka_panda",
+    "backend": "mujoco",
+    "runner": "profile_primitive.v1",
+    "policy": "profile_instruction",
+    "config": {"primitive": "home"},
+    "resources": ["arm", "gripper"]
+  }]
+}

@@ -1,0 +1,11 @@
+[package]
+name = "robo-archon-skills"
+version = "0.1.0"
+edition = "2021"
+description = "Simulator-independent skill manifests, discovery and deterministic call validation"
+
+[dependencies]
+robo-archon-embodied = { path = "../robo-archon-embodied" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }

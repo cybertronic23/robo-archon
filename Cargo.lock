@@ -642,6 +642,7 @@ dependencies = [
  "robo-archon-runtime",
  "robo-archon-sim",
  "robo-archon-sim-bridge",
+ "robo-archon-skills",
  "serde_json",
  "tokio",
  "tui-textarea",
@@ -744,6 +745,16 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
+]
+
+[[package]]
+name = "robo-archon-skills"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "robo-archon-embodied",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

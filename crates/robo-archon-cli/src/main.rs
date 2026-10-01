@@ -2,6 +2,7 @@
 
 mod pick_place;
 mod session;
+mod skill_commands;
 mod tui_app;
 
 use std::io::{self, BufRead, Write};
@@ -27,7 +28,11 @@ use session::{SessionConfig, TurnOutcome};
 #[derive(Parser, Debug)]
 #[command(
     name = "robo-archon",
-    about = "RoboArchon Agent OS — MuJoCo-ready control loop"
+    about = "RoboArchon Agent OS — MuJoCo-ready control loop",
+    group(clap::ArgGroup::new("skill_query")
+        .args(["list_skills", "inspect_skill", "validate_skill_call"])
+        .multiple(false)
+        .conflicts_with_all(["install_robot", "doctor_robot", "list_robots", "inspect_robot", "list_models", "demo", "tui", "instruction"]))
 )]
 struct Args {
     /// Task id recorded in the episode
@@ -77,6 +82,22 @@ struct Args {
     /// Body package catalog (independent of the MuJoCo asset catalog)
     #[arg(long, default_value = "robots/catalog.json")]
     body_catalog: PathBuf,
+
+    /// Directory of data-only skill packages (<directory>/skill.json).
+    #[arg(long, default_value = "skills")]
+    skills_dir: PathBuf,
+
+    /// List registered skill metadata; this does not imply a runner is installed.
+    #[arg(long, conflicts_with_all = ["inspect_skill", "validate_skill_call"])]
+    list_skills: bool,
+
+    /// Inspect a registered skill and its provider-neutral tool schema.
+    #[arg(long, conflicts_with = "validate_skill_call")]
+    inspect_skill: Option<String>,
+
+    /// Validate a SkillCall JSON file against --robot/--backend, without executing it.
+    #[arg(long, requires = "robot")]
+    validate_skill_call: Option<PathBuf>,
 
     /// Override worker script
     #[arg(long)]
@@ -144,6 +165,10 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<()> {
     let mut args = Args::parse();
+
+    if skill_commands::handle(&args)? {
+        return Ok(());
+    }
 
     if args.install_robot.is_some() || args.doctor_robot.is_some() {
         let id = args

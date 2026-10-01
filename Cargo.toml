@@ -2,6 +2,7 @@
 members = [
     # Embodied Agent OS (physical plane) — M0/M1
     "crates/robo-archon-embodied",
+    "crates/robo-archon-skills",
     "crates/robo-archon-runtime",
     "crates/robo-archon-kinetic",
     "crates/robo-archon-policy",

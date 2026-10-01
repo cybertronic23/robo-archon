@@ -86,3 +86,5 @@ On macOS, the native MuJoCo viewer uses `mjpython`; on Linux use the environment
 6. Add official sit/stand, ground-pick, and other tricks as separately verified capabilities. The official manifest includes them, but this probe does not establish that they work locally. Go2 follows completion of the Microduck integration.
 
 Agent/body contracts remain independent of the simulator. Other backends can provide their own model and policy bindings under the same body package; this milestone only verifies MuJoCo. Retraining on NVIDIA cloud is deferred until an actual policy-quality need is established.
+
+The reusable Skill/Runner mechanism is tracked separately as M2g; Microduck will exercise it in M2g.2/M2f.3. See [the extensible skill design](../skills-design.md). M2g.1 registration does not promote this planned robot binding.
