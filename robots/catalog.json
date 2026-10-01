@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "bodies": [
+    {
+      "id": "franka_panda",
+      "name": "Franka Panda",
+      "revision": "0.1.0",
+      "definition": {
+        "category": "arm",
+        "capabilities": [],
+        "coordinate_convention": null
+      },
+      "sources": [
+        {
+          "url": "https://github.com/google-deepmind/mujoco_menagerie/tree/main/franka_emika_panda",
+          "description": "Upstream model source; revision must be pinned before installation",
+          "revision": null,
+          "license": "Apache-2.0"
+        }
+      ],
+      "manufacturing_links": [],
+      "bindings": {
+        "mujoco": {
+          "status": "planned",
+          "model_format": "mjcf",
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "maniskill": {
+          "status": "planned",
+          "model_format": null,
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "isaacsim": {
+          "status": "planned",
+          "model_format": "usd",
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "real": {
+          "status": "planned",
+          "model_format": null,
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        }
+      },
+      "policies": {},
+      "tasks": {},
+      "devices": {},
+      "validations": []
+    },
+    {
+      "id": "so101",
+      "name": "SO101",
+      "revision": "0.1.0",
+      "definition": {
+        "category": "arm",
+        "capabilities": [],
+        "coordinate_convention": null
+      },
+      "sources": [
+        {
+          "url": "https://github.com/TheRobotStudio/SO-ARM100/tree/main/Simulation/SO101",
+          "description": "Upstream model source; revision must be pinned before installation",
+          "revision": null,
+          "license": null
+        }
+      ],
+      "manufacturing_links": [
+        {
+          "url": "https://github.com/TheRobotStudio/SO-ARM100",
+          "description": "Optional STEP/STL, printing and assembly references",
+          "revision": null,
+          "license": null
+        }
+      ],
+      "bindings": {
+        "mujoco": {
+          "status": "planned",
+          "model_format": "mjcf",
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "maniskill": {
+          "status": "planned",
+          "model_format": null,
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "isaacsim": {
+          "status": "planned",
+          "model_format": "usd",
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "real": {
+          "status": "planned",
+          "model_format": null,
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        }
+      },
+      "policies": {},
+      "tasks": {},
+      "devices": {},
+      "validations": []
+    },
+    {
+      "id": "unitree_go2",
+      "name": "Unitree Go2",
+      "revision": "0.1.0",
+      "definition": {
+        "category": "quadruped",
+        "capabilities": [],
+        "coordinate_convention": null
+      },
+      "sources": [
+        {
+          "url": "https://github.com/google-deepmind/mujoco_menagerie/tree/main/unitree_go2",
+          "description": "Upstream model source; revision must be pinned before installation",
+          "revision": null,
+          "license": "BSD-3-Clause"
+        }
+      ],
+      "manufacturing_links": [],
+      "bindings": {
+        "mujoco": {
+          "status": "planned",
+          "model_format": "mjcf",
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "maniskill": {
+          "status": "planned",
+          "model_format": null,
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "isaacsim": {
+          "status": "planned",
+          "model_format": "usd",
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "real": {
+          "status": "planned",
+          "model_format": null,
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        }
+      },
+      "policies": {},
+      "tasks": {},
+      "devices": {},
+      "validations": []
+    },
+    {
+      "id": "microduck",
+      "name": "Microduck",
+      "revision": "0.1.0",
+      "definition": {
+        "category": "biped",
+        "capabilities": [],
+        "coordinate_convention": null
+      },
+      "sources": [
+        {
+          "url": "https://github.com/pollen-robotics/microduck_rl",
+          "description": "Upstream model source; revision must be pinned before installation",
+          "revision": null,
+          "license": null
+        }
+      ],
+      "manufacturing_links": [],
+      "bindings": {
+        "mujoco": {
+          "status": "planned",
+          "model_format": "mjcf",
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "maniskill": {
+          "status": "planned",
+          "model_format": null,
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "isaacsim": {
+          "status": "planned",
+          "model_format": "usd",
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        },
+        "real": {
+          "status": "planned",
+          "model_format": null,
+          "model_spec": null,
+          "controller": null,
+          "observation_contract": null,
+          "action_contract": null,
+          "joint_mapping": {},
+          "notes": "Not installed or validated; runtime adapter and controller required."
+        }
+      },
+      "policies": {},
+      "tasks": {},
+      "devices": {},
+      "validations": []
+    }
+  ]
+}

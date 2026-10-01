@@ -45,6 +45,18 @@ struct Args {
     #[arg(long, default_value_t = false)]
     list_models: bool,
 
+    /// List simulator-independent body packages and exit
+    #[arg(long, conflicts_with = "inspect_robot")]
+    list_robots: bool,
+
+    /// Inspect a body package as JSON and exit
+    #[arg(long)]
+    inspect_robot: Option<String>,
+
+    /// Body package catalog (independent of the MuJoCo asset catalog)
+    #[arg(long, default_value = "robots/catalog.json")]
+    body_catalog: PathBuf,
+
     /// Override worker script
     #[arg(long)]
     worker: Option<PathBuf>,
@@ -111,6 +123,21 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
+
+    if args.list_robots || args.inspect_robot.is_some() {
+        let catalog = robo_archon_embodied::body::BodyCatalog::load(&args.body_catalog)?;
+        if let Some(id) = &args.inspect_robot {
+            println!("{}", serde_json::to_string_pretty(catalog.body(id)?)?);
+        } else {
+            for body in &catalog.bodies {
+                println!("{} — {}", body.id, body.name);
+                for (platform, binding) in &body.bindings {
+                    println!("  {platform}: {:?}", binding.status);
+                }
+            }
+        }
+        return Ok(());
+    }
 
     if args.list_models {
         let catalog_path = default_catalog_path();

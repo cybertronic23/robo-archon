@@ -4,6 +4,14 @@
 
 > 下方里程碑最初面向 **数字平面** Agent Harness（crate 仍为 `archon-*`）。具身主线优先级与已完成项见根 [README.md](../README.md)；架构见 [ARCHITECTURE.md](../ARCHITECTURE.md)。
 
+## 具身主线 M2f：本体资料包与跨平台机器人接入
+
+- M2f.1：已实现平台无关元数据、关系校验、四款计划资料包与 CLI 查询。
+- M2f.2：待实现资产安装、Franka/SO101 控制与任务、第二仿真平台验证。
+- M2f.3：待实现 Go2/Microduck 持续控制与策略接入。
+
+M2e 保留原网页 Chat 规划。见 [设计](../docs/body-packages-design.md) 与 [spec](../docs/specs/m2f-1-body-packages.md)。下方版本路线属于历史数字平面。
+
 ## 版本策略
 
 RoboArchon 使用 [语义化版本](https://semver.org/lang/zh-CN/) (SemVer)：

@@ -164,6 +164,7 @@ robo-archon/
 | **M2b** | ⏳ ManiSkill worker（可置于 M2d 之后） |
 | **M2c** | ✅ DeepSeek 等 LLM 编译自然语言 → 原语；平面小车 `diff_car` |
 | **M2d** | ✅ 会话常驻 + ratatui TUI（`--tui`；per-turn media / 中途 estop；待本机 viewer 手测；网页 Chat → 以后 M2e） |
+| **M2f** | 🚧 本体资料包与跨平台机器人接入：M2f.1 元数据/校验/CLI 已实现；资产与控制适配待实现，见 [设计](docs/body-packages-design.md) |
 | **M3** | Isaac Sim（次优先） |
 | **M4** | Gazebo 等其它平台 |
 | **M5** | 真机 SO101 / Microduck 等 `RobotBackend` |

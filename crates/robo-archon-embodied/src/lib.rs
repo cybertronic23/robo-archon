@@ -4,6 +4,7 @@
 //! It does **not** depend on LLM tool_use; policies emit `ActionProposal`s
 //! that pass through deterministic safety before reaching a `RobotBackend`.
 
+pub mod body;
 pub mod cancel;
 pub mod traits;
 pub mod types;
