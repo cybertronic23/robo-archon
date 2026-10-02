@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "id": "microduck.walk",
+  "id": "microduck.stop",
   "version": "0.2.0",
-  "tool_name": "microduck_walk",
-  "description": "Run bounded body-frame velocity commands on Microduck in MuJoCo. Actual motion is measured; low commands may not initiate walking and commanded speed is not guaranteed.",
+  "tool_name": "microduck_stop",
+  "description": "Set desired twist to zero and hold standing for a bounded interval. Requires an upright robot; not a recovery strategy.",
   "parameters": {
     "vx": {
       "description": "Requested forward velocity in m/s; low positive commands may fail to initiate walking.",
-      "required": true,
-      "default": null,
+      "required": false,
+      "default": 0.0,
       "kind": {
         "type": "number",
-        "min": -0.3,
-        "max": 0.3
+        "min": 0.0,
+        "max": 0.0
       }
     },
     "yaw_rate": {
@@ -21,8 +21,8 @@
       "default": 0.0,
       "kind": {
         "type": "number",
-        "min": -1.0,
-        "max": 1.0
+        "min": 0.0,
+        "max": 0.0
       }
     },
     "duration_ms": {
@@ -41,8 +41,8 @@
       "default": 0.0,
       "kind": {
         "type": "number",
-        "min": -0.2,
-        "max": 0.2
+        "min": 0.0,
+        "max": 0.0
       }
     }
   },

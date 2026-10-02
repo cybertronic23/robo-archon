@@ -15,3 +15,4 @@ tokio = { workspace = true }
 anyhow = { workspace = true }
 thiserror = { workspace = true }
 futures = { workspace = true }
+robo-archon-skills = { path = "../robo-archon-skills" }

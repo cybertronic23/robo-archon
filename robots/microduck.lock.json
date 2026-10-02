@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "rl": {"repository": "https://github.com/pollen-robotics/microduck_rl.git", "revision": "8d0db74916a4f833d1d9b95d6a1d7f4d13b9d5ec", "license": "Apache-2.0 code; CC BY-SA-NC model files"},
+  "bam": {"repository": "https://github.com/Rhoban/bam.git", "revision": "62bd8ce12154340be97e06f7f41a0ca8f116d967", "license": "Apache-2.0"},
+  "policy": {"url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx", "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0", "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45", "license": "Apache-2.0"},
+  "runtime_versions": {"mujoco": "3.10.0", "onnxruntime": "1.24.4", "numpy": "2.5.3"}
+}

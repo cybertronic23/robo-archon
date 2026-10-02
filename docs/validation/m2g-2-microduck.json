@@ -1,0 +1,1049 @@
+{
+  "milestone": "M2g.2 + M2f.3 execution foundation",
+  "date": "2026-10-02",
+  "platform": "macOS ARM64 CPU, Python 3.12.12",
+  "status": "control lifecycle accepted; turn-after-stop motion acceptance open",
+  "checks": {
+    "rust_workspace_tests": 47,
+    "python_ruff": "passed",
+    "pinned_package_clean_destination": "passed using pinned local source checkouts",
+    "package_tamper_rejection": "passed",
+    "keyboard": "TTY w/a/x/q exercised; native viewer not visually accepted",
+    "native_viewer": "unverified",
+    "fresh_network_download": "not repeated; installer Git exports and checksum verified from pinned local sources"
+  },
+  "lock": {
+    "schema_version": 1,
+    "rl": {
+      "repository": "https://github.com/pollen-robotics/microduck_rl.git",
+      "revision": "8d0db74916a4f833d1d9b95d6a1d7f4d13b9d5ec",
+      "license": "Apache-2.0 code; CC BY-SA-NC model files"
+    },
+    "bam": {
+      "repository": "https://github.com/Rhoban/bam.git",
+      "revision": "62bd8ce12154340be97e06f7f41a0ca8f116d967",
+      "license": "Apache-2.0"
+    },
+    "policy": {
+      "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx",
+      "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+      "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+      "license": "Apache-2.0"
+    },
+    "runtime_versions": {
+      "mujoco": "3.10.0",
+      "onnxruntime": "1.24.4",
+      "numpy": "2.5.3"
+    }
+  },
+  "one_shot_walk": {
+    "skill_id": "microduck.walk",
+    "version": "0.2.0",
+    "status": "succeeded",
+    "reason": "duration_complete",
+    "elapsed_ms": 6739,
+    "observation": {
+      "body_velocity": [
+        0.00694423310528401,
+        0.0006548818853609703,
+        -0.0008364100579367947
+      ],
+      "command": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fault": null,
+      "motion": {
+        "max_tilt_deg": 3.553248405456543,
+        "min_height": 0.1128013711991876,
+        "samples": 221,
+        "start_xyz": [
+          0.00032124935303342916,
+          -9.242233640303016e-05,
+          0.11478313772088018
+        ],
+        "sum_vx": 19.00196824833468,
+        "sum_yaw_rate": -18.533168182882942
+      },
+      "reason": "explicit_stop",
+      "simulation_time": 4.979999999999916,
+      "state": "idle",
+      "stop_confirmed": true,
+      "tilt_deg": 0.6726034283638,
+      "xyz": [
+        0.3606779218600839,
+        -0.06035645534120143,
+        0.11646429017571594
+      ],
+      "yaw": -0.4362087889608291,
+      "yaw_rate": -0.0178241990506649
+    }
+  },
+  "cancelled_one_shot": {
+    "skill_id": "microduck.walk",
+    "version": "0.2.0",
+    "status": "cancelled",
+    "reason": "cancelled",
+    "elapsed_ms": 1781,
+    "observation": {
+      "body_velocity": [
+        0.0014516513105070031,
+        0.0010449563620318764,
+        -0.0007037425581317941
+      ],
+      "command": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fault": null,
+      "motion": {
+        "max_tilt_deg": 1.9054670333862305,
+        "min_height": 0.11343138924160227,
+        "samples": 37,
+        "start_xyz": [
+          -0.00016088188531717716,
+          -1.7406078558357447e-05,
+          0.11621543555436029
+        ],
+        "sum_vx": 0.6602709650256342,
+        "sum_yaw_rate": -1.2222219804534689
+      },
+      "reason": "explicit_stop",
+      "simulation_time": 1.2999999999999945,
+      "state": "idle",
+      "stop_confirmed": true,
+      "tilt_deg": 0.1219465509057045,
+      "xyz": [
+        0.0022892444422844657,
+        0.00022988789422341877,
+        0.11575277696885553
+      ],
+      "yaw": -0.0003854593010858573,
+      "yaw_rate": -0.019758904352784157
+    }
+  },
+  "user_registered_skill": {
+    "skill_id": "user.duck.hold",
+    "version": "0.2.0",
+    "status": "succeeded",
+    "reason": "duration_complete",
+    "elapsed_ms": 1448,
+    "observation": {
+      "body_velocity": [
+        -7.421263942194159e-06,
+        2.023754662621681e-05,
+        0.0003469503312643488
+      ],
+      "command": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fault": null,
+      "motion": {
+        "max_tilt_deg": 1.0799216032028198,
+        "min_height": 0.11478313772088018,
+        "samples": 34,
+        "start_xyz": [
+          0.00032124935303342916,
+          -9.242233640303016e-05,
+          0.11478313772088018
+        ],
+        "sum_vx": 0.11137504004582544,
+        "sum_yaw_rate": 0.18660449937124213
+      },
+      "reason": "explicit_stop",
+      "simulation_time": 1.0000000000000009,
+      "state": "idle",
+      "stop_confirmed": true,
+      "tilt_deg": 0.8767032623291016,
+      "xyz": [
+        0.0027988014317472465,
+        -7.111479909027055e-05,
+        0.11655232414190284
+      ],
+      "yaw": 0.004126870772585063,
+      "yaw_rate": -0.00013412936823442578
+    }
+  },
+  "continuous_worker": {
+    "acceptance": "protocol/continuous-lifecycle passed; motion gates reported separately",
+    "first": {
+      "state": "idle",
+      "reason": "standing",
+      "fault": null,
+      "simulation_time": 0.02,
+      "xyz": [
+        -5.592902101512583e-05,
+        -9.183454698166961e-06,
+        0.12256282454122377
+      ],
+      "yaw": 0.00023163496428641858,
+      "tilt_deg": 0.04423465579748154,
+      "body_velocity": [
+        -0.004234261272609986,
+        -0.0006125750006798086,
+        -0.19510066704476692
+      ],
+      "yaw_rate": 0.012545212171971798,
+      "command": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "motion": null
+    },
+    "watchdog": {
+      "state": "idle",
+      "reason": "lease_expired",
+      "fault": null,
+      "simulation_time": 0.4600000000000003,
+      "xyz": [
+        0.00459296248130861,
+        -7.673368501813332e-05,
+        0.11535442291203957
+      ],
+      "yaw": -0.004722161888421146,
+      "tilt_deg": 1.4176170825958252,
+      "body_velocity": [
+        -0.017661990822811585,
+        -0.0008380263544349107,
+        0.001687806895517135
+      ],
+      "yaw_rate": -0.01871003769338131,
+      "command": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "motion": {
+        "start_xyz": [
+          0.00032124935303342916,
+          -9.242233640303016e-05,
+          0.11478313772088018
+        ],
+        "min_height": 0.11422538490929957,
+        "max_tilt_deg": 1.3344218730926514,
+        "samples": 9,
+        "sum_vx": 0.5108731516900946,
+        "sum_yaw_rate": -0.8280296912416816
+      }
+    },
+    "invalid_command": {
+      "state": "idle",
+      "reason": "invalid_command",
+      "fault": null,
+      "simulation_time": 0.04,
+      "xyz": [
+        -0.00016088188531717716,
+        -1.7406078558357447e-05,
+        0.11621543555436027
+      ],
+      "yaw": 0.0010075285083526835,
+      "tilt_deg": 0.15065784752368927,
+      "body_velocity": [
+        -0.007130485579178492,
+        -0.00018199145251569167,
+        -0.3907500583754731
+      ],
+      "yaw_rate": 0.04283032566308975,
+      "command": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "motion": null
+    },
+    "rollouts": [
+      {
+        "cycle": 0,
+        "command": "stand",
+        "start": {
+          "state": "running",
+          "reason": "command",
+          "fault": null,
+          "simulation_time": 1.219999999999996,
+          "xyz": [
+            0.002477859390667768,
+            0.000108086387969802,
+            0.11557251072538349
+          ],
+          "yaw": -0.005902922482992174,
+          "tilt_deg": 0.7157317996025085,
+          "body_velocity": [
+            -0.00014291094017485203,
+            -0.00028956244831726346,
+            -2.2552231893311265e-05
+          ],
+          "yaw_rate": 0.0002608580107335001,
+          "command": [
+            0,
+            0,
+            0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.002477859390667768,
+              0.000108086387969802,
+              0.11557251072538349
+            ],
+            "min_height": 0.11557251072538349,
+            "max_tilt_deg": 0.0,
+            "samples": 0,
+            "sum_vx": 0.0,
+            "sum_yaw_rate": 0.0
+          }
+        },
+        "end": {
+          "state": "idle",
+          "reason": "duration_complete",
+          "fault": null,
+          "simulation_time": 2.079999999999978,
+          "xyz": [
+            0.0021812129169392594,
+            3.0878627412345735e-05,
+            0.11560716539587934
+          ],
+          "yaw": -0.0031336841973415228,
+          "tilt_deg": 0.6584911346435547,
+          "body_velocity": [
+            -0.0016542020336427902,
+            -0.0004618578024337133,
+            -0.0001020358710670363
+          ],
+          "yaw_rate": 0.015583145432174206,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.002477859390667768,
+              0.000108086387969802,
+              0.11557251072538349
+            ],
+            "min_height": 0.11557251072538349,
+            "max_tilt_deg": 0.7132670283317566,
+            "samples": 38,
+            "sum_vx": -0.011439424276620853,
+            "sum_yaw_rate": 0.0382538191988715
+          }
+        },
+        "settled": {
+          "state": "idle",
+          "reason": "explicit_stop",
+          "fault": null,
+          "simulation_time": 2.359999999999972,
+          "xyz": [
+            0.0021298462286068716,
+            3.182242181145988e-05,
+            0.11563344741183264
+          ],
+          "yaw": -0.0021806157906085937,
+          "tilt_deg": 0.6486108303070068,
+          "body_velocity": [
+            -0.0004293507614914205,
+            -0.0008363180676649826,
+            -0.0005087587860193988
+          ],
+          "yaw_rate": 0.0055508301593363285,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.002477859390667768,
+              0.000108086387969802,
+              0.11557251072538349
+            ],
+            "min_height": 0.11557251072538349,
+            "max_tilt_deg": 0.7132670283317566,
+            "samples": 38,
+            "sum_vx": -0.011439424276620853,
+            "sum_yaw_rate": 0.0382538191988715
+          }
+        },
+        "displacement_xy": 0.000306529229708777,
+        "motion_gate_passed": null
+      },
+      {
+        "cycle": 0,
+        "command": "forward",
+        "start": {
+          "state": "running",
+          "reason": "command",
+          "fault": null,
+          "simulation_time": 2.3799999999999715,
+          "xyz": [
+            0.0021004834103259505,
+            1.6141303894457193e-05,
+            0.1156266014394515
+          ],
+          "yaw": -0.002039981360665806,
+          "tilt_deg": 0.6425489187240601,
+          "body_velocity": [
+            -0.002602454383118259,
+            -0.0007932507470222096,
+            -0.0003124995929736422
+          ],
+          "yaw_rate": 0.012739132158458233,
+          "command": [
+            0.3,
+            0,
+            0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.0021004834103259505,
+              1.6141303894457193e-05,
+              0.1156266014394515
+            ],
+            "min_height": 0.1156266014394515,
+            "max_tilt_deg": 0.0,
+            "samples": 0,
+            "sum_vx": 0.0,
+            "sum_yaw_rate": 0.0
+          }
+        },
+        "end": {
+          "state": "idle",
+          "reason": "duration_complete",
+          "fault": null,
+          "simulation_time": 6.919999999999875,
+          "xyz": [
+            0.33072183349281054,
+            -0.03551650626400432,
+            0.11947537979170031
+          ],
+          "yaw": -0.2991924994064168,
+          "tilt_deg": 2.948026657104492,
+          "body_velocity": [
+            0.04855882915924299,
+            -0.03684302487107584,
+            0.001459410081746557
+          ],
+          "yaw_rate": 0.17969897389411926,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.0021004834103259505,
+              1.6141303894457193e-05,
+              0.1156266014394515
+            ],
+            "min_height": 0.11274527648828711,
+            "max_tilt_deg": 3.565295696258545,
+            "samples": 223,
+            "sum_vx": 16.789011830475584,
+            "sum_yaw_rate": -12.862678808625787
+          }
+        },
+        "settled": {
+          "state": "idle",
+          "reason": "explicit_stop",
+          "fault": null,
+          "simulation_time": 7.479999999999863,
+          "xyz": [
+            0.32243881739121244,
+            -0.03712516427227881,
+            0.1168259366180464
+          ],
+          "yaw": -0.28268950460837705,
+          "tilt_deg": 0.32020553946495056,
+          "body_velocity": [
+            0.008588588941421133,
+            0.002899771744559079,
+            0.0007302686375104539
+          ],
+          "yaw_rate": 0.0036749907303601503,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.0021004834103259505,
+              1.6141303894457193e-05,
+              0.1156266014394515
+            ],
+            "min_height": 0.11274527648828711,
+            "max_tilt_deg": 3.565295696258545,
+            "samples": 223,
+            "sum_vx": 16.789011830475584,
+            "sum_yaw_rate": -12.862678808625787
+          }
+        },
+        "displacement_xy": 0.33053677673326975,
+        "motion_gate_passed": true
+      },
+      {
+        "cycle": 0,
+        "command": "turn",
+        "start": {
+          "state": "running",
+          "reason": "command",
+          "fault": null,
+          "simulation_time": 7.499999999999862,
+          "xyz": [
+            0.32262455517052663,
+            -0.03716897385411964,
+            0.11684962333014311
+          ],
+          "yaw": -0.2827526912349157,
+          "tilt_deg": 0.35990869998931885,
+          "body_velocity": [
+            0.009542937829312627,
+            -0.0010719626094252536,
+            0.0006724701757335097
+          ],
+          "yaw_rate": -0.004001203458756208,
+          "command": [
+            0.2,
+            0,
+            1
+          ],
+          "motion": {
+            "start_xyz": [
+              0.32262455517052663,
+              -0.03716897385411964,
+              0.11684962333014311
+            ],
+            "min_height": 0.11684962333014311,
+            "max_tilt_deg": 0.0,
+            "samples": 0,
+            "sum_vx": 0.0,
+            "sum_yaw_rate": 0.0
+          }
+        },
+        "end": {
+          "state": "idle",
+          "reason": "duration_complete",
+          "fault": null,
+          "simulation_time": 10.560000000000251,
+          "xyz": [
+            0.3314248309840504,
+            -0.038312506549381335,
+            0.11542094391041342
+          ],
+          "yaw": -0.1507830479167896,
+          "tilt_deg": 1.576815128326416,
+          "body_velocity": [
+            -0.038805334627405465,
+            -0.01648725669201382,
+            0.005208825968918016
+          ],
+          "yaw_rate": -0.18835851550102234,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.32262455517052663,
+              -0.03716897385411964,
+              0.11684962333014311
+            ],
+            "min_height": 0.11505164898249066,
+            "max_tilt_deg": 1.8259562253952026,
+            "samples": 150,
+            "sum_vx": 0.4994588280579016,
+            "sum_yaw_rate": 7.103597317240201
+          }
+        },
+        "settled": {
+          "state": "idle",
+          "reason": "explicit_stop",
+          "fault": null,
+          "simulation_time": 11.140000000000342,
+          "xyz": [
+            0.3236146614974573,
+            -0.03743940024251013,
+            0.1164595965872036
+          ],
+          "yaw": -0.22729107828889444,
+          "tilt_deg": 0.8325124979019165,
+          "body_velocity": [
+            -0.0008555388300839238,
+            0.0005560721684668501,
+            0.00021984858572321442
+          ],
+          "yaw_rate": -0.025516055524349213,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.32262455517052663,
+              -0.03716897385411964,
+              0.11684962333014311
+            ],
+            "min_height": 0.11505164898249066,
+            "max_tilt_deg": 1.8259562253952026,
+            "samples": 150,
+            "sum_vx": 0.4994588280579016,
+            "sum_yaw_rate": 7.103597317240201
+          }
+        },
+        "displacement_xy": 0.008874261739391282,
+        "motion_gate_passed": false
+      },
+      {
+        "cycle": 1,
+        "command": "stand",
+        "start": {
+          "state": "running",
+          "reason": "command",
+          "fault": null,
+          "simulation_time": 11.160000000000345,
+          "xyz": [
+            0.3235849417457291,
+            -0.037420601726098845,
+            0.11646100996212472
+          ],
+          "yaw": -0.22789286701245612,
+          "tilt_deg": 0.8341561555862427,
+          "body_velocity": [
+            -0.0019240895541771054,
+            0.0005623213207295743,
+            6.613550846970647e-05
+          ],
+          "yaw_rate": -0.04696077108383179,
+          "command": [
+            0,
+            0,
+            0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.3235849417457291,
+              -0.037420601726098845,
+              0.11646100996212472
+            ],
+            "min_height": 0.11646100996212472,
+            "max_tilt_deg": 0.0,
+            "samples": 0,
+            "sum_vx": 0.0,
+            "sum_yaw_rate": 0.0
+          }
+        },
+        "end": {
+          "state": "idle",
+          "reason": "duration_complete",
+          "fault": null,
+          "simulation_time": 11.980000000000473,
+          "xyz": [
+            0.32331185345224445,
+            -0.037081813468083175,
+            0.11646195001903184
+          ],
+          "yaw": -0.23662847951637958,
+          "tilt_deg": 0.9011377692222595,
+          "body_velocity": [
+            0.00019750440766529983,
+            0.0006371675431674809,
+            5.835896950240649e-05
+          ],
+          "yaw_rate": -0.019766580313444138,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.3235849417457291,
+              -0.037420601726098845,
+              0.11646100996212472
+            ],
+            "min_height": 0.11646100996212472,
+            "max_tilt_deg": 0.8386014103889465,
+            "samples": 38,
+            "sum_vx": -0.022327699768766265,
+            "sum_yaw_rate": -0.2792377344885608
+          }
+        },
+        "settled": {
+          "state": "idle",
+          "reason": "explicit_stop",
+          "fault": null,
+          "simulation_time": 12.260000000000517,
+          "xyz": [
+            0.323406902840638,
+            -0.0371075124945311,
+            0.11648868938602852
+          ],
+          "yaw": -0.23949506150945168,
+          "tilt_deg": 0.961441159248352,
+          "body_velocity": [
+            0.0014087126662744739,
+            -0.00197643322016768,
+            0.0010217264689300508
+          ],
+          "yaw_rate": -0.03133493289351463,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.3235849417457291,
+              -0.037420601726098845,
+              0.11646100996212472
+            ],
+            "min_height": 0.11646100996212472,
+            "max_tilt_deg": 0.8386014103889465,
+            "samples": 38,
+            "sum_vx": -0.022327699768766265,
+            "sum_yaw_rate": -0.2792377344885608
+          }
+        },
+        "displacement_xy": 0.0004351490547015533,
+        "motion_gate_passed": null
+      },
+      {
+        "cycle": 1,
+        "command": "forward",
+        "start": {
+          "state": "running",
+          "reason": "command",
+          "fault": null,
+          "simulation_time": 12.28000000000052,
+          "xyz": [
+            0.32342142391122436,
+            -0.03715281316545408,
+            0.11650597286366438
+          ],
+          "yaw": -0.24006992148386028,
+          "tilt_deg": 0.9555205702781677,
+          "body_velocity": [
+            0.0007256554867945917,
+            -0.0019324836735064327,
+            0.000703186807922281
+          ],
+          "yaw_rate": -0.02925409935414791,
+          "command": [
+            0.3,
+            0,
+            0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.32342142391122436,
+              -0.03715281316545408,
+              0.11650597286366438
+            ],
+            "min_height": 0.11650597286366438,
+            "max_tilt_deg": 0.0,
+            "samples": 0,
+            "sum_vx": 0.0,
+            "sum_yaw_rate": 0.0
+          }
+        },
+        "end": {
+          "state": "idle",
+          "reason": "duration_complete",
+          "fault": null,
+          "simulation_time": 16.820000000000938,
+          "xyz": [
+            0.6346515135138491,
+            -0.15975698478519487,
+            0.11457986823542321
+          ],
+          "yaw": -0.5565117274868988,
+          "tilt_deg": 0.9242920875549316,
+          "body_velocity": [
+            0.1025137527085709,
+            0.1587954359449198,
+            0.024432226836064705
+          ],
+          "yaw_rate": -2.0040268898010254,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.32342142391122436,
+              -0.03715281316545408,
+              0.11650597286366438
+            ],
+            "min_height": 0.11294673686959679,
+            "max_tilt_deg": 3.7426137924194336,
+            "samples": 225,
+            "sum_vx": 17.152700253852505,
+            "sum_yaw_rate": -14.014056046522455
+          }
+        },
+        "settled": {
+          "state": "idle",
+          "reason": "explicit_stop",
+          "fault": null,
+          "simulation_time": 17.32000000000084,
+          "xyz": [
+            0.6323191440231246,
+            -0.15882374610043345,
+            0.11677315873569781
+          ],
+          "yaw": -0.600778219145718,
+          "tilt_deg": 0.43069303035736084,
+          "body_velocity": [
+            0.00370087097489566,
+            0.0008187955595374814,
+            -0.0005300881250833154
+          ],
+          "yaw_rate": -0.03722366318106651,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.32342142391122436,
+              -0.03715281316545408,
+              0.11650597286366438
+            ],
+            "min_height": 0.11294673686959679,
+            "max_tilt_deg": 3.7426137924194336,
+            "samples": 225,
+            "sum_vx": 17.152700253852505,
+            "sum_yaw_rate": -14.014056046522455
+          }
+        },
+        "displacement_xy": 0.3345085224215082,
+        "motion_gate_passed": true
+      },
+      {
+        "cycle": 1,
+        "command": "turn",
+        "start": {
+          "state": "running",
+          "reason": "command",
+          "fault": null,
+          "simulation_time": 17.340000000000835,
+          "xyz": [
+            0.6323895955455656,
+            -0.15883403718502034,
+            0.11674444774705856
+          ],
+          "yaw": -0.6012727290218965,
+          "tilt_deg": 0.46055179834365845,
+          "body_velocity": [
+            0.003097391415857155,
+            0.001354226037609936,
+            -0.001811518969705126
+          ],
+          "yaw_rate": -0.025048846378922462,
+          "command": [
+            0.2,
+            0,
+            1
+          ],
+          "motion": {
+            "start_xyz": [
+              0.6323895955455656,
+              -0.15883403718502034,
+              0.11674444774705856
+            ],
+            "min_height": 0.11674444774705856,
+            "max_tilt_deg": 0.0,
+            "samples": 0,
+            "sum_vx": 0.0,
+            "sum_yaw_rate": 0.0
+          }
+        },
+        "end": {
+          "state": "idle",
+          "reason": "duration_complete",
+          "fault": null,
+          "simulation_time": 20.440000000000218,
+          "xyz": [
+            0.6385313734818184,
+            -0.16244900730306946,
+            0.11554676163235615
+          ],
+          "yaw": -0.4873419933916593,
+          "tilt_deg": 1.4236780405044556,
+          "body_velocity": [
+            -0.044438119435573305,
+            -0.022181226619316746,
+            0.0004046149070972917
+          ],
+          "yaw_rate": -0.2549704611301422,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.6323895955455656,
+              -0.15883403718502034,
+              0.11674444774705856
+            ],
+            "min_height": 0.1150124188521645,
+            "max_tilt_deg": 1.8349370956420898,
+            "samples": 150,
+            "sum_vx": 0.5081938994655244,
+            "sum_yaw_rate": 6.664134515507612
+          }
+        },
+        "settled": {
+          "state": "idle",
+          "reason": "explicit_stop",
+          "fault": null,
+          "simulation_time": 21.000000000000107,
+          "xyz": [
+            0.6333430529268708,
+            -0.15907983540746246,
+            0.11636930857019778
+          ],
+          "yaw": -0.5588299788342111,
+          "tilt_deg": 0.9385777711868286,
+          "body_velocity": [
+            0.0017777243552583957,
+            0.0007926365399791616,
+            0.00018466647875793656
+          ],
+          "yaw_rate": -0.040071066468954086,
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "motion": {
+            "start_xyz": [
+              0.6323895955455656,
+              -0.15883403718502034,
+              0.11674444774705856
+            ],
+            "min_height": 0.1150124188521645,
+            "max_tilt_deg": 1.8349370956420898,
+            "samples": 150,
+            "sum_vx": 0.5081938994655244,
+            "sum_yaw_rate": 6.664134515507612
+          }
+        },
+        "displacement_xy": 0.007126671395022359,
+        "motion_gate_passed": false
+      }
+    ],
+    "disconnect_exit": 0,
+    "fault_detection": "threshold/latching unit checks; no induced physical fall rollout",
+    "duration_clock": "wall clock; measured simulation time retained"
+  },
+  "physical_fall": {
+    "perturbation": "8 N horizontal trunk force for simulation 0.5–0.9 s; no teleport",
+    "fault": {
+      "protocol": "archon.continuous.v1",
+      "id": 10,
+      "ok": true,
+      "observation": {
+        "state": "fault",
+        "reason": "fallen",
+        "fault": "fallen",
+        "simulation_time": 0.7800000000000006,
+        "xyz": [
+          0.29247049084398336,
+          0.02530995909332343,
+          0.07811044514089316
+        ],
+        "yaw": -0.9543635930940982,
+        "tilt_deg": 61.211761474609375,
+        "body_velocity": [
+          1.3634626869460758,
+          1.0749863095932533,
+          1.9619354277893382
+        ],
+        "yaw_rate": -3.895890474319458,
+        "command": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "motion": null
+      }
+    },
+    "rejected": {
+      "protocol": "archon.continuous.v1",
+      "id": 11,
+      "ok": false,
+      "error": "fallen/faulted robot requires explicit simulation restart",
+      "observation": {
+        "state": "fault",
+        "reason": "invalid_command",
+        "fault": "fallen",
+        "simulation_time": 0.8000000000000006,
+        "xyz": [
+          0.33763467307112205,
+          0.035096809832096246,
+          0.07506390476301891
+        ],
+        "yaw": -1.118953894028369,
+        "tilt_deg": 74.90637969970703,
+        "body_velocity": [
+          0.1726595026363904,
+          0.20938502366051526,
+          2.1080892623958234
+        ],
+        "yaw_rate": -1.681999683380127,
+        "command": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "motion": null
+      }
+    },
+    "latched": {
+      "protocol": "archon.continuous.v1",
+      "id": 12,
+      "ok": true,
+      "observation": {
+        "state": "fault",
+        "reason": "fallen",
+        "fault": "fallen",
+        "simulation_time": 1.1799999999999968,
+        "xyz": [
+          0.8831917724119095,
+          0.141687644740589,
+          0.04675724029880806
+        ],
+        "yaw": 1.72568552642738,
+        "tilt_deg": 111.63363647460938,
+        "body_velocity": [
+          0.296427763277719,
+          0.11439743051662338,
+          0.33198593199601745
+        ],
+        "yaw_rate": 3.4294681549072266,
+        "command": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "motion": null
+      }
+    }
+  },
+  "remaining": [
+    "Official velstand sometimes has weak motion after stop; repeated turn gates failed (~0.045 rad/s mean vs requested 1.0).",
+    "Low command initiation unresolved; no accurate speed or distance claim.",
+    "M2g.3 custom-weight installation and LLM tool routing not implemented.",
+    "Native GUI visual acceptance, varied initial conditions, prolonged stability, extra policies, Go2 and hardware are unverified."
+  ]
+}

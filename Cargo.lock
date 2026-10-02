@@ -716,6 +716,7 @@ dependencies = [
  "robo-archon-embodied",
  "robo-archon-kinetic",
  "robo-archon-perception",
+ "robo-archon-skills",
  "serde",
  "serde_json",
  "thiserror",
@@ -742,6 +743,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "robo-archon-embodied",
+ "robo-archon-skills",
  "serde",
  "serde_json",
  "tokio",
@@ -752,6 +754,7 @@ name = "robo-archon-skills"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "robo-archon-embodied",
  "serde",
  "serde_json",

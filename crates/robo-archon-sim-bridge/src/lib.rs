@@ -13,3 +13,4 @@ pub use backend::{
     BridgedSimBackend,
 };
 pub use protocol::{ClientMsg, ServerMsg, PROTOCOL_VERSION};
+pub mod continuous;

@@ -398,18 +398,21 @@ mod tests {
     }
 
     #[test]
-    fn user_package_discovered_and_draft_body_not_callable() {
+    fn user_package_discovered_and_body_bindings_checked() {
         let registry = SkillRegistry::load_dir(&root().join("skills")).unwrap();
-        assert_eq!(registry.list().count(), 2);
+        assert_eq!(registry.list().count(), 4);
         assert_eq!(
             registry
                 .compatible_definitions(&catalog(), "franka_panda", "mujoco")
                 .len(),
             1
         );
-        assert!(registry
-            .compatible_definitions(&catalog(), "microduck", "mujoco")
-            .is_empty());
+        assert_eq!(
+            registry
+                .compatible_definitions(&catalog(), "microduck", "mujoco")
+                .len(),
+            3
+        );
         let request = SkillCall {
             skill_id: "microduck.walk".into(),
             parameters: json!({"vx":0.3}),
@@ -417,7 +420,7 @@ mod tests {
         };
         assert!(registry
             .prepare(&catalog(), "microduck", "mujoco", &request)
-            .is_err());
+            .is_ok());
         assert!(registry
             .prepare(&catalog(), "so101", "mujoco", &call(json!({})))
             .is_err());
@@ -532,3 +535,6 @@ mod tests {
             .is_err());
     }
 }
+
+pub mod runner;
+pub use runner::{RunnerProgress, RunnerRegistry, SkillResult, SkillRunner, SkillStatus};

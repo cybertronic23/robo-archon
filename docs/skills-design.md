@@ -1,6 +1,6 @@
 # AgentOS 可扩展技能设计
 
-状态：M2g.1 注册与调用校验已实现；Runner、运行时执行和 LLM 接入待后续实现。
+状态：M2g.1 已完成；M2g.2 执行基础已实现可信 Runner 注册、Executive 生命周期与 Microduck 持续控制。自训练权重与 LLM 调用属于 M2g.3。执行验收见 [M2g.2 spec](specs/m2g-2-continuous-skills.md)。
 
 AgentOS 的扩展入口是可注册的技能包。官方策略、自训练策略、传统控制器和任务组合使用同一套能力描述，不把机器人名称、技能名单或 ONNX 文件写死在 LLM 提示词中。Microduck 是首个持续策略执行案例，不是技能系统的特殊核心。
 
@@ -34,7 +34,7 @@ flowchart TD
     F --> L
 ```
 
-图表示最终设计；M2g.1 只实现 SkillRegistry、工具描述生成与静态 SkillCall 校验。
+图表示最终设计；当前已实现 Registry → Executive → Runner → worker 路径，LLM 动态工具调用尚未接入。
 
 ## 技能包与注册
 
@@ -50,7 +50,7 @@ flowchart TD
 
 ## 执行扩展点
 
-后续实现 `SkillRunner` 接口和 RunnerRegistry，按版本化 ID 注册可信执行适配器：
+已实现 `SkillRunner` 接口和 RunnerRegistry，按版本化 ID 注册可信执行适配器。当前仅 `onnx_policy.v1` 的 Microduck 官方 velstand 绑定可执行；以下其余类型仍是后续扩展：
 
 - `profile_primitive.v1`：适配已有机械臂原语和 Executive 路径。
 - `onnx_policy.v1`：加载已校验权重，并调用对应 observation/action adapter；策略推理和物理步进留在 worker。
@@ -64,7 +64,7 @@ LLM 看的是 Skill 描述与参数，不是权重文件或关节数组。现有
 
 Executive 保持单机器人唯一执行权。生命周期拟为 `queued → validating → running → stopping → succeeded/failed/cancelled/timed_out`；运行中可输出进度和观测。调用包含 `timeout_ms`，必须在 Skill 声明预算内。退出不等于任务成功，成功由适配器对实际观测判定并返回证据。
 
-资源名按机器人实例限定。`whole_body` 必须与 base、legs、head 等子资源互斥，而不只是比较字符串；组合父任务持有资源，子技能共享同一个执行上下文，避免父子死锁。M2g.1 仅校验资源声明，尚未把字符串资源接入现有固定 `ResourceKind` 锁。
+资源名按机器人实例限定。`whole_body` 必须与 base、legs、head 等子资源互斥，而不只是比较字符串；组合父任务持有资源，子技能共享同一个执行上下文，避免父子死锁。当前使用每机器人 Executive 的既有锁：`whole_body` 保守占用 Base、Arm、Gripper，未知资源拒绝执行。这能阻止与现有轨迹冲突；通用资源树、实例管理和父子共享上下文仍待实现。
 
 Runtime 负责取消、优先级、外部超时和日志；worker 必须独立维护命令 lease/watchdog，让宿主进程退出、连接断开或 LLM 卡住时仍会停止接受运动指令。Runner 的 `stop`/急停由运行时触发，不能仅靠取消一个 Rust future。正常停止、急停、跌倒处理、恢复策略分别定义；跌倒后禁止直接重新发步行指令，reset 标记为仿真重启。
 
@@ -82,14 +82,14 @@ ONNX 的接入至少校验：权重哈希、模型和本体版本、输入/输�
 4. Runner 验证依赖与适配，先仿真验收动作和策略切换，记录失败、超时与停止结果。
 5. 验证通过后进入可用工具目录，LLM 才能调用。若训练没有幅度输入，就不添加“幅度”参数。
 
-上述全流程是 M2g.2–M2g.3 的目标。当前可完成技能包注册/查询/静态校验，不能运行自训练策略。
+上述自训练权重全流程属于 M2g.3。当前可以注册使用已安装官方策略的新技能描述，并通过 Runner 执行；不能替换任意自训练权重。
 
 ## 迭代顺序
 
 | 迭代 | 范围与交付 | 完成判据 |
 | --- | --- | --- |
 | M2g.1 | 独立 Skills crate、schema v1、注册/发现、工具定义、静态调用校验与 CLI | 用户目录不修改核心即可注册；重复/非法调用被拒绝；元数据不触发动作 |
-| M2g.2 + M2f.3 | Runner/生命周期桥、Microduck 资产与连续 worker、官方策略和键盘试玩 | 通过 Archon 站立/行走/转弯/停车；lease、取消、跌倒处理通过实测 |
+| M2g.2 + M2f.3 | Runner/生命周期桥、Microduck 资产与连续 worker、官方策略和键盘试玩 | 通过 Archon 站立/行走/转弯/停车；lease、取消、实际运动与停止通过实测；跌倒阈值/锁存与外力跌倒拒绝通过检查；停止后转弯运动验收仍待解决 |
 | M2g.3 | 自训练策略安装与校验、动态 LLM 工具目录、结构化调用与结果反馈 | 使用一个实际自训练技能包，不改核心可调用并返回观测证据；不支持能力明确拒绝 |
 | M2g.4 | 受限组合技能、版本追溯、第二机器人/平台验证 | 同一任务组合更换绑定；父子资源与总预算正确；Go2 接在 Microduck 完成之后 |
 

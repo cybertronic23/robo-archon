@@ -322,31 +322,35 @@
     {
       "id": "microduck",
       "name": "Microduck",
-      "revision": "0.1.0",
+      "revision": "0.2.0",
       "definition": {
         "category": "biped",
-        "capabilities": [],
-        "coordinate_convention": null
+        "capabilities": [
+          "stand",
+          "bounded_twist",
+          "stop"
+        ],
+        "coordinate_convention": "body frame: x forward, y left, z up; m/s and rad/s"
       },
       "sources": [
         {
           "url": "https://github.com/pollen-robotics/microduck_rl",
-          "description": "Upstream model source; revision must be pinned before installation",
-          "revision": null,
-          "license": null
+          "description": "Official model and CPU policy rehearsal source",
+          "revision": "8d0db74916a4f833d1d9b95d6a1d7f4d13b9d5ec",
+          "license": "Apache-2.0 code; CC BY-SA-NC models"
         }
       ],
       "manufacturing_links": [],
       "bindings": {
         "mujoco": {
-          "status": "planned",
+          "status": "controlled",
           "model_format": "mjcf",
-          "model_spec": null,
-          "controller": null,
-          "observation_contract": null,
-          "action_contract": null,
+          "model_spec": "python/models/external/microduck/model/scene.xml",
+          "controller": "onnx_policy.v1 + BAM XL330 M6",
+          "observation_contract": "microduck.proprio_command.61.v1",
+          "action_contract": "microduck.joint_offset.14.rad.v1",
           "joint_mapping": {},
-          "notes": "Not installed or validated; runtime adapter and controller required."
+          "notes": "Pinned official velstand continuous CPU worker. Nominal flat-floor simulation; low commands and stop-to-motion transitions may give weak motion. Lifecycle and physical-fall rejection checked; turn-after-stop motion gate remains open. See docs/validation/m2g-2-microduck.json. No real robot verification."
         },
         "maniskill": {
           "status": "planned",
@@ -379,7 +383,23 @@
           "notes": "Not installed or validated; runtime adapter and controller required."
         }
       },
-      "policies": {},
+      "policies": {
+        "velstand": {
+          "bindings": [
+            "mujoco"
+          ],
+          "observation_contract": "microduck.proprio_command.61.v1",
+          "action_contract": "microduck.joint_offset.14.rad.v1",
+          "weights": {
+            "url": "https://huggingface.co/pollen-robotics/microduck-policies",
+            "description": "Official velstand.onnx; SHA-256 and exact source/runtime revisions in microduck.lock.json",
+            "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+            "license": "Apache-2.0"
+          },
+          "normalization": "Baked into ONNX export; raw 61D observation; official joint ordering",
+          "rate_hz": 50.0
+        }
+      },
       "tasks": {},
       "devices": {},
       "validations": []

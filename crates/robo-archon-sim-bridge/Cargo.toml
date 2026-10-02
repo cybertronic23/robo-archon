@@ -5,6 +5,7 @@ edition = "2021"
 description = "Platform-agnostic sim bridge: NDJSON stdio RobotBackend for MuJoCo/ManiSkill workers"
 
 [dependencies]
+robo-archon-skills = { path = "../robo-archon-skills" }
 robo-archon-embodied = { path = "../robo-archon-embodied" }
 anyhow = { workspace = true }
 serde = { workspace = true }

@@ -1,6 +1,6 @@
 # 机器人 Gallery：真实物理抓放
 
-Franka Panda 和 SO101 在 MuJoCo 中支持归位、基础关节动作、夹爪开合及 IK 抓放。Franka 同时支持 ManiSkill/SAPIEN 的同一抓放任务。Go2、Microduck 的运动控制属于下一阶段 M2f.3。
+Franka Panda 和 SO101 在 MuJoCo 中支持归位、基础关节动作、夹爪开合及 IK 抓放。Franka 同时支持 ManiSkill/SAPIEN 的同一抓放任务。Microduck 已通过独立持续 worker 接入 MuJoCo 官方 velstand 策略。Go2 后续接入。
 
 | Franka Panda / MuJoCo | SO101 / MuJoCo |
 | --- | --- |
@@ -90,3 +90,11 @@ ROBO_ARCHON_TEST_MANISKILL=1 .venv-maniskill/bin/python \
 ```
 
 `--list-robots` 显示目录成熟度；`--list-models` 查看文件存在状态；`--doctor-robot` 检查 MuJoCo 来源、内容和控制映射。详见 [M2f.2 spec](specs/m2f-2-arm-bindings.md)。GitHub CI 重复运行测试矩阵并导出视频/Episode artifacts。
+
+## Microduck 官方策略试玩
+
+Microduck 使用固定版本 MJCF、ONNX 和 BAM 执行器模型；资产通过 `--install-robot microduck` 下载到忽略目录。用 `--robot microduck --backend mujoco --skill-keyboard --viewer` 试玩，w 前进、a/d 转弯、x 停止、q 退出。独立 Python 环境安装步骤及一次性调用见 [M2g.2 spec](specs/m2g-2-continuous-skills.md)。
+
+目前只验收站立/速度指令/停止的控制链路。官方策略存在指令与实际速度偏差，连续停止后再次启动也可能运动较弱；不是位移任务验收。完整实测结果见 [报告](validation/m2g-2-microduck.json)。
+
+![Microduck 官方策略 CPU 仿真探测（接入前基线）](media/microduck-official-policy-probe.gif)

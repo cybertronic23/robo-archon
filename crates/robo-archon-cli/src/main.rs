@@ -30,7 +30,7 @@ use session::{SessionConfig, TurnOutcome};
     name = "robo-archon",
     about = "RoboArchon Agent OS — MuJoCo-ready control loop",
     group(clap::ArgGroup::new("skill_query")
-        .args(["list_skills", "inspect_skill", "validate_skill_call"])
+        .args(["list_skills", "inspect_skill", "validate_skill_call", "run_skill", "skill_keyboard"])
         .multiple(false)
         .conflicts_with_all(["install_robot", "doctor_robot", "list_robots", "inspect_robot", "list_models", "demo", "tui", "instruction"]))
 )]
@@ -47,7 +47,7 @@ struct Args {
     #[arg(long, default_value = "builtin:desktop_arm")]
     model: String,
 
-    /// Select an installed, explicitly adapted robot (franka_panda | so101)
+    /// Select an installed, explicitly adapted robot (franka_panda | so101 | microduck)
     #[arg(long)]
     robot: Option<String>,
 
@@ -63,7 +63,7 @@ struct Args {
     #[arg(long, default_value_t = false)]
     list_models: bool,
 
-    /// Install pinned official model assets and exit (franka_panda | so101)
+    /// Install pinned official model assets and exit (franka_panda | so101 | microduck)
     #[arg(long, conflicts_with_all = ["doctor_robot", "inspect_robot", "list_robots", "list_models", "robot"])]
     install_robot: Option<String>,
 
@@ -98,6 +98,26 @@ struct Args {
     /// Validate a SkillCall JSON file against --robot/--backend, without executing it.
     #[arg(long, requires = "robot")]
     validate_skill_call: Option<PathBuf>,
+
+    /// Execute a registered SkillCall JSON file through the Executive.
+    #[arg(long, requires = "robot")]
+    run_skill: Option<PathBuf>,
+
+    /// Interactive terminal keys: w/a/d/x (move/turn/stop), q to quit.
+    #[arg(long, requires = "robot")]
+    skill_keyboard: bool,
+
+    /// Local pinned Microduck package installed by --install-robot microduck.
+    #[arg(long, default_value = "python/models/external/microduck")]
+    skill_assets: PathBuf,
+
+    /// Save SkillResult as JSON (full media recordings remain local).
+    #[arg(long)]
+    skill_report: Option<PathBuf>,
+
+    /// Directory for locally rendered Microduck frames; must not already exist.
+    #[arg(long)]
+    skill_record_dir: Option<PathBuf>,
 
     /// Override worker script
     #[arg(long)]
@@ -166,6 +186,10 @@ struct Args {
 async fn main() -> Result<()> {
     let mut args = Args::parse();
 
+    if skill_commands::execute(&args).await? {
+        return Ok(());
+    }
+
     if skill_commands::handle(&args)? {
         return Ok(());
     }
@@ -176,8 +200,8 @@ async fn main() -> Result<()> {
             .as_ref()
             .or(args.doctor_robot.as_ref())
             .unwrap();
-        if !matches!(id.as_str(), "franka_panda" | "so101") {
-            anyhow::bail!("robot installation/doctor supports franka_panda | so101");
+        if !matches!(id.as_str(), "franka_panda" | "so101" | "microduck") {
+            anyhow::bail!("robot installation/doctor supports franka_panda | so101 | microduck");
         }
         let python_root =
             workspace_python_root().context("repository Python directory not found")?;
@@ -186,15 +210,29 @@ async fn main() -> Result<()> {
             .context("repository root missing")?
             .join("scripts")
             .join(if args.install_robot.is_some() {
-                "install_robot_assets.py"
+                if id == "microduck" {
+                    "install_microduck.py"
+                } else {
+                    "install_robot_assets.py"
+                }
             } else {
-                "doctor_robot.py"
+                if id == "microduck" {
+                    "install_microduck.py"
+                } else {
+                    "doctor_robot.py"
+                }
             });
         let python = std::env::var("ROBO_ARCHON_PYTHON").unwrap_or_else(|_| "python3".into());
-        let status = std::process::Command::new(python)
-            .arg(script)
-            .arg(id)
-            .status()?;
+        let mut command = std::process::Command::new(python);
+        command.arg(script);
+        if id == "microduck" {
+            if args.doctor_robot.is_some() {
+                command.arg("--verify");
+            }
+        } else {
+            command.arg(id);
+        }
+        let status = command.status()?;
         if !status.success() {
             anyhow::bail!("robot asset command failed");
         }

@@ -1,6 +1,6 @@
 # M2f 本体资料包与跨平台机器人接入设计
 
-日期：2026-10-01。状态：M2f.1 已实现基础元数据；M2f.2 固定资产、IK、机械臂物理抓放、第二平台与演示已完成；M2f.3 待实现。
+日期：2026-10-01。状态：M2f.1 已实现基础元数据；M2f.2 固定资产、IK、机械臂物理抓放、第二平台与演示已完成；M2f.3 Microduck 基础持续控制已接入，Go2 后续。
 
 ## 问题与目标
 
@@ -68,4 +68,4 @@ MuJoCo 原生 MJCF，也能导入 URDF；ManiSkill 导入 URDF/MJCF 但控制器
 
 ## M2f.2 交付
 
-固定上游资产安装、内容指纹、显式控制 profile、IK、接触与碰撞检查、CLI 多阶段抓放与失败/停止反馈、完整 Episode 已实现。Franka/SO101 的 MuJoCo binding 及 Franka 的 ManiSkill binding 按 pick_place.v1 的三种布局验证为 task_verified。演示和 CI 覆盖真实物理执行。Go2/Microduck、SO101/ManiSkill、Isaac Sim 和真机继续 planned。详见 [spec](specs/m2f-2-arm-bindings.md) 与 [Gallery](robot-gallery.md)。
+固定上游资产安装、内容指纹、显式控制 profile、IK、接触与碰撞检查、CLI 多阶段抓放与失败/停止反馈、完整 Episode 已实现。Franka/SO101 的 MuJoCo binding 及 Franka 的 ManiSkill binding 按 pick_place.v1 的三种布局验证为 task_verified。演示和 CI 覆盖真实物理执行。Microduck/MuJoCo 已以官方 velstand 策略接入为 controlled；Go2、SO101/ManiSkill、Isaac Sim 和真机继续 planned。详见 [spec](specs/m2f-2-arm-bindings.md) 与 [Gallery](robot-gallery.md)。

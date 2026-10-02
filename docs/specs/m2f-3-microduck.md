@@ -1,6 +1,6 @@
 # M2f.3 — Microduck first: official-policy simulation
 
-Status: feasibility probe implemented; Archon integration pending.
+Status: CPU feasibility and Archon official-policy continuous integration implemented. See [M2g.2 execution spec](m2g-2-continuous-skills.md). Physical push/fall rejection is checked; recovery, reliable turn-after-stop tracking and additional trick policies are not accepted.
 User scope: Microduck before Go2, simulation only, official pretrained policies as the baseline. No real robot is available. NVIDIA cloud compute may be used if training becomes necessary; it is not needed for this CPU inference probe.
 
 ## Upstream components
@@ -76,9 +76,9 @@ PYTHONPATH="../bam" ../../../.venv-microduck-probe/bin/mjpython scripts/infer_po
 
 On macOS, the native MuJoCo viewer uses `mjpython`; on Linux use the environment's Python. This interactive command is upstream's entry point; the automated rollout and offscreen rendering were tested here, while manual keyboard play has not been acceptance-tested. Keyboard control is read from the terminal, which must be a TTY. No NVIDIA GPU or complete CUDA training dependency stack is required for this route.
 
-## Archon integration spec — remaining M2f.3 work
+## Archon integration scope and follow-up
 
-1. Register the Microduck body package with explicit model, policy, source revision, checksums, licenses, and optional CAD/printing links. Keep `planned` until Archon's installer and runtime are verified.
+1. Register the Microduck body package with explicit model, policy, source revision, checksums, licenses, and optional CAD/printing links. The MuJoCo binding is now `controlled`, with pinned installer and runtime checks; it is not promoted to `task_verified`.
 2. Add a continuous locomotion worker. It owns physics and 50 Hz policy inference independently of LLM calls. Body-level commands: desired body-frame twist `(vx, vy, yaw_rate)`, stand/stop, reset; expose observed base pose, velocity, gravity/tilt, and simulation time. The MuJoCo binding owns MJCF and BAM details.
 3. Give every motion command an expiry. Stop on expiry, disconnect, explicit cancellation, or fall. Reset is a visible episode restart; do not describe a reset as a trained recovery behavior.
 4. Provide a keyboard demo with forward/turn presets and an obvious stop action, then Agent-issued bounded commands. Include recording and replayable metrics. A `duck-body` + official Rust `robotd` route is supported upstream but has not been locally reproduced in this probe; evaluate it separately if runtime parity is desired.
@@ -87,4 +87,4 @@ On macOS, the native MuJoCo viewer uses `mjpython`; on Linux use the environment
 
 Agent/body contracts remain independent of the simulator. Other backends can provide their own model and policy bindings under the same body package; this milestone only verifies MuJoCo. Retraining on NVIDIA cloud is deferred until an actual policy-quality need is established.
 
-The reusable Skill/Runner mechanism is tracked separately as M2g; Microduck will exercise it in M2g.2/M2f.3. See [the extensible skill design](../skills-design.md). M2g.1 registration does not promote this planned robot binding.
+The reusable Skill/Runner mechanism is tracked separately as M2g; Microduck exercises it in M2g.2/M2f.3. See [the extensible skill design](../skills-design.md). Registration alone never promotes a robot binding. Current supported commands and remaining validation limits are recorded in the M2g.2 spec.
