@@ -1,0 +1,3580 @@
+{
+  "milestone": "M2g.4 Microduck/MuJoCo composition, persistent chat and official behaviors",
+  "date": "2026-10-03",
+  "status": "local mechanism and bounded behavior acceptance passed; cloud/custom-trained/hardware acceptance is separate",
+  "rust_tests": 57,
+  "python_ruff": "passed",
+  "composition": {
+    "mode": "real MuJoCo physics, LOCAL MOCK LLM",
+    "cases": {
+      "sequence": {
+        "exit_code": 0,
+        "result": {
+          "elapsed_ms": 10571,
+          "error": null,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.00204677054703428,
+              -0.0001067310773706554,
+              -0.00014686688987521488
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 0.5626698732376099,
+              "min_height": 0.11693329675088336,
+              "samples": 41,
+              "start_xyz": [
+                0.5333096389020914,
+                0.13522405139054683,
+                0.11705788896773764
+              ],
+              "sum_vx": -0.006400918790036291,
+              "sum_vy": -0.002223468838251802,
+              "sum_yaw_rate": 0.1985109278321033
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 8.739999999999966,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.4111690819263458,
+            "xyz": [
+              0.5332772004925523,
+              0.13508050021438675,
+              0.11690155527244736
+            ],
+            "yaw": 0.6842290614997005,
+            "yaw_rate": -0.0024631330743432045
+          },
+          "plan": {
+            "timeout_ms": 15000,
+            "steps": [
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.3,
+                  "vy": 0.0,
+                  "yaw_rate": 1
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.stop",
+                "version": "0.2.0",
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.0,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "timeout_ms": 3000,
+                "policy_id": "velstand"
+              }
+            ]
+          },
+          "planned_steps": 4,
+          "status": "succeeded",
+          "steps": [
+            {
+              "elapsed_ms": 3029,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.0012529330142753206,
+                  -0.00015188481328540977,
+                  0.0002142409179424028
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 3.830423355102539,
+                  "min_height": 0.11156526515452549,
+                  "samples": 83,
+                  "start_xyz": [
+                    -0.00016088188531717716,
+                    -1.7406078558357447e-05,
+                    0.11621543555436029
+                  ],
+                  "sum_vx": 11.171980336985625,
+                  "sum_vy": 1.0319636126116234,
+                  "sum_yaw_rate": -11.196396382525563
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 2.499999999999969,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.4329586923122406,
+                "xyz": [
+                  0.22211634799339472,
+                  -0.012271452724537798,
+                  0.11698572697952944
+                ],
+                "yaw": -0.170251881176448,
+                "yaw_rate": -0.028424972668290135
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.walk",
+              "status": "succeeded",
+              "version": "0.4.0"
+            },
+            {
+              "elapsed_ms": 2884,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  -0.00042721627465538926,
+                  -0.0005069766053416706,
+                  -0.000741950498645842
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 3.925506353378296,
+                  "min_height": 0.11359022296921668,
+                  "samples": 84,
+                  "start_xyz": [
+                    0.22217768507300303,
+                    -0.012260825093838553,
+                    0.11700973870517564
+                  ],
+                  "sum_vx": 7.372915512529497,
+                  "sum_vy": -0.5695570614006421,
+                  "sum_yaw_rate": 34.61597959883511
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 4.899999999999918,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.292752206325531,
+                "xyz": [
+                  0.36142273950407994,
+                  0.0006376773899335677,
+                  0.1173921038148946
+                ],
+                "yaw": 0.6898690522038241,
+                "yaw_rate": 0.018108388409018517
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.walk",
+              "status": "succeeded",
+              "version": "0.4.0"
+            },
+            {
+              "elapsed_ms": 2905,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.0006762053916610875,
+                  -5.7349345060133566e-05,
+                  -0.00027592793791264553
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 4.0141987800598145,
+                  "min_height": 0.11239422943902132,
+                  "samples": 83,
+                  "start_xyz": [
+                    0.3614133185310873,
+                    0.0006053214492921584,
+                    0.11736302126958909
+                  ],
+                  "sum_vx": 11.041667748267333,
+                  "sum_vy": 1.0221354693800326,
+                  "sum_yaw_rate": -6.117870489601046
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 7.299999999999867,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.5471546053886414,
+                "xyz": [
+                  0.5332975749090724,
+                  0.1352164903440042,
+                  0.11706895798134052
+                ],
+                "yaw": 0.6777181592194158,
+                "yaw_rate": 0.003105561248958111
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.walk",
+              "status": "succeeded",
+              "version": "0.4.0"
+            },
+            {
+              "elapsed_ms": 1459,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.0006257197724992925,
+                  -0.00014636803927392552,
+                  -4.310859522334136e-06
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 0.5626698732376099,
+                  "min_height": 0.11693329675088336,
+                  "samples": 41,
+                  "start_xyz": [
+                    0.5333096389020914,
+                    0.13522405139054683,
+                    0.11705788896773764
+                  ],
+                  "sum_vx": -0.006400918790036291,
+                  "sum_vy": -0.002223468838251802,
+                  "sum_yaw_rate": 0.1985109278321033
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 8.499999999999929,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.4329586923122406,
+                "xyz": [
+                  0.5332734097076087,
+                  0.1351106820027259,
+                  0.11691490776035368
+                ],
+                "yaw": 0.6834052061187266,
+                "yaw_rate": 1.3004049833398312e-05
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.stop",
+              "status": "succeeded",
+              "version": "0.2.0"
+            }
+          ]
+        }
+      },
+      "registered_composite": {
+        "exit_code": 0,
+        "result": {
+          "elapsed_ms": 10385,
+          "error": null,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.000711874823161154,
+              -2.1035563974962764e-06,
+              -2.1062789178979296e-05
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 0.4097389280796051,
+              "min_height": 0.1169036202151046,
+              "samples": 42,
+              "start_xyz": [
+                0.5471568879176928,
+                0.13651824759143696,
+                0.11704656837640902
+              ],
+              "sum_vx": -0.001571637141065889,
+              "sum_vy": -0.006107550479905106,
+              "sum_yaw_rate": 0.5509523316723062
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 8.63999999999995,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.3769048750400543,
+            "xyz": [
+              0.5471057583203112,
+              0.1361386081150659,
+              0.1169583307102878
+            ],
+            "yaw": 0.6283115635505482,
+            "yaw_rate": -0.0034376026596874
+          },
+          "plan": {
+            "timeout_ms": 15000,
+            "steps": [
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.3,
+                  "vy": 0.0,
+                  "yaw_rate": 1
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.stop",
+                "version": "0.2.0",
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.0,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "timeout_ms": 3000,
+                "policy_id": "velstand"
+              }
+            ]
+          },
+          "planned_steps": 4,
+          "status": "succeeded",
+          "steps": [
+            {
+              "elapsed_ms": 2995,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  -0.002885820933829231,
+                  -0.00032540801968285616,
+                  -0.0006014437150902061
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 3.830423355102539,
+                  "min_height": 0.11156526515452549,
+                  "samples": 84,
+                  "start_xyz": [
+                    -0.00016088188531717716,
+                    -1.7406078558357447e-05,
+                    0.11621543555436029
+                  ],
+                  "sum_vx": 11.312899050896648,
+                  "sum_vy": 1.0294976308954564,
+                  "sum_yaw_rate": -11.71304544992745
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 2.499999999999969,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.4121197760105133,
+                "xyz": [
+                  0.22371710735547265,
+                  -0.01496220934178362,
+                  0.1170390333064076
+                ],
+                "yaw": -0.15250041564728758,
+                "yaw_rate": -2.886810398194939e-05
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.walk",
+              "status": "succeeded",
+              "version": "0.4.0"
+            },
+            {
+              "elapsed_ms": 2776,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.00037070342571656,
+                  -0.001320736286717626,
+                  -0.0008948231044047918
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 3.7417242527008057,
+                  "min_height": 0.11319306017469632,
+                  "samples": 83,
+                  "start_xyz": [
+                    0.2236081397300797,
+                    -0.01493796187425393,
+                    0.11703877495992757
+                  ],
+                  "sum_vx": 7.1187561729912705,
+                  "sum_vy": -0.2054795964408569,
+                  "sum_yaw_rate": 34.89835642464459
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 4.79999999999992,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.4558543264865875,
+                "xyz": [
+                  0.3575468417014552,
+                  0.009164805364789044,
+                  0.1173376897526185
+                ],
+                "yaw": 0.6499371496224524,
+                "yaw_rate": 0.01178375817835331
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.walk",
+              "status": "succeeded",
+              "version": "0.4.0"
+            },
+            {
+              "elapsed_ms": 2867,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  -0.0008051515173764929,
+                  -0.00011809618972474404,
+                  -0.0002633459125178397
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 4.295687675476074,
+                  "min_height": 0.11259603377388362,
+                  "samples": 84,
+                  "start_xyz": [
+                    0.35756271131814743,
+                    0.009145082565181263,
+                    0.11729372883371011
+                  ],
+                  "sum_vx": 11.571491147683432,
+                  "sum_vy": 0.9226697524121136,
+                  "sum_yaw_rate": -7.730754129588604
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 7.199999999999869,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.4454333484172821,
+                "xyz": [
+                  0.5471593022811659,
+                  0.1365263955303939,
+                  0.11706050303318229
+                ],
+                "yaw": 0.6132123177721611,
+                "yaw_rate": 0.009726498275995256
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.walk",
+              "status": "succeeded",
+              "version": "0.4.0"
+            },
+            {
+              "elapsed_ms": 1450,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  -0.0005645967233245787,
+                  1.1810845642051904e-05,
+                  -9.263070864380537e-06
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 0.4097389280796051,
+                  "min_height": 0.1169036202151046,
+                  "samples": 42,
+                  "start_xyz": [
+                    0.5471568879176928,
+                    0.13651824759143696,
+                    0.11704656837640902
+                  ],
+                  "sum_vx": -0.001571637141065889,
+                  "sum_vy": -0.006107550479905106,
+                  "sum_yaw_rate": 0.5509523316723062
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 8.399999999999913,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.34717920422554016,
+                "xyz": [
+                  0.5471202319499229,
+                  0.13618735126283946,
+                  0.11695707578307538
+                ],
+                "yaw": 0.6264911993630563,
+                "yaw_rate": -0.004537772852927446
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.stop",
+              "status": "succeeded",
+              "version": "0.2.0"
+            }
+          ]
+        }
+      },
+      "policy_handoff": {
+        "exit_code": 0,
+        "result": {
+          "elapsed_ms": 12971,
+          "error": null,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.000260307209745698,
+              -3.682103343059435e-05,
+              -0.00018326559869578915
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 3.755879402160645,
+              "min_height": 0.11191409926353556,
+              "samples": 83,
+              "start_xyz": [
+                0.64778693399752,
+                -0.08966010154502946,
+                0.11689703397254483
+              ],
+              "sum_vx": 10.848541692664478,
+              "sum_vy": 1.0575258440016675,
+              "sum_yaw_rate": -6.95969223510474
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 10.720000000000276,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.32625913619995117,
+            "xyz": [
+              0.8600575322535539,
+              -0.13887157887531673,
+              0.11686034225653964
+            ],
+            "yaw": -0.33920778563656095,
+            "yaw_rate": 0.00814983993768692
+          },
+          "plan": {
+            "timeout_ms": 16000,
+            "steps": [
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "example.walk",
+                "version": "0.3.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "timeout_ms": 4000,
+                "policy_id": "example.velstand"
+              },
+              {
+                "skill_id": "example.named.walk",
+                "version": "0.3.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "timeout_ms": 4000,
+                "policy_id": "example.named"
+              },
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              }
+            ]
+          },
+          "planned_steps": 4,
+          "status": "succeeded",
+          "steps": [
+            {
+              "elapsed_ms": 3006,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.0012529330142753206,
+                  -0.00015188481328540977,
+                  0.0002142409179424028
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 3.830423355102539,
+                  "min_height": 0.11156526515452549,
+                  "samples": 83,
+                  "start_xyz": [
+                    -0.00016088188531717716,
+                    -1.7406078558357447e-05,
+                    0.11621543555436029
+                  ],
+                  "sum_vx": 11.171980336985625,
+                  "sum_vy": 1.0319636126116234,
+                  "sum_yaw_rate": -11.196396382525563
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 2.499999999999969,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.4329586923122406,
+                "xyz": [
+                  0.22211634799339472,
+                  -0.012271452724537798,
+                  0.11698572697952944
+                ],
+                "yaw": -0.170251881176448,
+                "yaw_rate": -0.028424972668290135
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.walk",
+              "status": "succeeded",
+              "version": "0.4.0"
+            },
+            {
+              "elapsed_ms": 3223,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.00015592216919510767,
+                  -0.00010030229784286488,
+                  -0.00027867254072924696
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 3.825767993927002,
+                  "min_height": 0.11271643447718312,
+                  "samples": 83,
+                  "start_xyz": [
+                    0.2222976431235297,
+                    -0.01225689223620812,
+                    0.11700206604722088
+                  ],
+                  "sum_vx": 10.943751256522406,
+                  "sum_vy": 1.2237525871477724,
+                  "sum_yaw_rate": -9.392191621474922
+                },
+                "policy_id": "example.velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 5.159999999999912,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.46520182490348816,
+                "xyz": [
+                  0.4359339616093875,
+                  -0.049446856349826096,
+                  0.11686701331685996
+                ],
+                "yaw": -0.2565332302286465,
+                "yaw_rate": 0.0005221434985287488
+              },
+              "reason": "duration_complete",
+              "skill_id": "example.walk",
+              "status": "succeeded",
+              "version": "0.3.0"
+            },
+            {
+              "elapsed_ms": 3223,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.0002136563103314659,
+                  -0.00011251766116081664,
+                  -0.0003287975278158071
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 4.1696929931640625,
+                  "min_height": 0.11178657369571016,
+                  "samples": 83,
+                  "start_xyz": [
+                    0.4358893633173058,
+                    -0.04945628522069692,
+                    0.11680627036081524
+                  ],
+                  "sum_vx": 10.731378972650162,
+                  "sum_vy": 1.0445800362587525,
+                  "sum_yaw_rate": -4.718343494459987
+                },
+                "policy_id": "example.named",
+                "reason": "explicit_stop",
+                "simulation_time": 7.819999999999856,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.4140145778656006,
+                "xyz": [
+                  0.6477783265500909,
+                  -0.08963406885726778,
+                  0.11696524214333684
+                ],
+                "yaw": -0.27574295323597536,
+                "yaw_rate": 0.003386115189641714
+              },
+              "reason": "duration_complete",
+              "skill_id": "example.named.walk",
+              "status": "succeeded",
+              "version": "0.3.0"
+            },
+            {
+              "elapsed_ms": 3230,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  -0.00022802651980301204,
+                  -2.3908751811497435e-05,
+                  -0.0003028866502093034
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 3.755879402160645,
+                  "min_height": 0.11191409926353556,
+                  "samples": 83,
+                  "start_xyz": [
+                    0.64778693399752,
+                    -0.08966010154502946,
+                    0.11689703397254483
+                  ],
+                  "sum_vx": 10.848541692664478,
+                  "sum_vy": 1.0575258440016675,
+                  "sum_yaw_rate": -6.95969223510474
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 10.480000000000238,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.38410428166389465,
+                "xyz": [
+                  0.8601411501384832,
+                  -0.13888983253070042,
+                  0.11691609387865758
+                ],
+                "yaw": -0.340659568259138,
+                "yaw_rate": 0.0014018864603713157
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.walk",
+              "status": "succeeded",
+              "version": "0.4.0"
+            }
+          ]
+        }
+      },
+      "invalid_tail_before_motion": {
+        "exit_code": 1,
+        "result": null
+      },
+      "cancelled_sequence": {
+        "exit_code": 1,
+        "result": {
+          "elapsed_ms": 2445,
+          "error": null,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              0.0009002050250483193,
+              0.0007340672819769636,
+              7.372990473102882e-05
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 3.5544605255126953,
+              "min_height": 0.11156526515452549,
+              "samples": 41,
+              "start_xyz": [
+                -0.00016088188531717716,
+                -1.7406078558357447e-05,
+                0.11621543555436029
+              ],
+              "sum_vx": 4.77866761418006,
+              "sum_vy": 0.5329827690692573,
+              "sum_yaw_rate": -5.381223447620869
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 2.019999999999979,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.19281448423862457,
+            "xyz": [
+              0.09738617770868407,
+              8.171575385339084e-05,
+              0.11676179812411906
+            ],
+            "yaw": -0.07382890092793551,
+            "yaw_rate": -0.022910721600055695
+          },
+          "plan": {
+            "timeout_ms": 15000,
+            "steps": [
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.3,
+                  "vy": 0.0,
+                  "yaw_rate": 1
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 2000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0
+                },
+                "timeout_ms": 4000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.stop",
+                "version": "0.2.0",
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.0,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "timeout_ms": 3000,
+                "policy_id": "velstand"
+              }
+            ]
+          },
+          "planned_steps": 4,
+          "status": "cancelled",
+          "steps": [
+            {
+              "elapsed_ms": 2155,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.0035415291592731757,
+                  -0.00028416203276709364,
+                  0.0001326009892024258
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 3.5544605255126953,
+                  "min_height": 0.11156526515452549,
+                  "samples": 41,
+                  "start_xyz": [
+                    -0.00016088188531717716,
+                    -1.7406078558357447e-05,
+                    0.11621543555436029
+                  ],
+                  "sum_vx": 4.77866761418006,
+                  "sum_vy": 0.5329827690692573,
+                  "sum_yaw_rate": -5.381223447620869
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 1.779999999999984,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.3748224973678589,
+                "xyz": [
+                  0.09713674011538828,
+                  -1.4774247139409726e-05,
+                  0.1167924906373432
+                ],
+                "yaw": -0.07037141925117985,
+                "yaw_rate": 0.009431831538677216
+              },
+              "reason": "cancelled",
+              "skill_id": "microduck.walk",
+              "status": "cancelled",
+              "version": "0.4.0"
+            }
+          ]
+        }
+      },
+      "rotated_starts": [
+        {
+          "initial_yaw": -0.8,
+          "result": {
+            "elapsed_ms": 10488,
+            "error": null,
+            "observation": {
+              "active_behavior": null,
+              "body_velocity": [
+                0.0004735800118310543,
+                -0.001019688181980372,
+                -0.0008559013347772792
+              ],
+              "command": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "episode_id": 0,
+              "fault": null,
+              "motion": {
+                "max_tilt_deg": 0.454134076833725,
+                "min_height": 0.11659920859517776,
+                "samples": 37,
+                "start_xyz": [
+                  0.4264918811390154,
+                  -0.2843510021072117,
+                  0.11686443138095624
+                ],
+                "sum_vx": 0.009046151631683062,
+                "sum_vy": 0.008573247918058557,
+                "sum_yaw_rate": -0.08963835087342886
+              },
+              "policy_id": "velstand",
+              "reason": "explicit_stop",
+              "simulation_time": 7.939999999999853,
+              "state": "idle",
+              "stop_confirmed": true,
+              "tilt_deg": 0.23490244150161743,
+              "xyz": [
+                0.4268666302788302,
+                -0.28432073409150793,
+                0.11655103334302425
+              ],
+              "yaw": -0.5234823222468061,
+              "yaw_rate": -0.0003957841836381704
+            },
+            "plan": {
+              "timeout_ms": 15000,
+              "steps": [
+                {
+                  "skill_id": "microduck.walk",
+                  "version": "0.4.0",
+                  "parameters": {
+                    "duration_ms": 2000,
+                    "vx": 0.4,
+                    "vy": 0.0,
+                    "yaw_rate": 0
+                  },
+                  "timeout_ms": 4000,
+                  "policy_id": "velstand"
+                },
+                {
+                  "skill_id": "microduck.walk",
+                  "version": "0.4.0",
+                  "parameters": {
+                    "duration_ms": 2000,
+                    "vx": 0.3,
+                    "vy": 0.0,
+                    "yaw_rate": 1
+                  },
+                  "timeout_ms": 4000,
+                  "policy_id": "velstand"
+                },
+                {
+                  "skill_id": "microduck.walk",
+                  "version": "0.4.0",
+                  "parameters": {
+                    "duration_ms": 2000,
+                    "vx": 0.4,
+                    "vy": 0.0,
+                    "yaw_rate": 0
+                  },
+                  "timeout_ms": 4000,
+                  "policy_id": "velstand"
+                },
+                {
+                  "skill_id": "microduck.stop",
+                  "version": "0.2.0",
+                  "parameters": {
+                    "duration_ms": 1000,
+                    "vx": 0.0,
+                    "vy": 0.0,
+                    "yaw_rate": 0.0
+                  },
+                  "timeout_ms": 3000,
+                  "policy_id": "velstand"
+                }
+              ]
+            },
+            "planned_steps": 4,
+            "status": "succeeded",
+            "steps": [
+              {
+                "elapsed_ms": 3100,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.0009156990448471692,
+                    -0.0008925627716491176,
+                    -0.0004999577942168921
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 4.188765525817871,
+                    "min_height": 0.11162533724844068,
+                    "samples": 82,
+                    "start_xyz": [
+                      -0.0001245738453854119,
+                      0.00010328266863264408,
+                      0.11621543555436029
+                    ],
+                    "sum_vx": 10.95808693906071,
+                    "sum_vy": 1.0731419843122303,
+                    "sum_yaw_rate": -7.645940170623362
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 2.43999999999997,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.5647525787353516,
+                  "xyz": [
+                    0.1453784271265827,
+                    -0.16160685155442675,
+                    0.11698689810064385
+                  ],
+                  "yaw": -0.8969196429441256,
+                  "yaw_rate": 0.001982182962819934
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.walk",
+                "status": "succeeded",
+                "version": "0.4.0"
+              },
+              {
+                "elapsed_ms": 2850,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.0016257587454667549,
+                    0.0016456254209135657,
+                    -0.0007519068456927913
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 3.758589744567871,
+                    "min_height": 0.11357496304417872,
+                    "samples": 74,
+                    "start_xyz": [
+                      0.1453973636723522,
+                      -0.1616553584166329,
+                      0.1169850758392136
+                    ],
+                    "sum_vx": 6.002036567330335,
+                    "sum_vy": -0.6855282419338533,
+                    "sum_yaw_rate": 35.535624818876386
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 4.559999999999925,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.6561095714569092,
+                  "xyz": [
+                    0.2388562122428163,
+                    -0.22500590877971735,
+                    0.11680083734920248
+                  ],
+                  "yaw": -0.2644907047997944,
+                  "yaw_rate": -0.0220499187707901
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.walk",
+                "status": "succeeded",
+                "version": "0.4.0"
+              },
+              {
+                "elapsed_ms": 2849,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.005122917355616042,
+                    -0.0002471812434533792,
+                    -0.00028741563364845636
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 3.90590238571167,
+                    "min_height": 0.11243043886012144,
+                    "samples": 75,
+                    "start_xyz": [
+                      0.23887023106221508,
+                      -0.22499228506340593,
+                      0.11675878859137932
+                    ],
+                    "sum_vx": 9.818295295689907,
+                    "sum_vy": 0.5451650952621784,
+                    "sum_yaw_rate": -7.543313415721059
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 6.699999999999879,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.38714876770973206,
+                  "xyz": [
+                    0.4262884851364612,
+                    -0.28429318088509575,
+                    0.11689065811655308
+                  ],
+                  "yaw": -0.5210978527275593,
+                  "yaw_rate": -0.0007451025885529816
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.walk",
+                "status": "succeeded",
+                "version": "0.4.0"
+              },
+              {
+                "elapsed_ms": 1403,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.0010571541124104128,
+                    0.0010267950042938602,
+                    0.0012094952015674384
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 0.454134076833725,
+                    "min_height": 0.11659920859517776,
+                    "samples": 37,
+                    "start_xyz": [
+                      0.4264918811390154,
+                      -0.2843510021072117,
+                      0.11686443138095624
+                    ],
+                    "sum_vx": 0.009046151631683062,
+                    "sum_vy": 0.008573247918058557,
+                    "sum_yaw_rate": -0.08963835087342886
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 7.739999999999857,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.19483354687690735,
+                  "xyz": [
+                    0.4267758967395536,
+                    -0.284274104925722,
+                    0.11657600411597256
+                  ],
+                  "yaw": -0.5233868858675463,
+                  "yaw_rate": -0.000775897060520947
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.stop",
+                "status": "succeeded",
+                "version": "0.2.0"
+              }
+            ]
+          }
+        },
+        {
+          "initial_yaw": 0.8,
+          "result": {
+            "elapsed_ms": 10657,
+            "error": null,
+            "observation": {
+              "active_behavior": null,
+              "body_velocity": [
+                2.6366428435474057e-05,
+                -2.460507684046512e-06,
+                -7.835777880811081e-05
+              ],
+              "command": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "episode_id": 0,
+              "fault": null,
+              "motion": {
+                "max_tilt_deg": 0.35936465859413147,
+                "min_height": 0.11697155562616784,
+                "samples": 37,
+                "start_xyz": [
+                  0.25435339008573155,
+                  0.4104193699852565,
+                  0.11733386383727838
+                ],
+                "sum_vx": 0.019118234899940207,
+                "sum_vy": 0.006355943219893707,
+                "sum_yaw_rate": -0.053099171813073553
+              },
+              "policy_id": "velstand",
+              "reason": "explicit_stop",
+              "simulation_time": 7.879999999999854,
+              "state": "idle",
+              "stop_confirmed": true,
+              "tilt_deg": 0.2748253047466278,
+              "xyz": [
+                0.2544252660506997,
+                0.4109539328649752,
+                0.11693412340206404
+              ],
+              "yaw": 1.1822292023055458,
+              "yaw_rate": -1.5091909517650492e-05
+            },
+            "plan": {
+              "timeout_ms": 15000,
+              "steps": [
+                {
+                  "skill_id": "microduck.walk",
+                  "version": "0.4.0",
+                  "parameters": {
+                    "duration_ms": 2000,
+                    "vx": 0.4,
+                    "vy": 0.0,
+                    "yaw_rate": 0
+                  },
+                  "timeout_ms": 4000,
+                  "policy_id": "velstand"
+                },
+                {
+                  "skill_id": "microduck.walk",
+                  "version": "0.4.0",
+                  "parameters": {
+                    "duration_ms": 2000,
+                    "vx": 0.3,
+                    "vy": 0.0,
+                    "yaw_rate": 1
+                  },
+                  "timeout_ms": 4000,
+                  "policy_id": "velstand"
+                },
+                {
+                  "skill_id": "microduck.walk",
+                  "version": "0.4.0",
+                  "parameters": {
+                    "duration_ms": 2000,
+                    "vx": 0.4,
+                    "vy": 0.0,
+                    "yaw_rate": 0
+                  },
+                  "timeout_ms": 4000,
+                  "policy_id": "velstand"
+                },
+                {
+                  "skill_id": "microduck.stop",
+                  "version": "0.2.0",
+                  "parameters": {
+                    "duration_ms": 1000,
+                    "vx": 0.0,
+                    "vy": 0.0,
+                    "yaw_rate": 0.0
+                  },
+                  "timeout_ms": 3000,
+                  "policy_id": "velstand"
+                }
+              ]
+            },
+            "planned_steps": 4,
+            "status": "succeeded",
+            "steps": [
+              {
+                "elapsed_ms": 3162,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.0005262614564282422,
+                    -9.335989472257293e-05,
+                    -0.0007297210871801398
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 3.8370630741119385,
+                    "min_height": 0.11161532149386108,
+                    "samples": 73,
+                    "start_xyz": [
+                      -9.960113244038528e-05,
+                      -0.0001275365320627071,
+                      0.11621543555436029
+                    ],
+                    "sum_vx": 9.20891738884433,
+                    "sum_vy": 0.07924262292149463,
+                    "sum_yaw_rate": -7.688177572563291
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 2.299999999999973,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.451107919216156,
+                  "xyz": [
+                    0.13873468076351383,
+                    0.1258980648346272,
+                    0.11689697799799252
+                  ],
+                  "yaw": 0.6345447305726949,
+                  "yaw_rate": -0.000579001207370311
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.walk",
+                "status": "succeeded",
+                "version": "0.4.0"
+              },
+              {
+                "elapsed_ms": 2891,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    -0.0001827621322752277,
+                    -2.5606840723287383e-05,
+                    0.00017015549023204554
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 3.877674818038941,
+                    "min_height": 0.11343675935046404,
+                    "samples": 75,
+                    "start_xyz": [
+                      0.1387335629667984,
+                      0.12592001570684647,
+                      0.11691310340163195
+                    ],
+                    "sum_vx": 5.867140692425918,
+                    "sum_vy": -0.5278648872096657,
+                    "sum_yaw_rate": 36.03428365103901
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 4.459999999999927,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.6286957263946533,
+                  "xyz": [
+                    0.2044067228159579,
+                    0.21748175179502327,
+                    0.11672721593932853
+                  ],
+                  "yaw": 1.3029049104980428,
+                  "yaw_rate": -0.008780159056186676
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.walk",
+                "status": "succeeded",
+                "version": "0.4.0"
+              },
+              {
+                "elapsed_ms": 2937,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.002397717289985928,
+                    1.125623439492216e-05,
+                    -0.0005093833829481665
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 4.281256198883057,
+                    "min_height": 0.11229844455735558,
+                    "samples": 76,
+                    "start_xyz": [
+                      0.20440854137773823,
+                      0.2175210749831672,
+                      0.11671006627341848
+                    ],
+                    "sum_vx": 9.885305677320286,
+                    "sum_vy": 0.8129308238590194,
+                    "sum_yaw_rate": -3.794076954945922
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 6.65999999999988,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.4419051110744476,
+                  "xyz": [
+                    0.25431453038231383,
+                    0.41032684326654073,
+                    0.11735277993433044
+                  ],
+                  "yaw": 1.183304455474497,
+                  "yaw_rate": -0.0004999501397833228
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.walk",
+                "status": "succeeded",
+                "version": "0.4.0"
+              },
+              {
+                "elapsed_ms": 1381,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.0004996716668996438,
+                    4.766679616230099e-05,
+                    -6.16721595877764e-05
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 0.35936465859413147,
+                    "min_height": 0.11697155562616784,
+                    "samples": 37,
+                    "start_xyz": [
+                      0.25435339008573155,
+                      0.4104193699852565,
+                      0.11733386383727838
+                    ],
+                    "sum_vx": 0.019118234899940207,
+                    "sum_vy": 0.006355943219893707,
+                    "sum_yaw_rate": -0.053099171813073553
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 7.679999999999859,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.25944316387176514,
+                  "xyz": [
+                    0.2544160709147154,
+                    0.4109328228457418,
+                    0.11695285950407992
+                  ],
+                  "yaw": 1.1822354514751665,
+                  "yaw_rate": 6.4125729295483325e-06
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.stop",
+                "status": "succeeded",
+                "version": "0.2.0"
+              }
+            ]
+          }
+        }
+      ],
+      "weak_command_is_failure": {
+        "exit_code": 1,
+        "result": {
+          "elapsed_ms": 2415,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.00039320790779027255,
+              0.00014868866097979627,
+              -0.00037870419597146567
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 1.2271664142608645,
+              "min_height": 0.11476645579843953,
+              "samples": 74,
+              "start_xyz": [
+                -0.00016088188531717716,
+                -1.7406078558357447e-05,
+                0.11621543555436029
+              ],
+              "sum_vx": 0.19370936433813135,
+              "sum_vy": -0.005031241951685581,
+              "sum_yaw_rate": 0.2096469650509789
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 1.779999999999984,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.8598005175590515,
+            "xyz": [
+              0.0034944988261908835,
+              -0.00012906564014735742,
+              0.11635815822803496
+            ],
+            "yaw": 0.005330799067225855,
+            "yaw_rate": 0.0002281433407915756
+          },
+          "reason": "requested motion not observed for sum_vx; official policy may stall or move differently",
+          "skill_id": "microduck.walk",
+          "status": "failed",
+          "version": "0.4.0"
+        }
+      },
+      "llm_ordered_sequence": {
+        "exit_code": 0,
+        "result": {
+          "executed": true,
+          "feedback": {
+            "text": "LOCAL MOCK: measured result received."
+          },
+          "result": {
+            "elapsed_ms": 5432,
+            "error": null,
+            "observation": {
+              "active_behavior": null,
+              "body_velocity": [
+                -0.0011376373655465888,
+                -8.95196271927307e-05,
+                -5.240508470571899e-05
+              ],
+              "command": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "episode_id": 0,
+              "fault": null,
+              "motion": {
+                "max_tilt_deg": 0.17471295595169067,
+                "min_height": 0.11687840508177952,
+                "samples": 37,
+                "start_xyz": [
+                  0.13518623981501598,
+                  -0.005699250958274813,
+                  0.11729169001280808
+                ],
+                "sum_vx": -0.006401062200663133,
+                "sum_vy": 0.004124072469766406,
+                "sum_yaw_rate": 0.15797891313559376
+              },
+              "policy_id": "velstand",
+              "reason": "explicit_stop",
+              "simulation_time": 3.999999999999937,
+              "state": "idle",
+              "stop_confirmed": true,
+              "tilt_deg": 0.2185032218694687,
+              "xyz": [
+                0.13507111990073647,
+                -0.005807927438632761,
+                0.11683394998670242
+              ],
+              "yaw": 0.1824876921937884,
+              "yaw_rate": 0.004391723312437534
+            },
+            "plan": {
+              "timeout_ms": 30000,
+              "steps": [
+                {
+                  "skill_id": "microduck.walk",
+                  "version": "0.4.0",
+                  "parameters": {
+                    "duration_ms": 1000,
+                    "vx": 0.4,
+                    "vy": 0.0,
+                    "yaw_rate": 0.0
+                  },
+                  "timeout_ms": 10000,
+                  "policy_id": "velstand"
+                },
+                {
+                  "skill_id": "microduck.walk",
+                  "version": "0.4.0",
+                  "parameters": {
+                    "duration_ms": 1000,
+                    "vx": 0.3,
+                    "vy": 0.0,
+                    "yaw_rate": 1.0
+                  },
+                  "timeout_ms": 10000,
+                  "policy_id": "velstand"
+                },
+                {
+                  "skill_id": "microduck.stop",
+                  "version": "0.2.0",
+                  "parameters": {
+                    "duration_ms": 1000,
+                    "vx": 0.0,
+                    "vy": 0.0,
+                    "yaw_rate": 0.0
+                  },
+                  "timeout_ms": 10000,
+                  "policy_id": "velstand"
+                }
+              ]
+            },
+            "planned_steps": 3,
+            "status": "succeeded",
+            "steps": [
+              {
+                "elapsed_ms": 1853,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.006160160803624123,
+                    0.001417454523035319,
+                    -0.00133653396108566
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 3.5544605255126953,
+                    "min_height": 0.11156526515452549,
+                    "samples": 37,
+                    "start_xyz": [
+                      -0.00016088188531717716,
+                      -1.7406078558357447e-05,
+                      0.11621543555436029
+                    ],
+                    "sum_vx": 4.145726262016916,
+                    "sum_vy": -0.10198990168766,
+                    "sum_yaw_rate": -3.224772848188877
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 1.359999999999993,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.4780632257461548,
+                  "xyz": [
+                    0.08405856590877694,
+                    0.0026714122252054972,
+                    0.11661858401065885
+                  ],
+                  "yaw": -0.18337261792667256,
+                  "yaw_rate": 0.0066670579835772514
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.walk",
+                "status": "succeeded",
+                "version": "0.4.0"
+              },
+              {
+                "elapsed_ms": 1835,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    -0.001016871136485193,
+                    0.00030557577822601736,
+                    -0.0007149275877968339
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 3.440312623977661,
+                    "min_height": 0.11360910640925546,
+                    "samples": 38,
+                    "start_xyz": [
+                      0.08436451684547269,
+                      0.0027006185391586696,
+                      0.11660345476114528
+                    ],
+                    "sum_vx": 2.6262340054341875,
+                    "sum_vy": -0.07308092623636324,
+                    "sum_yaw_rate": 14.33913467079401
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 2.6999999999999647,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.12820424139499664,
+                  "xyz": [
+                    0.13520991189607576,
+                    -0.0056740757544585145,
+                    0.11733329155091143
+                  ],
+                  "yaw": 0.17571139267298924,
+                  "yaw_rate": -0.0012351664481684566
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.walk",
+                "status": "succeeded",
+                "version": "0.4.0"
+              },
+              {
+                "elapsed_ms": 1459,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    -0.00019547669761671308,
+                    -0.0013089848420268309,
+                    0.0010019233095120328
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 0.17471295595169067,
+                    "min_height": 0.11687840508177952,
+                    "samples": 37,
+                    "start_xyz": [
+                      0.13518623981501598,
+                      -0.005699250958274813,
+                      0.11729169001280808
+                    ],
+                    "sum_vx": -0.006401062200663133,
+                    "sum_vy": 0.004124072469766406,
+                    "sum_yaw_rate": 0.15797891313559376
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 3.7799999999999416,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.2229357808828354,
+                  "xyz": [
+                    0.13516181237011665,
+                    -0.005726786812405477,
+                    0.11682050158047236
+                  ],
+                  "yaw": 0.18192148263059635,
+                  "yaw_rate": -0.004691004753112793
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.stop",
+                "status": "succeeded",
+                "version": "0.2.0"
+              }
+            ]
+          },
+          "sequence": {
+            "schema_version": 1,
+            "steps": [
+              {
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.4
+                },
+                "skill_id": "microduck.walk",
+                "timeout_ms": 10000
+              },
+              {
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.3,
+                  "yaw_rate": 1.0
+                },
+                "skill_id": "microduck.walk",
+                "timeout_ms": 10000
+              },
+              {
+                "parameters": {
+                  "duration_ms": 1000
+                },
+                "skill_id": "microduck.stop",
+                "timeout_ms": 10000
+              }
+            ],
+            "timeout_ms": 30000
+          }
+        }
+      },
+      "persistent_chat": {
+        "turns": [
+          {
+            "executed": true,
+            "feedback": {
+              "text": "LOCAL MOCK: measured result received."
+            },
+            "instruction": "first turn",
+            "result": {
+              "elapsed_ms": 5297,
+              "error": null,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  6.010674750384018e-05,
+                  -0.00013256628692519872,
+                  3.547082766684849e-05
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 0.20747904479503632,
+                  "min_height": 0.11675499423020716,
+                  "samples": 37,
+                  "start_xyz": [
+                    0.1366218223820481,
+                    -0.0027455872806645223,
+                    0.11712055381155478
+                  ],
+                  "sum_vx": -0.0059767435193413135,
+                  "sum_vy": 0.004388649604418522,
+                  "sum_yaw_rate": 0.0839175330438593
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 3.899999999999939,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.2373882532119751,
+                "xyz": [
+                  0.13648870526678816,
+                  -0.0027859140837285775,
+                  0.11672967563405108
+                ],
+                "yaw": 0.1919186447384748,
+                "yaw_rate": -0.008725362829864025
+              },
+              "plan": {
+                "timeout_ms": 30000,
+                "steps": [
+                  {
+                    "skill_id": "microduck.walk",
+                    "version": "0.4.0",
+                    "parameters": {
+                      "duration_ms": 1000,
+                      "vx": 0.4,
+                      "vy": 0.0,
+                      "yaw_rate": 0.0
+                    },
+                    "timeout_ms": 10000,
+                    "policy_id": "velstand"
+                  },
+                  {
+                    "skill_id": "microduck.walk",
+                    "version": "0.4.0",
+                    "parameters": {
+                      "duration_ms": 1000,
+                      "vx": 0.3,
+                      "vy": 0.0,
+                      "yaw_rate": 1.0
+                    },
+                    "timeout_ms": 10000,
+                    "policy_id": "velstand"
+                  },
+                  {
+                    "skill_id": "microduck.stop",
+                    "version": "0.2.0",
+                    "parameters": {
+                      "duration_ms": 1000,
+                      "vx": 0.0,
+                      "vy": 0.0,
+                      "yaw_rate": 0.0
+                    },
+                    "timeout_ms": 10000,
+                    "policy_id": "velstand"
+                  }
+                ]
+              },
+              "planned_steps": 3,
+              "status": "succeeded",
+              "steps": [
+                {
+                  "elapsed_ms": 1873,
+                  "observation": {
+                    "active_behavior": null,
+                    "body_velocity": [
+                      0.007000904301506782,
+                      0.001582184708859971,
+                      -0.0008034884487038248
+                    ],
+                    "command": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "episode_id": 0,
+                    "fault": null,
+                    "motion": {
+                      "max_tilt_deg": 3.5544605255126953,
+                      "min_height": 0.11156526515452549,
+                      "samples": 37,
+                      "start_xyz": [
+                        -0.00016088188531717716,
+                        -1.7406078558357447e-05,
+                        0.11621543555436029
+                      ],
+                      "sum_vx": 4.145726262016916,
+                      "sum_vy": -0.10198990168766,
+                      "sum_yaw_rate": -3.224772848188877
+                    },
+                    "policy_id": "velstand",
+                    "reason": "explicit_stop",
+                    "simulation_time": 1.3799999999999926,
+                    "state": "idle",
+                    "stop_confirmed": true,
+                    "tilt_deg": 0.4865826964378357,
+                    "xyz": [
+                      0.08419699009293193,
+                      0.0026783821587759377,
+                      0.1165980755768158
+                    ],
+                    "yaw": -0.18329836381559017,
+                    "yaw_rate": 0.003964839968830347
+                  },
+                  "reason": "duration_complete",
+                  "skill_id": "microduck.walk",
+                  "status": "succeeded",
+                  "version": "0.4.0"
+                },
+                {
+                  "elapsed_ms": 1766,
+                  "observation": {
+                    "active_behavior": null,
+                    "body_velocity": [
+                      0.00014548554305997507,
+                      0.00015113688501930902,
+                      -0.0007015315791457806
+                    ],
+                    "command": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "episode_id": 0,
+                    "fault": null,
+                    "motion": {
+                      "max_tilt_deg": 3.570564031600952,
+                      "min_height": 0.11342036203652522,
+                      "samples": 37,
+                      "start_xyz": [
+                        0.08452151164637205,
+                        0.00268606108932658,
+                        0.11659655942373871
+                      ],
+                      "sum_vx": 2.557270003179227,
+                      "sum_vy": -0.07133858416803629,
+                      "sum_yaw_rate": 16.050735399127007
+                    },
+                    "policy_id": "velstand",
+                    "reason": "explicit_stop",
+                    "simulation_time": 2.679999999999965,
+                    "state": "idle",
+                    "stop_confirmed": true,
+                    "tilt_deg": 0.2365625500679016,
+                    "xyz": [
+                      0.1366264590076692,
+                      -0.002760100499733354,
+                      0.11714751614945287
+                    ],
+                    "yaw": 0.1882381087326128,
+                    "yaw_rate": 0.0079024164006114
+                  },
+                  "reason": "duration_complete",
+                  "skill_id": "microduck.walk",
+                  "status": "succeeded",
+                  "version": "0.4.0"
+                },
+                {
+                  "elapsed_ms": 1392,
+                  "observation": {
+                    "active_behavior": null,
+                    "body_velocity": [
+                      0.0004327472681323309,
+                      -0.00014551705161382263,
+                      -0.00016949761882604914
+                    ],
+                    "command": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "episode_id": 0,
+                    "fault": null,
+                    "motion": {
+                      "max_tilt_deg": 0.20747904479503632,
+                      "min_height": 0.11675499423020716,
+                      "samples": 37,
+                      "start_xyz": [
+                        0.1366218223820481,
+                        -0.0027455872806645223,
+                        0.11712055381155478
+                      ],
+                      "sum_vx": -0.0059767435193413135,
+                      "sum_vy": 0.004388649604418522,
+                      "sum_yaw_rate": 0.0839175330438593
+                    },
+                    "policy_id": "velstand",
+                    "reason": "explicit_stop",
+                    "simulation_time": 3.6999999999999433,
+                    "state": "idle",
+                    "stop_confirmed": true,
+                    "tilt_deg": 0.2414744198322296,
+                    "xyz": [
+                      0.136565606454432,
+                      -0.0026872728668406406,
+                      0.11668922419607727
+                    ],
+                    "yaw": 0.1910872546497395,
+                    "yaw_rate": -0.002328014001250267
+                  },
+                  "reason": "duration_complete",
+                  "skill_id": "microduck.stop",
+                  "status": "succeeded",
+                  "version": "0.2.0"
+                }
+              ]
+            }
+          },
+          {
+            "executed": true,
+            "feedback": {
+              "text": "LOCAL MOCK: measured result received."
+            },
+            "instruction": "second turn",
+            "result": {
+              "elapsed_ms": 1694,
+              "error": null,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  -2.6932742774046445e-05,
+                  -1.699764220262741e-05,
+                  -1.000964882393238e-05
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 0.2365625500679016,
+                  "min_height": 0.1167215398632707,
+                  "samples": 37,
+                  "start_xyz": [
+                    0.1364788983263027,
+                    -0.0027974900985664026,
+                    0.1167299085464658
+                  ],
+                  "sum_vx": -0.005219997420237574,
+                  "sum_vy": -0.0007426575753622139,
+                  "sum_yaw_rate": 0.0005744937516283244
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 5.159999999999912,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.22381176054477692,
+                "xyz": [
+                  0.13633284485189953,
+                  -0.0028483795708819384,
+                  0.11671643947876804
+                ],
+                "yaw": 0.19212817599366291,
+                "yaw_rate": -0.0034970876295119524
+              },
+              "plan": {
+                "timeout_ms": 10000,
+                "steps": [
+                  {
+                    "skill_id": "microduck.stand",
+                    "version": "0.2.0",
+                    "parameters": {
+                      "duration_ms": 1000,
+                      "vx": 0.0,
+                      "vy": 0.0,
+                      "yaw_rate": 0.0
+                    },
+                    "timeout_ms": 10000,
+                    "policy_id": "velstand"
+                  }
+                ]
+              },
+              "planned_steps": 1,
+              "status": "succeeded",
+              "steps": [
+                {
+                  "elapsed_ms": 1402,
+                  "observation": {
+                    "active_behavior": null,
+                    "body_velocity": [
+                      0.00044252744774034297,
+                      4.3206769170869974e-05,
+                      -1.6788464260959025e-05
+                    ],
+                    "command": [
+                      0.0,
+                      0.0,
+                      0.0
+                    ],
+                    "episode_id": 0,
+                    "fault": null,
+                    "motion": {
+                      "max_tilt_deg": 0.2365625500679016,
+                      "min_height": 0.1167215398632707,
+                      "samples": 37,
+                      "start_xyz": [
+                        0.1364788983263027,
+                        -0.0027974900985664026,
+                        0.1167299085464658
+                      ],
+                      "sum_vx": -0.005219997420237574,
+                      "sum_vy": -0.0007426575753622139,
+                      "sum_yaw_rate": 0.0005744937516283244
+                    },
+                    "policy_id": "velstand",
+                    "reason": "explicit_stop",
+                    "simulation_time": 4.939999999999917,
+                    "state": "idle",
+                    "stop_confirmed": true,
+                    "tilt_deg": 0.21939688920974731,
+                    "xyz": [
+                      0.13634770544094055,
+                      -0.002843072167511909,
+                      0.11671891791621676
+                    ],
+                    "yaw": 0.19211333970089312,
+                    "yaw_rate": -0.0013539555948227644
+                  },
+                  "reason": "duration_complete",
+                  "skill_id": "microduck.stand",
+                  "status": "succeeded",
+                  "version": "0.2.0"
+                }
+              ]
+            }
+          }
+        ],
+        "same_episode": true,
+        "explicit_reset": {
+          "executed": false,
+          "explicit_simulation_reset": true,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 1,
+            "fault": null,
+            "motion": null,
+            "policy_id": "velstand",
+            "reason": "explicit_reset",
+            "simulation_time": 0.0,
+            "state": "idle",
+            "tilt_deg": 0.0,
+            "xyz": [
+              0.0,
+              0.0,
+              0.125
+            ],
+            "yaw": 0.0,
+            "yaw_rate": 0.0
+          }
+        },
+        "after_reset": {
+          "executed": true,
+          "feedback": {
+            "text": "LOCAL MOCK: measured result received."
+          },
+          "instruction": "second turn after reset",
+          "result": {
+            "elapsed_ms": 1722,
+            "error": null,
+            "observation": {
+              "active_behavior": null,
+              "body_velocity": [
+                -0.001444273807792408,
+                0.0007522765187492752,
+                0.0010903066802627412
+              ],
+              "command": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "episode_id": 1,
+              "fault": null,
+              "motion": {
+                "max_tilt_deg": 1.0799216032028198,
+                "min_height": 0.11478313772088018,
+                "samples": 37,
+                "start_xyz": [
+                  -0.00016088188531717716,
+                  -1.7406078558357436e-05,
+                  0.11621543555436029
+                ],
+                "sum_vx": 0.1424367418793678,
+                "sum_vy": -0.0005118223669298527,
+                "sum_yaw_rate": 0.10833183644535892
+              },
+              "policy_id": "velstand",
+              "reason": "explicit_stop",
+              "simulation_time": 1.2999999999999945,
+              "state": "idle",
+              "stop_confirmed": true,
+              "tilt_deg": 0.8809338212013245,
+              "xyz": [
+                0.0028025352566490485,
+                -6.672342830320706e-05,
+                0.11652610217694068
+              ],
+              "yaw": 0.004188772065327933,
+              "yaw_rate": -8.891524339560419e-05
+            },
+            "plan": {
+              "timeout_ms": 10000,
+              "steps": [
+                {
+                  "skill_id": "microduck.stand",
+                  "version": "0.2.0",
+                  "parameters": {
+                    "duration_ms": 1000,
+                    "vx": 0.0,
+                    "vy": 0.0,
+                    "yaw_rate": 0.0
+                  },
+                  "timeout_ms": 10000,
+                  "policy_id": "velstand"
+                }
+              ]
+            },
+            "planned_steps": 1,
+            "status": "succeeded",
+            "steps": [
+              {
+                "elapsed_ms": 1450,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.0006666574805055121,
+                    0.0008166689139876013,
+                    0.000907764824562302
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 1,
+                  "fault": null,
+                  "motion": {
+                    "max_tilt_deg": 1.0799216032028198,
+                    "min_height": 0.11478313772088018,
+                    "samples": 37,
+                    "start_xyz": [
+                      -0.00016088188531717716,
+                      -1.7406078558357436e-05,
+                      0.11621543555436029
+                    ],
+                    "sum_vx": 0.1424367418793678,
+                    "sum_vy": -0.0005118223669298527,
+                    "sum_yaw_rate": 0.10833183644535892
+                  },
+                  "policy_id": "velstand",
+                  "reason": "explicit_stop",
+                  "simulation_time": 1.0999999999999983,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.8798224925994873,
+                  "xyz": [
+                    0.0028071852004136356,
+                    -6.075577333247461e-05,
+                    0.11655931610232752
+                  ],
+                  "yaw": 0.00409300559498387,
+                  "yaw_rate": -0.000524326169397682
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.stand",
+                "status": "succeeded",
+                "version": "0.2.0"
+              }
+            ]
+          }
+        }
+      },
+      "queued_stop_discards_motion": {
+        "model_requests": 0,
+        "exit_code": 0
+      },
+      "chat_sigint": {
+        "executed": true,
+        "feedback": {
+          "text": "LOCAL MOCK: measured result received."
+        },
+        "instruction": "first turn",
+        "result": {
+          "elapsed_ms": 2043,
+          "error": null,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              0.0006927130988007389,
+              -0.0015707274004799876,
+              -0.0010522491809872225
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 2.480649948120117,
+              "min_height": 0.11200797371073468,
+              "samples": 19,
+              "start_xyz": [
+                0.00032124935303342916,
+                -9.242233640303016e-05,
+                0.11478313772088018
+              ],
+              "sum_vx": 1.3717975081520146,
+              "sum_vy": 0.7611183925733677,
+              "sum_yaw_rate": -1.6310238651931286
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 1.5199999999999896,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.16668900847434998,
+            "xyz": [
+              0.02771745251168239,
+              0.011149970567378587,
+              0.11679596310117896
+            ],
+            "yaw": 0.05316750143990397,
+            "yaw_rate": -0.0006094924756325781
+          },
+          "plan": {
+            "timeout_ms": 30000,
+            "steps": [
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "timeout_ms": 10000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.walk",
+                "version": "0.4.0",
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.3,
+                  "vy": 0.0,
+                  "yaw_rate": 1.0
+                },
+                "timeout_ms": 10000,
+                "policy_id": "velstand"
+              },
+              {
+                "skill_id": "microduck.stop",
+                "version": "0.2.0",
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.0,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "timeout_ms": 10000,
+                "policy_id": "velstand"
+              }
+            ]
+          },
+          "planned_steps": 3,
+          "status": "cancelled",
+          "steps": [
+            {
+              "elapsed_ms": 1740,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.0003365727771284045,
+                  -0.000370719981818999,
+                  -0.00031066565477748875
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "motion": {
+                  "max_tilt_deg": 2.480649948120117,
+                  "min_height": 0.11200797371073468,
+                  "samples": 19,
+                  "start_xyz": [
+                    0.00032124935303342916,
+                    -9.242233640303016e-05,
+                    0.11478313772088018
+                  ],
+                  "sum_vx": 1.3717975081520146,
+                  "sum_vy": 0.7611183925733677,
+                  "sum_yaw_rate": -1.6310238651931286
+                },
+                "policy_id": "velstand",
+                "reason": "explicit_stop",
+                "simulation_time": 1.2999999999999945,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.1297215074300766,
+                "xyz": [
+                  0.027766560832972575,
+                  0.011149649590727015,
+                  0.1168125533178098
+                ],
+                "yaw": 0.05364660433704638,
+                "yaw_rate": -0.004737539682537317
+              },
+              "reason": "cancelled",
+              "skill_id": "microduck.walk",
+              "status": "cancelled",
+              "version": "0.4.0"
+            }
+          ]
+        }
+      }
+    },
+    "accepted": true
+  },
+  "official_behaviors": {
+    "accepted": true,
+    "scope": "five official motions with walking restart after each, same episode, flat floor; kicks in air, peck without object",
+    "result": {
+      "elapsed_ms": 31828,
+      "error": null,
+      "observation": {
+        "active_behavior": null,
+        "body_velocity": [
+          -0.00027079276684162753,
+          2.6601610277923152e-05,
+          -2.0273477467157053e-05
+        ],
+        "command": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "episode_id": 0,
+        "fault": null,
+        "motion": {
+          "max_tilt_deg": 3.926802635192871,
+          "min_height": 0.11200001955222028,
+          "samples": 42,
+          "start_xyz": [
+            0.764819165976843,
+            -0.2886732361253668,
+            0.1159364917105476
+          ],
+          "sum_vx": 4.623059030613314,
+          "sum_vy": 1.0601930105105597,
+          "sum_yaw_rate": -4.417262544855475
+        },
+        "policy_id": "velstand",
+        "reason": "explicit_stop",
+        "simulation_time": 26.339999999999044,
+        "state": "idle",
+        "stop_confirmed": true,
+        "tilt_deg": 0.66234290599823,
+        "xyz": [
+          0.673845606821679,
+          -0.25906065219834734,
+          0.11668827288620368
+        ],
+        "yaw": 2.6208905714637254,
+        "yaw_rate": -0.0005805101245641708
+      },
+      "plan": {
+        "timeout_ms": 70000,
+        "steps": [
+          {
+            "skill_id": "microduck.sitstand",
+            "version": "0.1.0",
+            "parameters": {},
+            "timeout_ms": 10000,
+            "policy_id": "official.sitstand"
+          },
+          {
+            "skill_id": "microduck.walk",
+            "version": "0.3.0",
+            "parameters": {
+              "duration_ms": 1000,
+              "vx": 0.4,
+              "vy": 0.0,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 4000,
+            "policy_id": "velstand"
+          },
+          {
+            "skill_id": "microduck.ground_pick",
+            "version": "0.1.0",
+            "parameters": {},
+            "timeout_ms": 10000,
+            "policy_id": "official.ground_pick"
+          },
+          {
+            "skill_id": "microduck.walk",
+            "version": "0.3.0",
+            "parameters": {
+              "duration_ms": 1000,
+              "vx": 0.4,
+              "vy": 0.0,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 4000,
+            "policy_id": "velstand"
+          },
+          {
+            "skill_id": "microduck.kick_left",
+            "version": "0.1.0",
+            "parameters": {},
+            "timeout_ms": 10000,
+            "policy_id": "official.kick_left"
+          },
+          {
+            "skill_id": "microduck.walk",
+            "version": "0.3.0",
+            "parameters": {
+              "duration_ms": 1000,
+              "vx": 0.4,
+              "vy": 0.0,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 4000,
+            "policy_id": "velstand"
+          },
+          {
+            "skill_id": "microduck.kick_right",
+            "version": "0.1.0",
+            "parameters": {},
+            "timeout_ms": 10000,
+            "policy_id": "official.kick_right"
+          },
+          {
+            "skill_id": "microduck.walk",
+            "version": "0.3.0",
+            "parameters": {
+              "duration_ms": 1000,
+              "vx": 0.4,
+              "vy": 0.0,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 4000,
+            "policy_id": "velstand"
+          },
+          {
+            "skill_id": "microduck.roulade",
+            "version": "0.1.0",
+            "parameters": {},
+            "timeout_ms": 10000,
+            "policy_id": "official.roulade"
+          },
+          {
+            "skill_id": "microduck.walk",
+            "version": "0.3.0",
+            "parameters": {
+              "duration_ms": 1000,
+              "vx": 0.4,
+              "vy": 0.0,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 4000,
+            "policy_id": "velstand"
+          }
+        ]
+      },
+      "planned_steps": 10,
+      "status": "succeeded",
+      "steps": [
+        {
+          "elapsed_ms": 7190,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.0017791634211057174,
+              -0.0003372649638786662,
+              0.0001357794171745851
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "behavior": "sitstand",
+              "executed_policy_id": "official.sitstand",
+              "max_tilt_deg": 8.36959171295166,
+              "min_height": 0.06001349102415574,
+              "samples": 251,
+              "start_xyz": [
+                0.002930753439905669,
+                -6.850532702030273e-05,
+                0.11666527500720612
+              ],
+              "sum_vx": -6.449415810016583,
+              "sum_vy": 0.05566287143391243,
+              "sum_yaw_rate": -15.650226234918591,
+              "max_joint_motion_range_rad": 1.4271583193819097
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 5.939999999999896,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 2.0264198780059814,
+            "xyz": [
+              -0.1302661925740894,
+              0.03948762432868545,
+              0.11613817688264044
+            ],
+            "yaw": -0.3024561619200513,
+            "yaw_rate": -0.01224872563034296
+          },
+          "reason": "duration_complete",
+          "skill_id": "microduck.sitstand",
+          "status": "succeeded",
+          "version": "0.1.0"
+        },
+        {
+          "elapsed_ms": 1930,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              2.917201962461572e-05,
+              -3.715373604397924e-05,
+              -0.0002716460050687844
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 4.23563289642334,
+              "min_height": 0.11148993811208698,
+              "samples": 42,
+              "start_xyz": [
+                -0.13036235188446824,
+                0.03950834099625034,
+                0.11614086689948476
+              ],
+              "sum_vx": 4.431820783795676,
+              "sum_vy": 0.8394448803265467,
+              "sum_yaw_rate": -0.1216006465256214
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 7.539999999999861,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.37430012226104736,
+            "xyz": [
+              -0.040967647075021874,
+              0.02366782914627741,
+              0.11693083947302582
+            ],
+            "yaw": -0.2105757764666774,
+            "yaw_rate": 0.002164331264793873
+          },
+          "reason": "duration_complete",
+          "skill_id": "microduck.walk",
+          "status": "succeeded",
+          "version": "0.3.0"
+        },
+        {
+          "elapsed_ms": 5256,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              0.0001824613750037389,
+              -5.912187377409087e-05,
+              -9.48931177918208e-05
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "behavior": "ground_pick",
+              "executed_policy_id": "official.ground_pick",
+              "max_tilt_deg": 32.933860778808594,
+              "min_height": 0.087041246027715,
+              "samples": 190,
+              "start_xyz": [
+                -0.04101493753180668,
+                0.023661235694116683,
+                0.11687346173892137
+              ],
+              "sum_vx": 0.5208059569579725,
+              "sum_vy": -0.5593467753390493,
+              "sum_yaw_rate": 7.374072289221658,
+              "max_joint_motion_range_rad": 1.8970099479570801
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 11.880000000000456,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 1.05034339427948,
+            "xyz": [
+              -0.03961018512550962,
+              0.020746406727547267,
+              0.1161123069235745
+            ],
+            "yaw": -0.02954532783001885,
+            "yaw_rate": -0.0025383541360497475
+          },
+          "reason": "duration_complete",
+          "skill_id": "microduck.ground_pick",
+          "status": "succeeded",
+          "version": "0.1.0"
+        },
+        {
+          "elapsed_ms": 1935,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.00031636227072278543,
+              -5.681123749122638e-05,
+              -0.000311714834216605
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 3.96738600730896,
+              "min_height": 0.11169765417379011,
+              "samples": 42,
+              "start_xyz": [
+                -0.03962247729279731,
+                0.020741987152201474,
+                0.11610988525755166
+              ],
+              "sum_vx": 4.635412488317692,
+              "sum_vy": 0.9044043732753572,
+              "sum_yaw_rate": -4.389387860894203
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 13.480000000000707,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.3921703696250915,
+            "xyz": [
+              0.05342218536964157,
+              0.02587396529313171,
+              0.11700878117563587
+            ],
+            "yaw": -0.017294889866190957,
+            "yaw_rate": 0.000902207160834223
+          },
+          "reason": "duration_complete",
+          "skill_id": "microduck.walk",
+          "status": "succeeded",
+          "version": "0.3.0"
+        },
+        {
+          "elapsed_ms": 2458,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.002274713981185162,
+              -0.0006388136472824909,
+              0.0005304489115190501
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "behavior": "kick_left",
+              "executed_policy_id": "official.kick_left",
+              "max_tilt_deg": 3.224400758743286,
+              "min_height": 0.1091264543815047,
+              "samples": 75,
+              "start_xyz": [
+                0.053384905746926455,
+                0.025869066317855863,
+                0.11694223773416372
+              ],
+              "sum_vx": 1.309159997371146,
+              "sum_vy": 0.8670984284461623,
+              "sum_yaw_rate": -18.39389777602628,
+              "max_joint_motion_range_rad": 0.4621119994108833
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 15.520000000001026,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 1.8180075883865356,
+            "xyz": [
+              0.08157856262438509,
+              0.04045060879148693,
+              0.11492258985754732
+            ],
+            "yaw": -0.3886077963608845,
+            "yaw_rate": -0.008078091777861118
+          },
+          "reason": "duration_complete",
+          "skill_id": "microduck.kick_left",
+          "status": "succeeded",
+          "version": "0.1.0"
+        },
+        {
+          "elapsed_ms": 1832,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              0.004590566635432393,
+              0.0022862715652275877,
+              -0.001363732165308468
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 4.365471839904785,
+              "min_height": 0.11189144348627704,
+              "samples": 41,
+              "start_xyz": [
+                0.08152244478954254,
+                0.04041773098776462,
+                0.1149498092240868
+              ],
+              "sum_vx": 4.659873320105427,
+              "sum_vy": -0.0733944230738384,
+              "sum_yaw_rate": -5.797928042709827
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 17.0200000000009,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.3152790069580078,
+            "xyz": [
+              0.16661598083525925,
+              0.002576661418460536,
+              0.11676132375161566
+            ],
+            "yaw": -0.595914740797584,
+            "yaw_rate": -0.007552470080554485
+          },
+          "reason": "duration_complete",
+          "skill_id": "microduck.walk",
+          "status": "succeeded",
+          "version": "0.3.0"
+        },
+        {
+          "elapsed_ms": 2832,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.0009053626245470184,
+              0.000637000345593463,
+              0.0018251773562779272
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "behavior": "kick_right",
+              "executed_policy_id": "official.kick_right",
+              "max_tilt_deg": 3.8713574409484863,
+              "min_height": 0.10823159758884315,
+              "samples": 75,
+              "start_xyz": [
+                0.167016971711739,
+                0.0025766113133459992,
+                0.11666474740477588
+              ],
+              "sum_vx": 0.41249566364324025,
+              "sum_vy": -1.7768767152351392,
+              "sum_yaw_rate": 6.799078711657785,
+              "max_joint_motion_range_rad": 0.5736897863538112
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 19.360000000000433,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.6345817446708679,
+            "xyz": [
+              0.15113274418974484,
+              -0.03256376413506522,
+              0.11578846891433732
+            ],
+            "yaw": -0.46642300391011016,
+            "yaw_rate": -0.05676919221878052
+          },
+          "reason": "duration_complete",
+          "skill_id": "microduck.kick_right",
+          "status": "succeeded",
+          "version": "0.1.0"
+        },
+        {
+          "elapsed_ms": 2282,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              0.0009794206000441744,
+              -0.0003919957334499965,
+              0.0001341839133492659
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 3.986786365509033,
+              "min_height": 0.1120983875703585,
+              "samples": 42,
+              "start_xyz": [
+                0.15109605002955256,
+                -0.032488846763176905,
+                0.11582991316091544
+              ],
+              "sum_vx": 4.9227931867682875,
+              "sum_vy": 0.2354258788332507,
+              "sum_yaw_rate": -5.706751963123679
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 21.260000000000055,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.6119778156280518,
+            "xyz": [
+              0.23589693278786572,
+              -0.08173291336991431,
+              0.11658506511658363
+            ],
+            "yaw": -0.5594597594888561,
+            "yaw_rate": -0.006592196878045797
+          },
+          "reason": "duration_complete",
+          "skill_id": "microduck.walk",
+          "status": "succeeded",
+          "version": "0.3.0"
+        },
+        {
+          "elapsed_ms": 3666,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.00016011533307800805,
+              -0.0008690097243076808,
+              0.0008106653974245338
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "behavior": "roulade",
+              "executed_policy_id": "official.roulade",
+              "max_tilt_deg": 173.22447204589844,
+              "min_height": 0.045426154649770775,
+              "samples": 125,
+              "start_xyz": [
+                0.23620524194386808,
+                -0.0817710812149133,
+                0.1165573001483676
+              ],
+              "sum_vx": -20.19449828411816,
+              "sum_vy": -5.191036772623904,
+              "sum_yaw_rate": 129.36740394402295,
+              "max_joint_motion_range_rad": 2.936881785828939
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 24.29999999999945,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.940868318080902,
+            "xyz": [
+              0.7648020211227289,
+              -0.2886990135628541,
+              0.11590504356212866
+            ],
+            "yaw": 2.694348908567452,
+            "yaw_rate": 0.009875884279608728
+          },
+          "reason": "duration_complete",
+          "skill_id": "microduck.roulade",
+          "status": "succeeded",
+          "version": "0.1.0"
+        },
+        {
+          "elapsed_ms": 2158,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              0.0004275102793063295,
+              -5.323388138834666e-05,
+              2.7796798220645705e-05
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "motion": {
+              "max_tilt_deg": 3.926802635192871,
+              "min_height": 0.11200001955222028,
+              "samples": 42,
+              "start_xyz": [
+                0.764819165976843,
+                -0.2886732361253668,
+                0.1159364917105476
+              ],
+              "sum_vx": 4.623059030613314,
+              "sum_vy": 1.0601930105105597,
+              "sum_yaw_rate": -4.417262544855475
+            },
+            "policy_id": "velstand",
+            "reason": "explicit_stop",
+            "simulation_time": 26.099999999999092,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.6348900198936462,
+            "xyz": [
+              0.6737711604496177,
+              -0.2590056642041457,
+              0.11669501570679708
+            ],
+            "yaw": 2.621322904845946,
+            "yaw_rate": -0.0022443970665335655
+          },
+          "reason": "duration_complete",
+          "skill_id": "microduck.walk",
+          "status": "succeeded",
+          "version": "0.3.0"
+        }
+      ]
+    }
+  },
+  "physical_fall_and_explicit_reset": {
+    "perturbation": "8 N horizontal trunk force for simulation 0.5\u20130.9 s; no teleport",
+    "fault": {
+      "protocol": "archon.continuous.v1",
+      "id": 10,
+      "ok": true,
+      "observation": {
+        "episode_id": 0,
+        "policy_id": "velstand",
+        "active_behavior": null,
+        "state": "fault",
+        "reason": "fallen",
+        "fault": "fallen",
+        "simulation_time": 0.7800000000000006,
+        "xyz": [
+          0.29247049084398336,
+          0.02530995909332343,
+          0.07811044514089316
+        ],
+        "yaw": -0.9543635930940982,
+        "tilt_deg": 61.211761474609375,
+        "body_velocity": [
+          1.3634626869460758,
+          1.0749863095932533,
+          1.9619354277893382
+        ],
+        "yaw_rate": -3.895890474319458,
+        "command": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "motion": null
+      }
+    },
+    "rejected": {
+      "protocol": "archon.continuous.v1",
+      "id": 11,
+      "ok": false,
+      "error": "fallen/faulted robot requires explicit simulation restart",
+      "observation": {
+        "episode_id": 0,
+        "policy_id": "velstand",
+        "active_behavior": null,
+        "state": "fault",
+        "reason": "invalid_command",
+        "fault": "fallen",
+        "simulation_time": 0.8000000000000006,
+        "xyz": [
+          0.33763467307112205,
+          0.035096809832096246,
+          0.07506390476301891
+        ],
+        "yaw": -1.118953894028369,
+        "tilt_deg": 74.90637969970703,
+        "body_velocity": [
+          0.1726595026363904,
+          0.20938502366051526,
+          2.1080892623958234
+        ],
+        "yaw_rate": -1.681999683380127,
+        "command": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "motion": null
+      }
+    },
+    "latched": {
+      "protocol": "archon.continuous.v1",
+      "id": 12,
+      "ok": true,
+      "observation": {
+        "episode_id": 0,
+        "policy_id": "velstand",
+        "active_behavior": null,
+        "state": "fault",
+        "reason": "fallen",
+        "fault": "fallen",
+        "simulation_time": 1.1999999999999964,
+        "xyz": [
+          0.8873990510683551,
+          0.14666572759066038,
+          0.04966177993388482
+        ],
+        "yaw": 1.5971379809214636,
+        "tilt_deg": 118.07453918457031,
+        "body_velocity": [
+          0.2514994650450685,
+          0.1387928495100969,
+          0.07839956525721163
+        ],
+        "yaw_rate": 3.348576784133911,
+        "command": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "motion": null
+      }
+    },
+    "explicit_reset": {
+      "protocol": "archon.continuous.v1",
+      "id": 13,
+      "ok": true,
+      "observation": {
+        "episode_id": 1,
+        "policy_id": "velstand",
+        "active_behavior": null,
+        "state": "idle",
+        "reason": "explicit_reset",
+        "fault": null,
+        "simulation_time": 0.0,
+        "xyz": [
+          0.0,
+          0.0,
+          0.125
+        ],
+        "yaw": 0.0,
+        "tilt_deg": 0.0,
+        "body_velocity": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "yaw_rate": 0.0,
+        "command": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "motion": null
+      }
+    },
+    "after_reset": {
+      "protocol": "archon.continuous.v1",
+      "id": 23,
+      "ok": true,
+      "observation": {
+        "episode_id": 1,
+        "policy_id": "velstand",
+        "active_behavior": null,
+        "state": "idle",
+        "reason": "duration_complete",
+        "fault": null,
+        "simulation_time": 1.0399999999999998,
+        "xyz": [
+          0.08654262507996614,
+          0.015299483539901822,
+          0.11914736334230193
+        ],
+        "yaw": -0.07562578320097503,
+        "tilt_deg": 2.9729552268981934,
+        "body_velocity": [
+          0.07677256481785238,
+          0.06643821245490726,
+          0.09269739088549328
+        ],
+        "yaw_rate": -0.27865493297576904,
+        "command": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "motion": {
+          "start_xyz": [
+            0.003141339611678735,
+            -2.6987108698470266e-05,
+            0.11676425887696673
+          ],
+          "min_height": 0.11229635399971737,
+          "max_tilt_deg": 3.978919267654419,
+          "samples": 37,
+          "sum_vx": 3.7910835318037943,
+          "sum_yaw_rate": -0.17158574191853404
+        }
+      }
+    },
+    "reset_is_not_trained_recovery": true
+  },
+  "regressions": {
+    "policy_package_checks": "passed",
+    "local_mock_skill_agent": "passed including refusal/unknown/invalid calls and feedback HTTP failure",
+    "keyboard": "passed (w/a/d/w, cancel, stop, quit)"
+  },
+  "preview": {
+    "path": "docs/media/microduck-archon-behaviors.gif",
+    "bytes": 821409,
+    "source": "actual worker render frames from the accepted ten-step official-behavior/walking sequence; full frames local only"
+  },
+  "not_accepted": [
+    "LIVE cloud LLM inference (key exists only in a separate iTerm2 shell; use scripts/verify_microduck_cloud.py there)",
+    "genuine self-trained checkpoint/novel learned behavior (no checkpoint provided)",
+    "trained fall recovery (reset is explicit simulation restart)",
+    "arbitrary velocity tracking, exact distance/angle navigation or all command combinations",
+    "roller-body/crouch/slope variants",
+    "hours-long endurance or arbitrary terrain/initial poses",
+    "Microduck on other simulators or hardware",
+    "Go2/second-body skill execution (separate M2f.4/M2g.5)"
+  ],
+  "policy_provenance": {
+    "velstand": {
+      "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx",
+      "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+      "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+      "license": "Apache-2.0"
+    },
+    "example.velstand": {
+      "action_contract": "microduck.joint_offset.14.rad.v1",
+      "adapter": "microduck.twist.v1",
+      "backend": "mujoco",
+      "body": "microduck",
+      "id": "example.velstand",
+      "license": "Apache-2.0",
+      "normalization": "embedded",
+      "observation_contract": "microduck.proprio_command.61.v1",
+      "rate_hz": 50,
+      "schema_version": 1,
+      "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+      "source": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx (official weights copied for compatibility fixture; not self-trained)",
+      "version": "0.1.0",
+      "weight": "policy.onnx"
+    },
+    "example.named": {
+      "action_contract": "microduck.joint_offset.14.rad.v1",
+      "adapter": "microduck.twist.v1",
+      "backend": "mujoco",
+      "body": "microduck",
+      "id": "example.named",
+      "license": "Apache-2.0",
+      "normalization": "embedded",
+      "observation_contract": "microduck.proprio_command.61.v1",
+      "rate_hz": 50,
+      "schema_version": 1,
+      "sha256": "a3bc4c3a0b27cbbac3c68e44766f4beb0521d9909eeb6814615f8d2611c713f3",
+      "source": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx (official weights copied for compatibility fixture; not self-trained); tensor names renamed for handoff regression",
+      "version": "0.1.0",
+      "weight": "policy.onnx"
+    },
+    "official.sitstand": {
+      "command_names": "twist,head_pose",
+      "duration_s": 6.0,
+      "file": "alpha_sitstand.onnx",
+      "license": "Apache-2.0",
+      "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+      "sha256": "a6f102d9fd655782ba85bfffe18175c34621da719cffcdd673be7982a06fc254"
+    },
+    "official.ground_pick": {
+      "command_names": "twist",
+      "duration_s": 4.0,
+      "file": "alpha_ground_pick.onnx",
+      "license": "Apache-2.0",
+      "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+      "sha256": "ffbf5109982ff999b0ba53afe86b9ae731bbec679d67fb7f8ab4c52152c88872"
+    },
+    "official.kick_left": {
+      "command_names": "twist",
+      "duration_s": 2.0,
+      "file": "ball_kick_left.onnx",
+      "license": "Apache-2.0",
+      "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+      "sha256": "d6928284dccd3dd61e08bf2f760effa74309fbefd97b2b31afb2a60f526d196a"
+    },
+    "official.kick_right": {
+      "command_names": "twist",
+      "duration_s": 2.0,
+      "file": "ball_kick_right.onnx",
+      "license": "Apache-2.0",
+      "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+      "sha256": "147a32c388c6b19111b3ac3b550a9a6dc8b8bf267118af4d8c3712522eedb5af"
+    },
+    "official.roulade": {
+      "command_names": "twist",
+      "duration_s": 3.0,
+      "file": "roulade.onnx",
+      "license": "Apache-2.0",
+      "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+      "sha256": "3d60da08fc13f29c1b57f41977aa898132c0d60042100149d8e775affcbca32b"
+    }
+  },
+  "evidence_note": "Committed evidence keeps measured poses, velocities, motion gates, stop/fault/status, policy hashes and calls. Full joint arrays and raw reports remain in ignored tmp-episodes; reproduce with the committed acceptance scripts."
+}

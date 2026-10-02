@@ -132,6 +132,7 @@ impl SkillManifest {
         if self.schema_version != 1
             || !identifier(&self.id, true)
             || !identifier(&self.tool_name, false)
+            || self.tool_name == "archon_sequence"
         {
             bail!("unsupported schema or invalid skill/tool name");
         }
@@ -400,7 +401,7 @@ mod tests {
     #[test]
     fn user_package_discovered_and_body_bindings_checked() {
         let registry = SkillRegistry::load_dir(&root().join("skills")).unwrap();
-        assert_eq!(registry.list().count(), 4);
+        assert_eq!(registry.list().count(), 10);
         assert_eq!(
             registry
                 .compatible_definitions(&catalog(), "franka_panda", "mujoco")
@@ -411,7 +412,7 @@ mod tests {
             registry
                 .compatible_definitions(&catalog(), "microduck", "mujoco")
                 .len(),
-            3
+            4
         );
         let request = SkillCall {
             skill_id: "microduck.walk".into(),
@@ -535,6 +536,9 @@ mod tests {
             .is_err());
     }
 }
+
+pub mod sequence;
+pub use sequence::{PreparedSequence, SkillSequence};
 
 pub mod runner;
 pub use runner::{RunnerProgress, RunnerRegistry, SkillResult, SkillRunner, SkillStatus};

@@ -10,7 +10,7 @@ Current compatible adapter: `microduck.twist.v1` on MuJoCo, with embedded normal
 
 The installed package inventory provides policy profiles to a runtime-only body catalog overlay. Users reference policy IDs in their own skill manifests; they do not edit core code or the repository's catalog. `--validate-skill-call` reads installed metadata without loading ONNX; `--list-skill-tools` performs readiness checks. Metadata validation, dependency readiness and measured behavior acceptance remain distinct.
 
-The generic SkillRegistry stays independent of ONNX and LLM providers. The runner uses the host-selected policy package; the worker revalidates it and reports the loaded policy ID, digest and source. One invocation initializes one simulation episode and uses one policy. Multiple-policy hot switching/composition within one episode is deferred to M2g.4.
+The generic SkillRegistry stays independent of ONNX and LLM providers. The runner uses the host-selected policy package; the worker revalidates it and reports the loaded policy ID, digest and source. One invocation initializes one simulation episode and uses one policy. Compatible policy handoff and same-episode composition are now implemented in [M2g.4](m2g-4-microduck-composition.md); this file records the original M2g.3 acceptance.
 
 ## Dynamic model invocation
 
@@ -20,7 +20,7 @@ A bounded Chat Completions tool request selects at most one function call, or re
 
 The raw SkillResult is saved before the optional follow-up model request. The follow-up sends it as a correlated tool result and requests a short measured explanation. Feedback cannot trigger another action; feedback transport failures are recorded without losing physical evidence. A model explanation is untrusted text; the raw result remains the source of truth. Calls are non-streaming and bounded; API credentials travel via curl's stdin configuration, not its argument list or reports.
 
-The adapter accepts a configurable Chat Completions base URL (include `/v1` if the provider requires it), model and API key. The existing default provider URL is retained; select a model supported by your provider. This is not an OpenAI Responses/Realtime adapter or a multi-turn robot chat UI.
+The adapter accepts a configurable Chat Completions base URL (include `/v1` if the provider requires it), model and API key. The existing default provider URL is retained; select a model supported by your provider. This is not an OpenAI Responses/Realtime adapter. Persistent CLI skill chat is introduced separately in M2g.4.
 
 ## Reproduce the custom package acceptance
 

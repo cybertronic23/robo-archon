@@ -57,7 +57,7 @@ pub async fn inspect(
     {
         let id = item["id"].as_str().context("policy ID missing")?;
         let package = item["package"].as_str().map(PathBuf::from);
-        if let Some(ref package) = package {
+        if !item["manifest"].is_null() {
             let manifest = &item["manifest"];
             let target = catalog
                 .bodies
@@ -81,7 +81,7 @@ pub async fn inspect(
                         .into(),
                     weights: Some(SourceLink {
                         url: manifest["source"].as_str().context("source")?.into(),
-                        description: format!("installed ONNX {}", package.display()),
+                        description: format!("installed ONNX {id}"),
                         revision: Some(manifest["sha256"].as_str().context("checksum")?.into()),
                         license: Some(manifest["license"].as_str().context("license")?.into()),
                     }),
@@ -127,10 +127,56 @@ pub async fn inspect(
                     .iter()
                     .all(|p| skill.parameters.contains_key(*p))
         });
-        if ready {
+        let behavior_ready = skill.bind(&catalog, body, backend).is_ok_and(|b| {
+            b.runner == "onnx_policy.v1"
+                && b.resources == ["whole_body"]
+                && b.policy
+                    .as_ref()
+                    .is_some_and(|id| packages.contains_key(id))
+                && skill.parameters.is_empty()
+                && {
+                    let prepared = robo_archon_skills::PreparedSkill {
+                        skill_id: skill.id.clone(),
+                        version: skill.version.clone(),
+                        parameters: json!({}),
+                        timeout_ms: skill.max_duration_ms,
+                        binding: b.clone(),
+                    };
+                    b.policy.as_deref().is_some_and(|id| {
+                        robo_archon_sim_bridge::continuous::validate_call(&prepared, id).is_ok()
+                    })
+                }
+        });
+        if ready || behavior_ready {
             skills.push(skill.clone());
         } else {
             rejected.push(json!({"skill_id":skill.id,"reason":"binding/runner/policy/parameter shape is not executable here"}));
+        }
+    }
+    for skill in registry
+        .list()
+        .filter(|s| s.bindings.iter().any(|b| b.runner == "sequence.v1"))
+    {
+        let call = robo_archon_skills::SkillCall {
+            skill_id: skill.id.clone(),
+            parameters: json!({}),
+            timeout_ms: skill.max_duration_ms,
+        };
+        let sequence = robo_archon_skills::SkillSequence {
+            schema_version: 1,
+            timeout_ms: skill.max_duration_ms,
+            steps: vec![call],
+        };
+        if registry
+            .prepare_sequence(&catalog, body, backend, &sequence)
+            .is_ok_and(|p| {
+                p.steps
+                    .iter()
+                    .all(|leaf| skills.iter().any(|s| s.id == leaf.skill_id))
+            })
+        {
+            rejected.retain(|r| r["skill_id"] != skill.id);
+            skills.push(skill.clone());
         }
     }
     Ok(Readiness {
@@ -143,7 +189,63 @@ pub async fn inspect(
 
 /// Metadata-only overlay for --validate-skill-call. Never loads ONNX or checks readiness.
 pub fn metadata_catalog(mut catalog: BodyCatalog, directory: &Path) -> Result<BodyCatalog> {
+    // Optional official behavior metadata is pinned in Git; do not load ONNX here.
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let receipt = root.join("python/policies/official-microduck/receipt.json");
+    if receipt.is_file()
+        && !receipt.is_symlink()
+        && catalog.bodies.iter().any(|b| b.id == "microduck")
+    {
+        let lock: Value = serde_json::from_slice(&std::fs::read(
+            root.join("robots/microduck-behaviors.lock.json"),
+        )?)?;
+        let installed: Value = serde_json::from_slice(&std::fs::read(&receipt)?)?;
+        if lock != installed {
+            bail!("official behavior metadata receipt mismatch");
+        }
+        let target = catalog
+            .bodies
+            .iter_mut()
+            .find(|b| b.id == "microduck")
+            .context("Microduck body")?;
+        for (name, entry) in lock["behaviors"]
+            .as_object()
+            .context("behavior lock entries")?
+        {
+            let id = format!("official.{name}");
+            if target.policies.contains_key(&id) {
+                bail!("official policy metadata collides with body catalog");
+            }
+            target.policies.insert(
+                id,
+                PolicyProfile {
+                    bindings: vec!["mujoco".into()],
+                    observation_contract: "microduck.proprio_command.61.v1".into(),
+                    action_contract: "microduck.joint_offset.14.rad.v1".into(),
+                    normalization: "embedded".into(),
+                    rate_hz: 50.0,
+                    weights: Some(SourceLink {
+                        url: format!(
+                            "{}/resolve/{}/{}",
+                            lock["repository"].as_str().unwrap_or(""),
+                            lock["revision"].as_str().unwrap_or(""),
+                            entry["file"].as_str().unwrap_or("")
+                        ),
+                        description: "pinned metadata; readiness not checked".into(),
+                        revision: Some(
+                            entry["sha256"]
+                                .as_str()
+                                .context("behavior checksum")?
+                                .into(),
+                        ),
+                        license: Some("Apache-2.0".into()),
+                    }),
+                },
+            );
+        }
+    }
     if !directory.exists() {
+        catalog.validate()?;
         return Ok(catalog);
     }
     for entry in std::fs::read_dir(directory)? {

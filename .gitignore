@@ -79,3 +79,6 @@ __pycache__/
 # User-installed ONNX packages
 /python/policies/external/**
 !/python/policies/external/.gitkeep
+
+# Optional pinned official Microduck behavior weights
+/python/policies/official-microduck/

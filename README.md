@@ -46,7 +46,7 @@ Skill 注册与查询已实现：`cargo run -p robo-archon-cli -- --list-skills`
 
 ## Robot Gallery
 
-Franka Panda / SO101 已支持固定版本资产安装、归位、摆动与夹爪开合。运行步骤见 [Robot Gallery](docs/robot-gallery.md)。Microduck 已接入官方 ONNX 策略，支持 MuJoCo 站立、行走、转弯和停止，见 [试玩与执行 spec](docs/specs/m2g-2-continuous-skills.md)。Go2 后续接入。
+Franka Panda / SO101 已支持固定版本资产安装、归位、摆动与夹爪开合。运行步骤见 [Robot Gallery](docs/robot-gallery.md)。Microduck 已接入官方 ONNX 策略，支持 MuJoCo 站立、行走、转弯和停止，见 [试玩与执行 spec](docs/specs/m2g-2-continuous-skills.md)。Microduck 还支持有序组合、持续 LLM 聊天及可选的坐下起身、啄地、空踢和前滚，见 [M2g.4](docs/specs/m2g-4-microduck-composition.md)。Go2 后续接入。
 
 ## 快速开始（具身）
 
@@ -173,7 +173,7 @@ robo-archon/
 | **M2c** | ✅ DeepSeek 等 LLM 编译自然语言 → 原语；平面小车 `diff_car` |
 | **M2d** | ✅ 会话常驻 + ratatui TUI（`--tui`；per-turn media / 中途 estop；待本机 viewer 手测；网页 Chat → 以后 M2e） |
 | **M2f** | 🚧 M2f.1/M2f.2 已完成：本体资料包、Franka/SO101 物理抓放、ManiSkill 同任务验证与演示；M2f.3 Microduck 基础接入已实现，Go2 后续，见 [Gallery](docs/robot-gallery.md) 与 [设计](docs/body-packages-design.md) |
-| **M2g** | 🚧 可扩展技能：M2g.1 注册/发现/调用校验、M2g.2 Runner 与持续执行已实现；M2g.3 兼容策略包与 LLM 调用机制已实现；真实自训练模型/云端推理待验收，见 [技能设计](docs/skills-design.md) |
+| **M2g** | 🚧 可扩展技能：M2g.1 注册/发现/调用校验、M2g.2 Runner 与持续执行已实现；M2g.4 同一仿真组合、兼容策略切换、持续聊天与官方动作已实现并本地验收；真实自训练模型/云端推理待独立验收，见 [技能设计](docs/skills-design.md) |
 | **M3** | Isaac Sim（次优先） |
 | **M4** | Gazebo 等其它平台 |
 | **M5** | 真机 SO101 / Microduck 等 `RobotBackend` |

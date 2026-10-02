@@ -19,7 +19,7 @@ robo-archon-sim = { path = "../robo-archon-sim" }
 robo-archon-sim-bridge = { path = "../robo-archon-sim-bridge" }
 anyhow = { workspace = true }
 clap = { workspace = true }
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["signal"] }
 serde_json = { workspace = true }
 futures = { workspace = true }
 ratatui = "0.29"

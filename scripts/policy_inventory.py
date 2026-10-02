@@ -34,6 +34,12 @@ if __name__ == "__main__":
         )
         sys.exit(0)
     ready.append({"id": "velstand", "package": None, "manifest": None})
+    from official_behaviors import DEFAULT, profiles
+    if DEFAULT.exists():
+        try:
+            ready.extend(profiles())
+        except Exception as e:
+            rejected.append({"id":"official_behaviors","reason":str(e)})
     if args.packages.exists():
         for package in sorted(args.packages.iterdir()):
             if not package.is_dir() or package.name.startswith("."):

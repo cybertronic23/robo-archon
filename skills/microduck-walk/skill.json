@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "microduck.walk",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "tool_name": "microduck_walk",
   "description": "Run bounded body-frame velocity commands on Microduck in MuJoCo. Tested play presets: forward vx=0.4; arc turns vx=0.3,yaw_rate=\u00b11. Actual velocity is measured and may differ; smaller commands can stall.",
   "parameters": {
@@ -51,7 +51,7 @@
     "standing",
     "controller_ready"
   ],
-  "success_description": "Requested interval completed without detected fall, then zero twist and measured settling confirmed. Observed velocities and displacement are evidence; no distance goal is claimed.",
+  "success_description": "Requested interval produced measured directional movement, completed without detected fall, then zero twist and measured settling confirmed. Coarse movement gates do not certify exact speed or distance; stalled commands fail.",
   "bindings": [
     {
       "body": "microduck",

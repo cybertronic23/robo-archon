@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+  "repository": "https://huggingface.co/pollen-robotics/microduck-policies",
+  "license": "Apache-2.0",
+  "behaviors": {
+    "sitstand": {
+      "file": "alpha_sitstand.onnx",
+      "sha256": "a6f102d9fd655782ba85bfffe18175c34621da719cffcdd673be7982a06fc254",
+      "duration_s": 6.0,
+      "command_names": "twist,head_pose"
+    },
+    "ground_pick": {
+      "file": "alpha_ground_pick.onnx",
+      "sha256": "ffbf5109982ff999b0ba53afe86b9ae731bbec679d67fb7f8ab4c52152c88872",
+      "duration_s": 4.0,
+      "command_names": "twist"
+    },
+    "kick_left": {
+      "file": "ball_kick_left.onnx",
+      "sha256": "d6928284dccd3dd61e08bf2f760effa74309fbefd97b2b31afb2a60f526d196a",
+      "duration_s": 2.0,
+      "command_names": "twist"
+    },
+    "kick_right": {
+      "file": "ball_kick_right.onnx",
+      "sha256": "147a32c388c6b19111b3ac3b550a9a6dc8b8bf267118af4d8c3712522eedb5af",
+      "duration_s": 2.0,
+      "command_names": "twist"
+    },
+    "roulade": {
+      "file": "roulade.onnx",
+      "sha256": "3d60da08fc13f29c1b57f41977aa898132c0d60042100149d8e775affcbca32b",
+      "duration_s": 3.0,
+      "command_names": "twist"
+    }
+  }
+}

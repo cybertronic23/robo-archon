@@ -63,6 +63,7 @@ def validate(package):
         not isinstance(manifest["id"], str)
         or not re.fullmatch(r"[a-z][a-z0-9_.-]{0,63}", manifest["id"])
         or manifest["id"] == "velstand"
+        or manifest["id"].startswith("official.")
     ):
         raise ValueError("invalid/reserved policy ID")
     for key in ["version", "source", "license"]:

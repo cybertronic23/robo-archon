@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "microduck.patrol",
+  "version": "0.1.0",
+  "tool_name": "microduck_patrol",
+  "description": "Execute a fixed forward 2s, left arc 2s, forward 2s, stop 1s sequence in one simulation. Reports measured results; not precise navigation.",
+  "parameters": {},
+  "max_duration_ms": 15000,
+  "entry_conditions": [
+    "standing",
+    "controller_ready"
+  ],
+  "success_description": "Every child interval completed and measured stop confirmed; no exact route claimed.",
+  "bindings": [
+    {
+      "body": "microduck",
+      "backend": "mujoco",
+      "runner": "sequence.v1",
+      "policy": null,
+      "config": {
+        "steps": [
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "vx": 0.4,
+              "yaw_rate": 0,
+              "duration_ms": 2000
+            },
+            "timeout_ms": 4000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "vx": 0.3,
+              "yaw_rate": 1,
+              "duration_ms": 2000
+            },
+            "timeout_ms": 4000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "vx": 0.4,
+              "yaw_rate": 0,
+              "duration_ms": 2000
+            },
+            "timeout_ms": 4000
+          },
+          {
+            "skill_id": "microduck.stop",
+            "parameters": {
+              "duration_ms": 1000
+            },
+            "timeout_ms": 3000
+          }
+        ]
+      },
+      "resources": [
+        "whole_body"
+      ]
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import importlib.metadata
 import importlib.util
 import json
 import math
+import os
 from pathlib import Path
 import queue
 import sys
@@ -46,6 +47,7 @@ def main():
     parser.add_argument("--package", type=Path, required=True)
     parser.add_argument("--viewer", action="store_true")
     parser.add_argument("--policy-package", type=Path)
+    parser.add_argument("--available-policy", type=Path, action="append", default=[])
     parser.add_argument("--record-dir", type=Path)
     args = parser.parse_args()
     package = args.package.resolve()
@@ -66,6 +68,18 @@ def main():
 
         provenance, policy_path = verify_installed(args.policy_package)
         policy_id = provenance["id"]
+    from official_behaviors import DEFAULT as BEHAVIOR_DIR, verify as verify_behaviors
+
+    behavior_lock = verify_behaviors() if BEHAVIOR_DIR.exists() else None
+    behavior_kwargs = {}
+    if behavior_lock:
+        for name, entry in behavior_lock["behaviors"].items():
+            key = {
+                "sitstand": "sitstand_onnx_path",
+                "ground_pick": "ground_pick_onnx_path",
+            }.get(name, name + "_onnx_path")
+            behavior_kwargs[key] = str(BEHAVIOR_DIR / entry["file"])
+        behavior_kwargs.update(kick_duration=0.5, roulade_duration=1.0)
     sys.path.insert(0, str(package))
     import mujoco
     import numpy as np
@@ -88,6 +102,7 @@ def main():
             bam_ctrl=controller,
             new_cmd_obs=True,
             use_projected_gravity=True,
+            **behavior_kwargs,
         )
     metadata = policy.ort_session.get_modelmeta().custom_metadata_map
     if policy.ort_session.get_inputs()[0].shape != [
@@ -97,7 +112,38 @@ def main():
         raise ValueError("official policy shape mismatch")
     if metadata["joint_names"].split(",") != names or metadata["action_scale"] != "1.0":
         raise ValueError("official policy joint/action metadata mismatch")
-    data.qpos[:7] = [0, 0, 0.125, 1, 0, 0, 0]
+    # Preload host-selected, verified compatible sessions. No model I/O in a control handoff.
+    import onnxruntime as ort
+
+    sessions = {policy_id: (policy.ort_session, provenance)}
+    if policy_id != "velstand":
+        sessions["velstand"] = (
+            ort.InferenceSession(
+                str(package / "velstand.onnx"), providers=["CPUExecutionProvider"]
+            ),
+            lock["policy"],
+        )
+    for directory in args.available_policy:
+        from policy_packages import verify_installed
+
+        manifest, weight = verify_installed(directory)
+        if manifest["id"] not in sessions:
+            sessions[manifest["id"]] = (
+                ort.InferenceSession(str(weight), providers=["CPUExecutionProvider"]),
+                manifest,
+            )
+    initial_yaw = float(os.environ.get("ROBO_ARCHON_MICRODUCK_INITIAL_YAW", "0"))
+    if not math.isfinite(initial_yaw) or abs(initial_yaw) > math.pi:
+        raise ValueError("initial heading must be finite and within +/-pi")
+    data.qpos[:7] = [
+        0,
+        0,
+        0.125,
+        math.cos(initial_yaw / 2),
+        0,
+        0,
+        math.sin(initial_yaw / 2),
+    ]
     data.qpos[policy.joint_qpos_indices] = policy.default_pose
     controller.reset(data.qpos)
     policy.set_position_targets(policy.default_pose)
@@ -126,6 +172,9 @@ def main():
     disconnected_until = None
     tick = 0
     metrics = None
+    active_behavior = None
+    behavior_elapsed = 0.0
+    episode_id = 0
 
     def reply(request, **fields):
         print(
@@ -134,7 +183,18 @@ def main():
         )
 
     def stop(why):
-        nonlocal command, state, reason
+        nonlocal command, state, reason, active_behavior, policy_id, provenance
+        if active_behavior:
+            policy.sit_mode = False
+            policy.ground_pick_mode = False
+            policy.behavior_mode = None
+            policy.current_policy = "walking"
+            policy.ort_session = sessions["velstand"][0]
+            policy.walking_session = policy.ort_session
+            policy_id, provenance = "velstand", lock["policy"]
+            active_behavior = None
+            with contextlib.redirect_stdout(sys.stderr):
+                policy.set_vel_cmd(0, 0, 0)
         command = [0.0, 0.0, 0.0]
         state = "fault" if fault else "idle"
         reason = why
@@ -149,7 +209,10 @@ def main():
         )
         velocity = policy.quat_rotate_inverse(quat, data.qvel[:3])
         return {
+            "episode_id": episode_id,
             "policy_id": policy_id,
+            "active_behavior": active_behavior,
+            "joint_positions": data.qpos[policy.joint_qpos_indices].tolist(),
             "policy_provenance": provenance,
             "state": state,
             "reason": reason,
@@ -178,6 +241,86 @@ def main():
                 if op == "hello":
                     if request.get("protocol") != PROTOCOL:
                         raise ValueError("protocol mismatch")
+                    reply(request, ok=True, observation=snapshot())
+                elif op == "select_policy":
+                    target = request.get("policy_id")
+                    obs = snapshot()
+                    if target not in sessions:
+                        raise ValueError("policy was not preloaded by host")
+                    if (
+                        fault
+                        or state != "idle"
+                        or obs["tilt_deg"] > 15
+                        or obs["xyz"][2] < 0.1
+                        or math.hypot(*obs["body_velocity"][:2]) >= 0.015
+                        or abs(obs["yaw_rate"]) >= 0.08
+                    ):
+                        raise ValueError(
+                            "policy handoff requires measured settled upright state"
+                        )
+                    policy.ort_session, provenance = sessions[target]
+                    policy.walking_session = policy.ort_session
+                    policy.input_name = policy.ort_session.get_inputs()[0].name
+                    policy.output_name = policy.ort_session.get_outputs()[0].name
+                    # Preserve measured pose, actuator state and action history across the handoff.
+                    policy_id = target
+                    reply(request, ok=True, observation=snapshot())
+                elif op == "behavior":
+                    name = request.get("name")
+                    if not behavior_lock or name not in behavior_lock["behaviors"]:
+                        raise ValueError("official behavior not installed")
+                    obs = snapshot()
+                    if (
+                        fault
+                        or state != "idle"
+                        or obs["tilt_deg"] > 15
+                        or obs["xyz"][2] < 0.1
+                        or math.hypot(*obs["body_velocity"][:2]) >= 0.015
+                        or abs(obs["yaw_rate"]) >= 0.08
+                    ):
+                        raise ValueError(
+                            "behavior requires measured settled upright state"
+                        )
+                    if request.get("lease_ms") != 600:
+                        raise ValueError("behavior requires 600ms lease")
+                    # Always enter official behaviors from the pinned official walking session.
+                    policy.walking_session = sessions["velstand"][0]
+                    policy.ort_session = policy.walking_session
+                    policy.current_policy = "walking"
+                    with contextlib.redirect_stdout(sys.stderr):
+                        policy.set_vel_cmd(0, 0, 0)
+                    with contextlib.redirect_stdout(sys.stderr):
+                        if name == "sitstand":
+                            policy.toggle_sit()
+                        elif name == "ground_pick":
+                            policy.trigger_ground_pick()
+                        else:
+                            policy.trigger_behavior(name)
+                    active_behavior, behavior_elapsed = name, 0.0
+                    policy_id = "official." + name
+                    entry = behavior_lock["behaviors"][name]
+                    provenance = {
+                        **entry,
+                        "revision": behavior_lock["revision"],
+                        "license": behavior_lock["license"],
+                    }
+                    state, reason = "running", "behavior"
+                    lease_until = started + 0.6
+                    duration_until = started + 9.0
+                    metrics = {
+                        "start_xyz": data.qpos[:3].tolist(),
+                        "min_height": float(data.qpos[2]),
+                        "max_tilt_deg": 0.0,
+                        "samples": 0,
+                        "sum_vx": 0.0,
+                        "sum_vy": 0.0,
+                        "sum_yaw_rate": 0.0,
+                        "behavior": name,
+                        "executed_policy_id": policy_id,
+                        "executed_policy_provenance": provenance,
+                        "joint_min": data.qpos[policy.joint_qpos_indices].tolist(),
+                        "joint_max": data.qpos[policy.joint_qpos_indices].tolist(),
+                    }
                     reply(request, ok=True, observation=snapshot())
                 elif op == "command":
                     if fault:
@@ -215,6 +358,7 @@ def main():
                         "max_tilt_deg": 0.0,
                         "samples": 0,
                         "sum_vx": 0.0,
+                        "sum_vy": 0.0,
                         "sum_yaw_rate": 0.0,
                     }
                     reply(request, ok=True, observation=snapshot())
@@ -226,6 +370,38 @@ def main():
                     reply(request, ok=True, observation=snapshot())
                 elif op == "stop":
                     stop("explicit_stop")
+                    reply(request, ok=True, observation=snapshot())
+                elif op == "reset":
+                    if state == "running":
+                        raise ValueError("stop before explicit simulation reset")
+                    stop("explicit_reset")
+                    mujoco.mj_resetData(model, data)
+                    data.qpos[:7] = [
+                        0,
+                        0,
+                        0.125,
+                        math.cos(initial_yaw / 2),
+                        0,
+                        0,
+                        math.sin(initial_yaw / 2),
+                    ]
+                    data.qpos[policy.joint_qpos_indices] = policy.default_pose
+                    policy.current_policy = "walking"
+                    policy.ort_session = sessions["velstand"][0]
+                    policy.walking_session = policy.ort_session
+                    policy_id, provenance = "velstand", lock["policy"]
+                    policy.last_action[:] = 0
+                    if policy.action_buffer is not None:
+                        policy.action_buffer[:] = 0
+                    policy.head_offset[:] = 0
+                    policy.body_cmd[:] = 0
+                    with contextlib.redirect_stdout(sys.stderr):
+                        policy.set_vel_cmd(0, 0, 0)
+                    controller.reset(data.qpos)
+                    policy.set_position_targets(policy.default_pose)
+                    mujoco.mj_forward(model, data)
+                    fault, state, reason, metrics = None, "idle", "explicit_reset", None
+                    episode_id += 1
                     reply(request, ok=True, observation=snapshot())
                 elif op == "shutdown":
                     stop("shutdown")
@@ -250,22 +426,40 @@ def main():
         elif state == "running" and now >= lease_until:
             stop("lease_expired")
         with contextlib.redirect_stdout(sys.stderr):
-            policy.set_vel_cmd(*command) if not np.allclose(
+            policy.set_vel_cmd(*command) if not active_behavior and not np.allclose(
                 policy.vel_cmd, command, atol=1e-8
             ) else None
+        if active_behavior:
+            behavior_elapsed += 0.02
+            with contextlib.redirect_stdout(sys.stderr):
+                if (
+                    active_behavior == "sitstand"
+                    and policy.sit_mode
+                    and behavior_elapsed >= 2.0
+                ):
+                    policy.toggle_sit()
+                policy.update_ground_pick_phase(0.02)
+                policy.update_behavior(0.02)
         if fault:
             controller.q_target[:] = data.qpos[policy.joint_qpos_indices]
         else:
+            # Compatible exports may use different tensor names. Refresh on every session change.
+            policy.input_name = policy.ort_session.get_inputs()[0].name
+            policy.output_name = policy.ort_session.get_outputs()[0].name
             policy.apply_action(policy.infer())
         for _ in range(4):
             controller.update()
             mujoco.mj_step(model, data)
         obs = snapshot()
+        # Expected low posture is limited to a timed, pinned official behavior.
+        # All non-finite states remain fatal, and ordinary walking retains original gates.
+        allowed_low = active_behavior in ("sitstand", "roulade")
+        allowed_roll = active_behavior == "roulade"
         fault = safety_fault(
             fault,
             all(np.isfinite(v).all() for v in (data.qpos, data.qvel, data.ctrl)),
-            obs["tilt_deg"],
-            obs["xyz"][2],
+            0.0 if allowed_roll else obs["tilt_deg"],
+            0.1 if allowed_low and obs["xyz"][2] >= 0.035 else obs["xyz"][2],
         )
         if fault:
             stop(fault)
@@ -276,7 +470,32 @@ def main():
             metrics["max_tilt_deg"] = max(metrics["max_tilt_deg"], obs["tilt_deg"])
             metrics["samples"] += 1
             metrics["sum_vx"] += obs["body_velocity"][0]
+            metrics["sum_vy"] += obs["body_velocity"][1]
             metrics["sum_yaw_rate"] += obs["yaw_rate"]
+            if "joint_min" in metrics:
+                metrics["joint_min"] = np.minimum(
+                    metrics["joint_min"], obs["joint_positions"]
+                ).tolist()
+                metrics["joint_max"] = np.maximum(
+                    metrics["joint_max"], obs["joint_positions"]
+                ).tolist()
+        if active_behavior and not fault:
+            done_at = {
+                "sitstand": 5.0,
+                "ground_pick": 3.8,
+                "kick_left": 1.5,
+                "kick_right": 1.5,
+                "roulade": 2.5,
+            }[active_behavior]
+            if (
+                behavior_elapsed >= done_at
+                and obs["xyz"][2] >= 0.1
+                and obs["tilt_deg"] <= 15
+            ):
+                stop("duration_complete")
+            elif behavior_elapsed >= done_at + 2.0:
+                fault = "behavior_return_not_upright"
+                stop(fault)
         if viewer:
             viewer.sync()
         if renderer and tick % 5 == 0:

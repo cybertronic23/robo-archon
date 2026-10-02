@@ -15,6 +15,8 @@ pub struct ContinuousRunner {
     output: Lines<BufReader<ChildStdout>>,
     sequence: u64,
     policy_id: String,
+    expected_twist: Option<[f64; 3]>,
+    available: std::collections::BTreeSet<String>,
 }
 
 impl ContinuousRunner {
@@ -26,6 +28,29 @@ impl ContinuousRunner {
         record_dir: Option<&Path>,
         policy_id: &str,
         policy_package: Option<&Path>,
+    ) -> Result<Self> {
+        Self::launch_with_policies(
+            python,
+            script,
+            package,
+            viewer,
+            record_dir,
+            policy_id,
+            policy_package,
+            &std::collections::BTreeMap::new(),
+        )
+        .await
+    }
+
+    pub async fn launch_with_policies(
+        python: &str,
+        script: &Path,
+        package: &Path,
+        viewer: bool,
+        record_dir: Option<&Path>,
+        policy_id: &str,
+        policy_package: Option<&Path>,
+        policies: &std::collections::BTreeMap<String, Option<std::path::PathBuf>>,
     ) -> Result<Self> {
         let mut command = Command::new(python);
         command
@@ -39,6 +64,9 @@ impl ContinuousRunner {
             .kill_on_drop(true);
         if let Some(path) = policy_package {
             command.arg("--policy-package").arg(path);
+        }
+        for path in policies.values().flatten() {
+            command.arg("--available-policy").arg(path);
         }
         if viewer {
             command.arg("--viewer");
@@ -89,6 +117,12 @@ impl ContinuousRunner {
             output,
             sequence: 0,
             policy_id: policy_id.to_string(),
+            expected_twist: None,
+            available: policies
+                .keys()
+                .cloned()
+                .chain([policy_id.to_string(), "velstand".to_string()])
+                .collect(),
         };
         let hello = runner
             .exchange(json!({"op":"hello"}), Duration::from_secs(30))
@@ -137,6 +171,16 @@ impl ContinuousRunner {
         .context("worker response timeout")?
     }
 
+    /// Explicit simulation reset, never a learned physical recovery.
+    pub async fn reset_simulation(&mut self) -> Result<Value> {
+        self.stop().await?;
+        let observation = self
+            .exchange(json!({"op":"reset"}), Duration::from_millis(700))
+            .await?;
+        self.policy_id = "velstand".into();
+        Ok(observation)
+    }
+
     pub async fn shutdown(&mut self) -> Result<()> {
         let result = self
             .exchange(json!({"op":"shutdown"}), Duration::from_secs(1))
@@ -161,10 +205,37 @@ impl SkillRunner for ContinuousRunner {
         "onnx_policy.v1"
     }
     fn validate(&self, skill: &PreparedSkill) -> Result<()> {
-        validate_call(skill, &self.policy_id)
+        let policy = skill
+            .binding
+            .policy
+            .as_deref()
+            .context("policy reference required")?;
+        if !self.available.contains(policy) {
+            bail!("policy was not preloaded");
+        }
+        validate_call(skill, policy)
     }
     async fn start(&mut self, skill: &PreparedSkill) -> Result<()> {
         self.validate(skill)?;
+        self.expected_twist = None;
+        let target = skill.binding.policy.as_deref().context("policy required")?;
+        let behavior = skill.binding.config["command_adapter"] == "microduck.behavior.v1";
+        if behavior {
+            self.stop().await?;
+        }
+        if !behavior && target != self.policy_id {
+            self.stop().await?;
+            let observation = self
+                .exchange(
+                    json!({"op":"select_policy","policy_id":target}),
+                    Duration::from_millis(700),
+                )
+                .await?;
+            if observation["policy_id"] != target {
+                bail!("handoff policy mismatch");
+            }
+            self.policy_id = target.to_string();
+        }
         // Wait for a measured upright standing state; no pose teleport or implicit reset.
         let obs = self
             .exchange(json!({"op":"observe"}), Duration::from_millis(700))
@@ -175,6 +246,19 @@ impl SkillRunner for ContinuousRunner {
         {
             bail!("entry condition: robot must be upright");
         }
+        if behavior {
+            self.exchange(
+                json!({"op":"behavior","name":skill.binding.config["behavior"],"lease_ms":600}),
+                Duration::from_millis(700),
+            )
+            .await?;
+            return Ok(());
+        }
+        self.expected_twist = Some([
+            skill.parameters["vx"].as_f64().context("vx")?,
+            skill.parameters["vy"].as_f64().context("vy")?,
+            skill.parameters["yaw_rate"].as_f64().context("yaw_rate")?,
+        ]);
         self.exchange(json!({"op":"command","twist":[skill.parameters["vx"],skill.parameters["vy"],skill.parameters["yaw_rate"]],"duration_ms":skill.parameters["duration_ms"],"lease_ms":600}),Duration::from_millis(700)).await?;
         Ok(())
     }
@@ -188,6 +272,11 @@ impl SkillRunner for ContinuousRunner {
         let finished = observation["state"] == "idle";
         if finished && observation["reason"] != "duration_complete" {
             bail!("motion ended unexpectedly: {}", observation["reason"]);
+        }
+        if finished {
+            if let Some(twist) = self.expected_twist {
+                validate_motion(&observation, twist)?;
+            }
         }
         Ok(RunnerProgress {
             finished,
@@ -221,6 +310,10 @@ impl SkillRunner for ContinuousRunner {
                 stable = 0;
             }
             if stable >= 3 {
+                self.policy_id = observation["policy_id"]
+                    .as_str()
+                    .context("policy ID in stop")?
+                    .to_string();
                 observation["stop_confirmed"] = json!(true);
                 return Ok(observation);
             }
@@ -232,8 +325,61 @@ impl SkillRunner for ContinuousRunner {
     }
 }
 
+/// A nonzero motion command must produce measured directional movement.
+/// This is a coarse gate, not a speed/distance tracking certificate.
+pub fn validate_motion(observation: &Value, twist: [f64; 3]) -> Result<()> {
+    for (requested, name, threshold) in [
+        (twist[0], "sum_vx", 0.02),
+        (twist[1], "sum_vy", 0.01),
+        (twist[2], "sum_yaw_rate", 0.05),
+    ] {
+        if requested.abs() > 1e-6 {
+            let samples = observation["motion"]["samples"]
+                .as_f64()
+                .context("motion samples missing")?;
+            let total = observation["motion"][name]
+                .as_f64()
+                .context("motion metric missing")?;
+            if samples <= 0.0
+                || !total.is_finite()
+                || total / samples * requested.signum() < threshold
+            {
+                bail!("requested motion not observed for {name}; official policy may stall or move differently");
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Validate the trusted adapter call before creating any worker.
 pub fn validate_call(skill: &PreparedSkill, policy_id: &str) -> Result<()> {
+    if skill.binding.config["command_adapter"] == "microduck.behavior.v1" {
+        let name = skill.binding.config["behavior"]
+            .as_str()
+            .context("behavior missing")?;
+        let duration = match name {
+            "sitstand" => 6000,
+            "ground_pick" => 4000,
+            "kick_left" | "kick_right" => 2000,
+            "roulade" => 3000,
+            _ => bail!("unknown official behavior"),
+        };
+        if skill.binding.body != "microduck"
+            || skill.binding.backend != "mujoco"
+            || skill.binding.runner != "onnx_policy.v1"
+            || skill.binding.policy.as_deref() != Some(policy_id)
+            || policy_id != format!("official.{name}")
+            || skill.binding.config
+                != json!({"command_adapter":"microduck.behavior.v1","behavior":name})
+            || skill.binding.resources != ["whole_body"]
+            || skill.parameters != json!({})
+            || skill.timeout_ms < duration + 4000
+            || skill.timeout_ms > 10000
+        {
+            bail!("unsupported official behavior binding/budget");
+        }
+        return Ok(());
+    }
     if skill.binding.body != "microduck"
         || skill.binding.backend != "mujoco"
         || skill.binding.policy.as_deref() != Some(policy_id)
@@ -286,5 +432,19 @@ mod policy_call_tests {
         skill.timeout_ms = 4000;
         skill.binding.config = json!({"command_adapter":"shell"});
         assert!(validate_call(&skill, "user.policy").is_err());
+    }
+}
+
+#[cfg(test)]
+mod motion_gate_tests {
+    use super::*;
+    #[test]
+    fn stalled_or_wrong_direction_is_failure_without_claiming_speed_tracking() {
+        let obs = json!({"motion":{"samples":10,"sum_vx":0.0,"sum_vy":0.0,"sum_yaw_rate":0.0}});
+        assert!(validate_motion(&obs, [0.1, 0.0, 0.0]).is_err());
+        assert!(validate_motion(&obs, [0.0, 0.0, 0.0]).is_ok());
+        let moving = json!({"motion":{"samples":10,"sum_vx":1.0,"sum_vy":0.0,"sum_yaw_rate":-2.0}});
+        assert!(validate_motion(&moving, [0.4, 0.0, -1.0]).is_ok());
+        assert!(validate_motion(&moving, [-0.4, 0.0, 1.0]).is_err());
     }
 }

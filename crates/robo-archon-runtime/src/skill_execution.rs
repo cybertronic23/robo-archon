@@ -12,6 +12,15 @@ impl Executive {
         skill: &PreparedSkill,
         runner: &mut dyn SkillRunner,
     ) -> Result<SkillResult> {
+        self.run_skill_inner(skill, runner, true).await
+    }
+
+    async fn run_skill_inner(
+        &mut self,
+        skill: &PreparedSkill,
+        runner: &mut dyn SkillRunner,
+        acquire: bool,
+    ) -> Result<SkillResult> {
         if runner.id() != skill.binding.runner {
             bail!("runner ID mismatch");
         }
@@ -29,7 +38,9 @@ impl Executive {
                 _ => bail!("resource {name} has no runtime mapping"),
             }
         }
-        self.locks.try_acquire(&resources, "skill")?;
+        if acquire {
+            self.locks.try_acquire(&resources, "skill")?;
+        }
         let started = Instant::now();
         let mut events = self.events.subscribe();
         let budget = Duration::from_millis(skill.timeout_ms);
@@ -100,7 +111,13 @@ impl Executive {
                 reason = format!("stop acknowledgement failed: {other:?}");
             }
         }
-        self.locks.release(&resources, "skill");
+        if status == SkillStatus::Succeeded && started.elapsed() >= budget {
+            status = SkillStatus::TimedOut;
+            reason = "execution deadline during measured stop".into();
+        }
+        if acquire {
+            self.locks.release(&resources, "skill");
+        }
         Ok(SkillResult {
             skill_id: skill.skill_id.clone(),
             version: skill.version.clone(),
@@ -109,6 +126,85 @@ impl Executive {
             elapsed_ms: started.elapsed().as_millis() as u64,
             observation,
         })
+    }
+}
+
+impl Executive {
+    /// Parent owns resources for the whole task. Children never reacquire/release them.
+    pub async fn run_sequence(
+        &mut self,
+        plan: &robo_archon_skills::PreparedSequence,
+        runner: &mut dyn SkillRunner,
+    ) -> Result<serde_json::Value> {
+        if plan.steps.is_empty()
+            || plan.steps.len() > robo_archon_skills::sequence::MAX_STEPS
+            || plan.timeout_ms == 0
+            || plan.timeout_ms > robo_archon_skills::sequence::MAX_BUDGET_MS
+        {
+            bail!("invalid prepared sequence");
+        }
+        for child in &plan.steps {
+            if child.binding.runner != runner.id() || child.binding.resources != ["whole_body"] {
+                bail!("sequence runner/resources mismatch");
+            }
+            runner.validate(child)?;
+        }
+        let resources = [ResourceKind::Base, ResourceKind::Arm, ResourceKind::Gripper];
+        self.locks.try_acquire(&resources, "sequence")?;
+        let started = Instant::now();
+        let mut results = Vec::new();
+        let mut status = SkillStatus::Succeeded;
+        let execution: Result<()> = async {
+            for child in &plan.steps {
+                let remaining = plan
+                    .timeout_ms
+                    .saturating_sub(started.elapsed().as_millis() as u64);
+                if remaining == 0 {
+                    status = SkillStatus::TimedOut;
+                    break;
+                }
+                if self.cancel.is_cancelled() {
+                    status = SkillStatus::Cancelled;
+                    break;
+                }
+                let mut child = child.clone();
+                child.timeout_ms = child.timeout_ms.min(remaining);
+                let result = self.run_skill_inner(&child, runner, false).await?;
+                status = result.status.clone();
+                results.push(result);
+                if status != SkillStatus::Succeeded {
+                    break;
+                }
+            }
+            Ok(())
+        }
+        .await;
+        // All aborts, including between children, receive a measured stop.
+        let stopped = tokio::time::timeout(Duration::from_secs(4), runner.stop()).await;
+        self.locks.release(&resources, "sequence");
+        let final_observation = match stopped {
+            Ok(Ok(obs)) => {
+                if obs.get("fault").is_some_and(|v| !v.is_null()) {
+                    status = SkillStatus::Failed;
+                }
+                obs
+            }
+            other => {
+                status = SkillStatus::Failed;
+                serde_json::json!({"stop_error":format!("{other:?}")})
+            }
+        };
+        if execution.is_err() {
+            status = SkillStatus::Failed;
+        }
+        if status == SkillStatus::Succeeded
+            && started.elapsed().as_millis() > plan.timeout_ms as u128
+        {
+            status = SkillStatus::TimedOut;
+        }
+        Ok(
+            serde_json::json!({"status":status,"plan":plan,"steps":results,"planned_steps":plan.steps.len(),"elapsed_ms":started.elapsed().as_millis(),"observation":final_observation,"error":execution.err().map(|e| format!("{e:#}"))}),
+        )
     }
 }
 
@@ -225,6 +321,133 @@ mod tests {
         executive
             .locks
             .try_acquire(&[ResourceKind::Base], "next")
+            .unwrap();
+    }
+}
+
+#[cfg(test)]
+mod sequence_tests {
+    use super::*;
+    use async_trait::async_trait;
+    use robo_archon_kinetic::Chronos;
+    use robo_archon_skills::{PreparedSequence, RunnerProgress, SkillBinding};
+    use serde_json::json;
+    struct Runner {
+        starts: usize,
+        stops: usize,
+        fail_at: usize,
+        finished: bool,
+    }
+    #[async_trait]
+    impl SkillRunner for Runner {
+        fn id(&self) -> &str {
+            "test.v1"
+        }
+        fn validate(&self, _: &PreparedSkill) -> Result<()> {
+            Ok(())
+        }
+        async fn start(&mut self, _: &PreparedSkill) -> Result<()> {
+            self.starts += 1;
+            if self.starts == self.fail_at {
+                bail!("test failure");
+            }
+            Ok(())
+        }
+        async fn poll(&mut self) -> Result<RunnerProgress> {
+            Ok(RunnerProgress {
+                finished: self.finished,
+                observation: json!({}),
+            })
+        }
+        async fn stop(&mut self) -> Result<Value> {
+            self.stops += 1;
+            Ok(json!({"stop_confirmed":true,"fault":null}))
+        }
+    }
+    fn plan() -> PreparedSequence {
+        PreparedSequence {
+            timeout_ms: 3000,
+            steps: (0..3)
+                .map(|i| PreparedSkill {
+                    skill_id: format!("s{i}"),
+                    version: "1".into(),
+                    parameters: json!({}),
+                    timeout_ms: 1000,
+                    binding: SkillBinding {
+                        body: "microduck".into(),
+                        backend: "mujoco".into(),
+                        runner: "test.v1".into(),
+                        policy: None,
+                        config: json!({}),
+                        resources: vec!["whole_body".into()],
+                    },
+                })
+                .collect(),
+        }
+    }
+    #[tokio::test]
+    async fn failure_aborts_tail_and_parent_releases_all_resources() {
+        let mut executive = Executive::new(Default::default(), Chronos::desktop_arm_6dof());
+        let mut runner = Runner {
+            starts: 0,
+            stops: 0,
+            fail_at: 2,
+            finished: true,
+        };
+        let result = executive.run_sequence(&plan(), &mut runner).await.unwrap();
+        assert_eq!(result["status"], "failed");
+        assert_eq!(runner.starts, 2);
+        assert_eq!(result["steps"].as_array().unwrap().len(), 2);
+        assert_eq!(runner.stops, 3);
+        executive
+            .locks
+            .try_acquire(
+                &[ResourceKind::Base, ResourceKind::Arm, ResourceKind::Gripper],
+                "next",
+            )
+            .unwrap();
+    }
+    #[tokio::test]
+    async fn cancelled_parent_stops_without_starting_children_and_conflicts_with_trajectory() {
+        let mut executive = Executive::new(Default::default(), Chronos::desktop_arm_6dof());
+        let mut runner = Runner {
+            starts: 0,
+            stops: 0,
+            fail_at: 99,
+            finished: true,
+        };
+        executive.cancel.cancel();
+        assert_eq!(
+            executive.run_sequence(&plan(), &mut runner).await.unwrap()["status"],
+            "cancelled"
+        );
+        assert_eq!(runner.starts, 0);
+        assert_eq!(runner.stops, 1);
+        executive
+            .locks
+            .try_acquire(&[ResourceKind::Arm], "trajectory")
+            .unwrap();
+        assert!(executive.run_sequence(&plan(), &mut runner).await.is_err());
+        assert_eq!(runner.stops, 1);
+    }
+    #[tokio::test]
+    async fn parent_deadline_aborts_remaining_steps() {
+        let mut executive = Executive::new(Default::default(), Chronos::desktop_arm_6dof());
+        let mut runner = Runner {
+            starts: 0,
+            stops: 0,
+            fail_at: 99,
+            finished: false,
+        };
+        let mut task = plan();
+        task.timeout_ms = 30;
+        let result = executive.run_sequence(&task, &mut runner).await.unwrap();
+        assert_eq!(result["status"], "timed_out");
+        assert_eq!(runner.starts, 1);
+        assert_eq!(runner.stops, 2);
+        executive
+            .locks
+            .try_acquire(&[ResourceKind::Arm], "next")
             .unwrap();
     }
 }

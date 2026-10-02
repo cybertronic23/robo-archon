@@ -31,7 +31,7 @@ use session::{SessionConfig, TurnOutcome};
     name = "robo-archon",
     about = "RoboArchon Agent OS — MuJoCo-ready control loop",
     group(clap::ArgGroup::new("skill_query")
-        .args(["list_skills", "inspect_skill", "validate_skill_call", "run_skill", "skill_keyboard", "skill_instruction", "list_skill_tools", "install_policy"])
+        .args(["list_skills", "inspect_skill", "validate_skill_call", "run_skill", "skill_keyboard", "skill_instruction", "skill_chat", "run_skill_sequence", "list_skill_tools", "install_policy"])
         .multiple(false)
         .conflicts_with_all(["install_robot", "doctor_robot", "list_robots", "inspect_robot", "list_models", "demo", "tui", "instruction"]))
 )]
@@ -104,11 +104,19 @@ struct Args {
     #[arg(long, requires = "robot")]
     run_skill: Option<PathBuf>,
 
+    /// Execute a bounded sequence JSON in one simulation episode.
+    #[arg(long, requires = "robot")]
+    run_skill_sequence: Option<PathBuf>,
+
+    /// Persistent LLM robot chat. Enter /quit to exit; Ctrl-C cancels and exits.
+    #[arg(long, requires = "robot")]
+    skill_chat: bool,
+
     /// Interactive terminal keys: w/a/d/x (move/turn/stop), q to quit.
     #[arg(long, requires = "robot")]
     skill_keyboard: bool,
 
-    /// Propose one available skill via LLM tools, execute it, and return measured feedback.
+    /// Propose a registered skill or ordered sequence via LLM tools and return measured feedback.
     #[arg(long, requires = "robot")]
     skill_instruction: Option<String>,
 

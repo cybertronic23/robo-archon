@@ -4,7 +4,7 @@ use anyhow::{bail, Context, Result};
 use robo_archon_kinetic::Chronos;
 use robo_archon_runtime::{Executive, ExecutiveConfig};
 use robo_archon_sim_bridge::continuous::ContinuousRunner;
-use robo_archon_skills::{RunnerRegistry, SkillCall, SkillRegistry, SkillStatus};
+use robo_archon_skills::{RunnerRegistry, SkillCall, SkillRegistry, SkillRunner, SkillStatus};
 use serde_json::json;
 use std::path::PathBuf;
 
@@ -69,6 +69,8 @@ pub async fn execute(args: &Args) -> Result<bool> {
         return Ok(true);
     }
     if args.run_skill.is_none()
+        && args.run_skill_sequence.is_none()
+        && !args.skill_chat
         && !args.skill_keyboard
         && args.skill_instruction.is_none()
         && !args.list_skill_tools
@@ -97,10 +99,13 @@ pub async fn execute(args: &Args) -> Result<bool> {
         println!(
             "{}",
             serde_json::to_string_pretty(
-                &json!({"tools":robo_archon_policy::skill_agent::tools(&ready.skills),"rejected":ready.rejected,"readiness":"structural, not behavioral certification"})
+                &json!({"tools":robo_archon_policy::skill_agent::planning_tools(&ready.skills),"rejected":ready.rejected,"readiness":"structural, not behavioral certification"})
             )?
         );
         return Ok(true);
+    }
+    if args.run_skill_sequence.is_some() || args.skill_chat {
+        return execute_session(args, &root, &python, &registry, &ready).await;
     }
     let mut client = None;
     let mut decision = None;
@@ -120,11 +125,33 @@ pub async fn execute(args: &Args) -> Result<bool> {
         let proposal =
             robo_archon_policy::skill_agent::propose(&connection, instruction, &ready.skills)
                 .await?;
-        if proposal.call.is_none() {
+        if proposal.call.is_none() && proposal.sequence.is_none() {
             let report = json!({"executed":false,"refusal":proposal.refusal});
             save_report(args, &report)?;
             println!("{}", report);
             return Ok(true);
+        }
+        if proposal.sequence.is_some()
+            || proposal.call.as_ref().is_some_and(|c| {
+                registry.get(&c.skill_id).is_ok_and(|s| {
+                    s.bindings.iter().any(|b| {
+                        b.runner == "sequence.v1"
+                            || b.config["command_adapter"] == "microduck.behavior.v1"
+                    })
+                })
+            })
+        {
+            return execute_decision(
+                args,
+                &root,
+                &python,
+                &registry,
+                &ready,
+                &connection,
+                proposal,
+                instruction,
+            )
+            .await;
         }
         let call = proposal.call.clone();
         client = Some(connection);
@@ -135,6 +162,28 @@ pub async fn execute(args: &Args) -> Result<bool> {
     } else {
         None
     };
+    if pending.as_ref().is_some_and(|c| {
+        registry.get(&c.skill_id).is_ok_and(|s| {
+            s.bindings.iter().any(|b| {
+                b.runner == "sequence.v1" || b.config["command_adapter"] == "microduck.behavior.v1"
+            })
+        })
+    }) {
+        let call = pending.take().unwrap();
+        return execute_plan_once(
+            args,
+            &root,
+            &python,
+            &registry,
+            &ready,
+            robo_archon_skills::SkillSequence {
+                schema_version: 1,
+                timeout_ms: call.timeout_ms,
+                steps: vec![call],
+            },
+        )
+        .await;
+    }
     let mut selected_policy = "velstand".to_string();
     // No worker or motion exists until the proposed call passes host validation.
     if let Some(call) = &pending {
@@ -301,4 +350,256 @@ fn save_report(args: &Args, value: &serde_json::Value) -> Result<()> {
         std::fs::write(path, serde_json::to_string_pretty(value)?)?;
     }
     Ok(())
+}
+
+fn prepare_plan(
+    args: &Args,
+    registry: &SkillRegistry,
+    ready: &crate::skill_readiness::Readiness,
+    sequence: &robo_archon_skills::SkillSequence,
+) -> Result<robo_archon_skills::PreparedSequence> {
+    let plan = registry.prepare_sequence(
+        &ready.catalog,
+        args.robot.as_deref().context("robot required")?,
+        &args.backend,
+        sequence,
+    )?;
+    for leaf in &plan.steps {
+        if !ready.skills.iter().any(|s| s.id == leaf.skill_id) {
+            bail!("sequence contains unavailable skill {}", leaf.skill_id);
+        }
+        let id = leaf.binding.policy.as_deref().context("policy required")?;
+        robo_archon_sim_bridge::continuous::validate_call(leaf, id)?;
+    }
+    Ok(plan)
+}
+
+async fn launch_session(
+    args: &Args,
+    root: &std::path::Path,
+    python: &str,
+    ready: &crate::skill_readiness::Readiness,
+) -> Result<ContinuousRunner> {
+    let python = if args.viewer && cfg!(target_os = "macos") {
+        std::path::Path::new(python)
+            .parent()
+            .context("venv path")?
+            .join("mjpython")
+            .to_string_lossy()
+            .into_owned()
+    } else {
+        python.into()
+    };
+    ContinuousRunner::launch_with_policies(
+        &python,
+        &root.join("python/robo_archon_sim_workers/microduck_worker.py"),
+        &args.skill_assets,
+        args.viewer,
+        args.skill_record_dir.as_deref(),
+        "velstand",
+        None,
+        &ready.packages,
+    )
+    .await
+}
+
+fn session_executive(args: &Args) -> Executive {
+    let executive = Executive::new(ExecutiveConfig::default(), Chronos::desktop_arm_6dof());
+    if args.auto_stop_ms > 0 {
+        let cancel = executive.cancel.clone();
+        let delay = args.auto_stop_ms;
+        tokio::spawn(async move {
+            tokio::time::sleep(std::time::Duration::from_millis(delay)).await;
+            cancel.cancel();
+        });
+    }
+    let cancel = executive.cancel.clone();
+    tokio::spawn(async move {
+        if tokio::signal::ctrl_c().await.is_ok() {
+            cancel.cancel();
+        }
+    });
+    executive
+}
+
+async fn execute_plan_once(
+    args: &Args,
+    root: &std::path::Path,
+    python: &str,
+    registry: &SkillRegistry,
+    ready: &crate::skill_readiness::Readiness,
+    sequence: robo_archon_skills::SkillSequence,
+) -> Result<bool> {
+    let plan = prepare_plan(args, registry, ready, &sequence)?;
+    let mut runner = launch_session(args, root, python, ready).await?;
+    let mut executive = session_executive(args);
+    let result = executive.run_sequence(&plan, &mut runner).await;
+    let shutdown = runner.shutdown().await;
+    let result = result?;
+    save_report(args, &result)?;
+    println!("{result}");
+    shutdown?;
+    if result["status"] != "succeeded" {
+        bail!("sequence did not succeed: {}", result["status"]);
+    }
+    Ok(true)
+}
+
+fn decision_sequence(
+    decision: &robo_archon_policy::skill_agent::SkillDecision,
+) -> Result<robo_archon_skills::SkillSequence> {
+    if let Some(sequence) = &decision.sequence {
+        return Ok(sequence.clone());
+    }
+    let call = decision.call.clone().context("no proposed action")?;
+    Ok(robo_archon_skills::SkillSequence {
+        schema_version: 1,
+        timeout_ms: call.timeout_ms,
+        steps: vec![call],
+    })
+}
+
+async fn execute_decision(
+    args: &Args,
+    root: &std::path::Path,
+    python: &str,
+    registry: &SkillRegistry,
+    ready: &crate::skill_readiness::Readiness,
+    client: &robo_archon_policy::chat::ChatClient,
+    decision: robo_archon_policy::skill_agent::SkillDecision,
+    instruction: &str,
+) -> Result<bool> {
+    let sequence = decision_sequence(&decision)?;
+    let plan = prepare_plan(args, registry, ready, &sequence)?;
+    let mut runner = launch_session(args, root, python, ready).await?;
+    let mut executive = session_executive(args);
+    let outcome = executive.run_sequence(&plan, &mut runner).await;
+    let shutdown = runner.shutdown().await;
+    let outcome = outcome?;
+    let mut report = json!({"executed":true,"sequence":sequence,"result":outcome,"feedback":null});
+    save_report(args, &report)?;
+    report["feedback"] =
+        match robo_archon_policy::skill_agent::feedback(client, instruction, &decision, &outcome)
+            .await
+        {
+            Ok(text) => json!({"text":text}),
+            Err(e) => json!({"error":e.to_string()}),
+        };
+    save_report(args, &report)?;
+    println!("{report}");
+    shutdown?;
+    if outcome["status"] != "succeeded" {
+        bail!("sequence did not succeed");
+    }
+    Ok(true)
+}
+
+async fn execute_session(
+    args: &Args,
+    root: &std::path::Path,
+    python: &str,
+    registry: &SkillRegistry,
+    ready: &crate::skill_readiness::Readiness,
+) -> Result<bool> {
+    if let Some(path) = &args.run_skill_sequence {
+        let sequence = serde_json::from_slice(&std::fs::read(path)?)?;
+        return execute_plan_once(args, root, python, registry, ready, sequence).await;
+    }
+    let key = args
+        .llm_api_key
+        .clone()
+        .or_else(|| std::env::var("OPENAI_API_KEY").ok())
+        .context("skill chat requires API key in this process")?;
+    let client = robo_archon_policy::chat::ChatClient::new(
+        key,
+        args.llm_base_url
+            .clone()
+            .unwrap_or_else(|| "https://api.deepseek.com".into()),
+        args.llm_model.clone(),
+    );
+    let mut executive = session_executive(args);
+    let (sender, mut lines) = tokio::sync::mpsc::unbounded_channel();
+    let cancel = executive.cancel.clone();
+    let interruption = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
+    let input_interruption = interruption.clone();
+    let signal_interruption = interruption.clone();
+    let signal_sender = sender.clone();
+    let signal_cancel = executive.cancel.clone();
+    tokio::spawn(async move {
+        if tokio::signal::ctrl_c().await.is_ok() {
+            let generation =
+                signal_interruption.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
+            signal_cancel.cancel();
+            let _ = signal_sender.send(("/quit".to_string(), generation));
+        }
+    });
+    std::thread::spawn(move || {
+        use std::io::BufRead;
+        for line in std::io::stdin().lock().lines() {
+            let Ok(line) = line else {
+                break;
+            };
+            if ["/stop", "/quit", "/reset"].contains(&line.trim()) {
+                input_interruption.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                cancel.cancel();
+            }
+            let generation = input_interruption.load(std::sync::atomic::Ordering::SeqCst);
+            if sender.send((line, generation)).is_err() {
+                break;
+            }
+        }
+        cancel.cancel();
+        let generation = input_interruption.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
+        let _ = sender.send(("/quit".to_string(), generation));
+    });
+    let mut runner = launch_session(args, root, python, ready).await?;
+    eprintln!("Persistent Microduck chat: enter an instruction, /stop to cancel, /quit to exit. Simulation stays alive between turns.");
+    let mut reports = Vec::new();
+    let execution: Result<()> = async {
+        loop {
+            let message = tokio::select! {
+                message=lines.recv()=>message,
+                _=tokio::signal::ctrl_c()=>{executive.cancel.cancel();break;}
+            };
+            let Some((instruction,generation))=message else { break; };
+            let instruction = instruction.trim();
+            if instruction == "/quit" { break; }
+            if instruction == "/stop" { runner.stop().await?; continue; }
+            if instruction == "/reset" {
+                let observation=runner.reset_simulation().await?;
+                executive.cancel.reset();
+                let report=json!({"executed":false,"explicit_simulation_reset":true,"observation":observation});
+                reports.push(report.clone());save_report(args,&json!({"turns":reports}))?;println!("{report}");continue;
+            }
+            if instruction.is_empty() || generation != interruption.load(std::sync::atomic::Ordering::SeqCst) { continue; }
+            executive.cancel.reset();
+            if generation != interruption.load(std::sync::atomic::Ordering::SeqCst) { executive.cancel.cancel(); continue; }
+            let history = json!(reports.iter().rev().take(8).collect::<Vec<_>>());
+            let proposal = match robo_archon_policy::skill_agent::propose_with_context(&client, instruction, &ready.skills, &history).await {
+                Ok(p) => p,
+                Err(error) => { let report=json!({"instruction":instruction,"executed":false,"error":error.to_string()}); reports.push(report.clone()); save_report(args, &json!({"turns":reports}))?; println!("{report}"); continue; }
+            };
+            if proposal.call.is_none() && proposal.sequence.is_none() {
+                let report=json!({"instruction":instruction,"executed":false,"refusal":proposal.refusal});
+                reports.push(report.clone()); save_report(args, &json!({"turns":reports}))?; println!("{report}"); continue;
+            }
+            let plan = match decision_sequence(&proposal).and_then(|s| prepare_plan(args, registry, ready, &s)) {
+                Ok(p)=>p,
+                Err(error)=> { let report=json!({"instruction":instruction,"executed":false,"error":error.to_string()}); reports.push(report.clone()); save_report(args,&json!({"turns":reports}))?; println!("{report}"); continue; }
+            };
+            let outcome = executive.run_sequence(&plan, &mut runner).await?;
+            let mut report=json!({"instruction":instruction,"executed":true,"result":outcome,"feedback":null});
+            reports.push(report.clone()); save_report(args, &json!({"turns":reports}))?;
+            report["feedback"] = match robo_archon_policy::skill_agent::feedback(&client, instruction, &proposal, &outcome).await { Ok(text)=>json!({"text":text}), Err(e)=>json!({"error":e.to_string()}) };
+            *reports.last_mut().unwrap()=report.clone(); save_report(args,&json!({"turns":reports}))?; println!("{report}");
+            if outcome["status"] == "failed" { eprintln!("Task failed. Use /reset for an explicit simulation restart, or /quit. No automatic recovery."); }
+        }
+        Ok(())
+    }.await;
+    let stopped = runner.stop().await;
+    let shutdown = runner.shutdown().await;
+    execution?;
+    stopped?;
+    shutdown?;
+    Ok(true)
 }

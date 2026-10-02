@@ -1,6 +1,6 @@
 # 机器人 Gallery：真实物理抓放
 
-Franka Panda 和 SO101 在 MuJoCo 中支持归位、基础关节动作、夹爪开合及 IK 抓放。Franka 同时支持 ManiSkill/SAPIEN 的同一抓放任务。Microduck 已通过独立持续 worker 接入 MuJoCo 官方 velstand 策略。Go2 后续接入。
+Franka Panda 和 SO101 在 MuJoCo 中支持归位、基础关节动作、夹爪开合及 IK 抓放。Franka 同时支持 ManiSkill/SAPIEN 的同一抓放任务。Microduck 已通过独立持续 worker 接入 MuJoCo 官方行走策略，并支持组合任务、持续 LLM 聊天与五种可选官方动作。Go2 后续接入。
 
 | Franka Panda / MuJoCo | SO101 / MuJoCo |
 | --- | --- |
@@ -98,3 +98,22 @@ Microduck 使用固定版本 MJCF、ONNX 和 BAM 执行器模型；资产通过 
 当前试玩预设为前进 vx=0.4，左右弧线转弯 vx=0.3、yaw=±1，已通过连续启停和键盘验收。旧较小指令可能停在原地；官方策略仍存在指令与实测速度偏差。预设值会显示在终端，用户输入不被自动改写。完整实测结果见 [预设验收报告](validation/m2g-2-microduck-presets.json)。
 
 ![通过 Archon 调用官方策略完成弧线转弯](media/microduck-archon-turn.gif)
+
+
+## Microduck 组合任务与更多动作
+
+安装基础环境之后，可额外安装固定版本的官方动作权重：
+
+```sh
+.venv-microduck/bin/python scripts/install_microduck_behaviors.py
+cargo run -p robo-archon-cli -- --robot microduck --backend mujoco \
+  --run-skill skills/calls/microduck-patrol.json --viewer
+cargo run -p robo-archon-cli -- --robot microduck --backend mujoco \
+  --run-skill skills/calls/microduck-roulade.json --viewer
+```
+
+支持坐下再起身、啄地、左/右空踢和前滚；连续任务中每项动作后均验收重新行走。空踢没有球，啄地没有抓取物体。动作使用独立契约适配，不与速度指令混用。
+
+在有 LLM Key 的终端中添加 `--skill-chat --viewer` 开启持续自然语言试玩，`/stop` 取消、`/quit` 退出、`/reset` 显式重置仿真。真实云端模型验收独立于本地模拟 API 验收；详见 [M2g.4 设计、使用与验收](specs/m2g-4-microduck-composition.md)。
+
+![通过 Archon 执行五种官方动作](media/microduck-archon-behaviors.gif)

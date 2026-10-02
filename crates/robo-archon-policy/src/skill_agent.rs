@@ -8,6 +8,7 @@ pub struct SkillDecision {
     pub assistant: Value,
     pub call: Option<SkillCall>,
     pub refusal: Option<String>,
+    pub sequence: Option<robo_archon_skills::SkillSequence>,
 }
 
 pub fn tools(skills: &[SkillManifest]) -> Value {
@@ -26,11 +27,12 @@ pub fn parse_decision(assistant: Value, skills: &[SkillManifest]) -> Result<Skil
             assistant,
             call: None,
             refusal: Some(refusal),
+            sequence: None,
         });
     }
     let calls = calls.unwrap();
     if calls.len() != 1 {
-        bail!("exactly one skill call is allowed; composition is a later milestone");
+        bail!("exactly one tool call is allowed; use archon_sequence for ordered composition");
     }
     let call = &calls[0];
     if call["type"] != "function" || call["id"].as_str().is_none_or(str::is_empty) {
@@ -39,6 +41,59 @@ pub fn parse_decision(assistant: Value, skills: &[SkillManifest]) -> Result<Skil
     let name = call["function"]["name"]
         .as_str()
         .context("function name missing")?;
+    if name == "archon_sequence" && skills.len() > 1 {
+        #[derive(serde::Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Step {
+            tool_name: String,
+            parameters: Value,
+        }
+        #[derive(serde::Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Arguments {
+            steps: Vec<Step>,
+        }
+        let args: Arguments = serde_json::from_str(
+            call["function"]["arguments"]
+                .as_str()
+                .context("arguments required")?,
+        )?;
+        if args.steps.is_empty() || args.steps.len() > 16 {
+            bail!("sequence needs 1..16 steps");
+        }
+        let mut steps = Vec::new();
+        for step in args.steps {
+            let skill = skills
+                .iter()
+                .find(|s| s.tool_name == step.tool_name)
+                .context("sequence selected unavailable tool")?;
+            if !step.parameters.is_object() {
+                bail!("step parameters must be object");
+            }
+            steps.push(SkillCall {
+                skill_id: skill.id.clone(),
+                parameters: step.parameters,
+                timeout_ms: skill.max_duration_ms,
+            });
+        }
+        let budget = steps
+            .iter()
+            .try_fold(0u64, |sum, s| sum.checked_add(s.timeout_ms))
+            .context("budget overflow")?;
+        if budget > 120000 {
+            bail!("sequence exceeds 120 second budget");
+        }
+        return Ok(SkillDecision {
+            assistant,
+            call: None,
+            refusal: None,
+            sequence: Some(robo_archon_skills::SkillSequence {
+                schema_version: 1,
+                timeout_ms: budget,
+                steps,
+            }),
+        });
+    }
     let skill = skills
         .iter()
         .find(|s| s.tool_name == name)
@@ -60,11 +115,20 @@ pub fn parse_decision(assistant: Value, skills: &[SkillManifest]) -> Result<Skil
         assistant,
         call: Some(proposed),
         refusal: None,
+        sequence: None,
     })
 }
 
+pub fn planning_tools(skills: &[SkillManifest]) -> Value {
+    let mut value = tools(skills);
+    if skills.len() > 1 {
+        value.as_array_mut().unwrap().push(json!({"type":"function","function":{"name":"archon_sequence","description":"Execute an ordered sequence of registered skills in the SAME simulation. Every step is validated before any motion; stop on failure. Use for instructions with multiple ordered actions. Use only names and parameters from the other tool definitions.","parameters":{"type":"object","additionalProperties":false,"required":["steps"],"properties":{"steps":{"type":"array","minItems":1,"maxItems":16,"items":{"type":"object","additionalProperties":false,"required":["tool_name","parameters"],"properties":{"tool_name":{"type":"string","enum":skills.iter().map(|s| &s.tool_name).collect::<Vec<_>>()},"parameters":{"type":"object"}}}}}}}}));
+    }
+    value
+}
+
 pub fn system_prompt() -> &'static str {
-    "Select at most one available robot skill for this instruction. If it is unsupported, explain why without calling a tool. Do not invent capabilities, goal completion, or exact speed tracking. Tools describe bounded input commands; duration completion may occur with little motion. Only use the supplied tool descriptions and schemas. You cannot alter policy, runner, contracts or time budget."
+    "Select one available robot skill or archon_sequence for ordered multi-step instructions. Never use parallel tool calls. If it is unsupported, explain why without calling a tool. Do not invent capabilities, goal completion, or exact speed tracking. Tools describe bounded input commands; duration completion may occur with little motion. Only use the supplied tool descriptions and schemas. You cannot alter policy, runner, contracts or time budget."
 }
 
 pub async fn propose(
@@ -81,9 +145,22 @@ pub async fn propose(
                 json!({"role":"system","content":system_prompt()}),
                 json!({"role":"user","content":instruction}),
             ],
-            Some(tools(skills)),
+            Some(planning_tools(skills)),
         )
         .await?;
+    parse_decision(assistant, skills)
+}
+
+pub async fn propose_with_context(
+    client: &ChatClient,
+    instruction: &str,
+    skills: &[SkillManifest],
+    measured_history: &Value,
+) -> Result<SkillDecision> {
+    if skills.is_empty() {
+        bail!("no executable skills available");
+    }
+    let assistant = client.messages(vec![json!({"role":"system","content":system_prompt()}), json!({"role":"user","content":json!({"instruction":instruction,"previous_measured_results":measured_history}).to_string()})], Some(planning_tools(skills))).await?;
     parse_decision(assistant, skills)
 }
 
@@ -146,5 +223,31 @@ mod tests {
         let d = parse_decision(response("user_demo", r#"{"vx":0.4}"#), &s).unwrap();
         assert_eq!(d.call.unwrap().skill_id, "user.demo");
         assert_eq!(tools(&s)[0]["function"]["name"], "user_demo");
+    }
+}
+
+#[cfg(test)]
+mod sequence_tests {
+    use super::*;
+    #[test]
+    fn sequential_tool_uses_registry_names_and_host_budgets() {
+        let mut first: SkillManifest =
+            serde_json::from_str(include_str!("../../../skills/microduck-walk/skill.json"))
+                .unwrap();
+        let second = first.clone();
+        first.id = "user.other".into();
+        first.tool_name = "user_other".into();
+        let skills = vec![first, second];
+        let response = json!({"role":"assistant","tool_calls":[{"id":"p","type":"function","function":{"name":"archon_sequence","arguments":json!({"steps":[{"tool_name":"user_other","parameters":{"vx":0.4}},{"tool_name":"microduck_walk","parameters":{"vx":0.3,"yaw_rate":1.0}}]}).to_string()}}]});
+        let plan = parse_decision(response.clone(), &skills)
+            .unwrap()
+            .sequence
+            .unwrap();
+        assert_eq!(plan.steps[0].skill_id, "user.other");
+        assert_eq!(plan.timeout_ms, 20000);
+        let mut bad = response;
+        bad["tool_calls"][0]["function"]["arguments"] =
+            json!(json!({"steps":[{"tool_name":"shell","parameters":{}}]}).to_string());
+        assert!(parse_decision(bad, &skills).is_err());
     }
 }

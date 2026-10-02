@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "microduck.kick_right",
+  "version": "0.1.0",
+  "tool_name": "microduck_kick_right",
+  "description": "Perform the official right-leg kick motion in the air; no ball is present.",
+  "parameters": {},
+  "max_duration_ms": 10000,
+  "entry_conditions": [
+    "settled",
+    "standing"
+  ],
+  "success_description": "Timed official behavior ended, upright posture and measured stop confirmed. Motion metrics retained; no task outcome inferred.",
+  "bindings": [
+    {
+      "body": "microduck",
+      "backend": "mujoco",
+      "runner": "onnx_policy.v1",
+      "policy": "official.kick_right",
+      "config": {
+        "command_adapter": "microduck.behavior.v1",
+        "behavior": "kick_right"
+      },
+      "resources": [
+        "whole_body"
+      ]
+    }
+  ]
+}
