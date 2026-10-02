@@ -1,6 +1,6 @@
 # M2f.3 — Microduck first: official-policy simulation
 
-Status: CPU feasibility and Archon official-policy continuous integration implemented. See [M2g.2 execution spec](m2g-2-continuous-skills.md). Physical push/fall rejection is checked; recovery, reliable turn-after-stop tracking and additional trick policies are not accepted.
+Status: CPU feasibility and Archon official-policy continuous integration implemented. See [M2g.2 execution spec](m2g-2-continuous-skills.md). Physical push/fall rejection is checked; the updated nominal play presets pass repeated stop/restart acceptance. Recovery, arbitrary velocity tracking and additional trick policies are not accepted.
 User scope: Microduck before Go2, simulation only, official pretrained policies as the baseline. No real robot is available. NVIDIA cloud compute may be used if training becomes necessary; it is not needed for this CPU inference probe.
 
 ## Upstream components

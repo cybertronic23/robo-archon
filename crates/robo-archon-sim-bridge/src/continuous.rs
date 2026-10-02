@@ -40,6 +40,40 @@ impl ContinuousRunner {
         if let Some(path) = record_dir {
             command.arg("--record-dir").arg(path);
         }
+        if viewer && cfg!(target_os = "macos") {
+            // mjpython resolves @executable_path relative to a venv symlink. uv Python's
+            // libpython lives in the base interpreter, so supply its real library directory.
+            let interpreter = Path::new(python)
+                .parent()
+                .context("viewer interpreter path")?
+                .join("python");
+            let info = tokio::time::timeout(
+                Duration::from_secs(5),
+                Command::new(interpreter)
+                    .args([
+                        "-c",
+                        "import sysconfig; print(sysconfig.get_config_var('LIBDIR') or '')",
+                    ])
+                    .output(),
+            )
+            .await
+            .context("viewer Python inspection timed out")??;
+            if !info.status.success() {
+                bail!(
+                    "could not inspect viewer Python: {}",
+                    String::from_utf8_lossy(&info.stderr)
+                );
+            }
+            let directory = String::from_utf8(info.stdout)?.trim().to_string();
+            if !directory.is_empty() && Path::new(&directory).is_dir() {
+                let previous = std::env::var("DYLD_FALLBACK_LIBRARY_PATH")
+                    .unwrap_or_else(|_| "/usr/local/lib:/usr/lib".into());
+                command.env(
+                    "DYLD_FALLBACK_LIBRARY_PATH",
+                    format!("{directory}:{previous}"),
+                );
+            }
+        }
         let mut child = command.spawn().context("launch continuous worker")?;
         let input = child.stdin.take().context("worker stdin")?;
         let output = BufReader::new(child.stdout.take().context("worker stdout")?).lines();
@@ -131,7 +165,7 @@ impl SkillRunner for ContinuousRunner {
         if duration == 0 || duration > 10000 || duration + 1000 > skill.timeout_ms {
             bail!("duration needs at least 1000 ms of stop/IO budget");
         }
-        for (name, limit) in [("vx", 0.3), ("vy", 0.2), ("yaw_rate", 1.0)] {
+        for (name, limit) in [("vx", 0.4), ("vy", 0.2), ("yaw_rate", 1.0)] {
             let value = skill.parameters[name]
                 .as_f64()
                 .context("twist parameter missing")?;

@@ -322,7 +322,7 @@
     {
       "id": "microduck",
       "name": "Microduck",
-      "revision": "0.2.0",
+      "revision": "0.3.0",
       "definition": {
         "category": "biped",
         "capabilities": [
@@ -350,7 +350,7 @@
           "observation_contract": "microduck.proprio_command.61.v1",
           "action_contract": "microduck.joint_offset.14.rad.v1",
           "joint_mapping": {},
-          "notes": "Pinned official velstand continuous CPU worker. Nominal flat-floor simulation; low commands and stop-to-motion transitions may give weak motion. Lifecycle and physical-fall rejection checked; turn-after-stop motion gate remains open. See docs/validation/m2g-2-microduck.json. No real robot verification."
+          "notes": "Pinned official velstand CPU worker. Nominal play presets accepted: forward vx=0.4; arc turns vx=0.3,yaw=\u00b11. Lower commands may stall; requested speed is not achieved speed. Repeated start/stop, keyboard, fall rejection and native macOS viewer startup/rendering checked. See docs/validation/m2g-2-microduck-presets.json. No hardware verification."
         },
         "maniskill": {
           "status": "planned",

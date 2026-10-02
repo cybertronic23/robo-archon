@@ -95,6 +95,6 @@ ROBO_ARCHON_TEST_MANISKILL=1 .venv-maniskill/bin/python \
 
 Microduck 使用固定版本 MJCF、ONNX 和 BAM 执行器模型；资产通过 `--install-robot microduck` 下载到忽略目录。用 `--robot microduck --backend mujoco --skill-keyboard --viewer` 试玩，w 前进、a/d 转弯、x 停止、q 退出。独立 Python 环境安装步骤及一次性调用见 [M2g.2 spec](specs/m2g-2-continuous-skills.md)。
 
-目前只验收站立/速度指令/停止的控制链路。官方策略存在指令与实际速度偏差，连续停止后再次启动也可能运动较弱；不是位移任务验收。完整实测结果见 [报告](validation/m2g-2-microduck.json)。
+当前试玩预设为前进 vx=0.4，左右弧线转弯 vx=0.3、yaw=±1，已通过连续启停和键盘验收。旧较小指令可能停在原地；官方策略仍存在指令与实测速度偏差。预设值会显示在终端，用户输入不被自动改写。完整实测结果见 [预设验收报告](validation/m2g-2-microduck-presets.json)。
 
-![Microduck 官方策略 CPU 仿真探测（接入前基线）](media/microduck-official-policy-probe.gif)
+![通过 Archon 调用官方策略完成弧线转弯](media/microduck-archon-turn.gif)

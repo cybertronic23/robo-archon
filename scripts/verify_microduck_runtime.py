@@ -57,7 +57,7 @@ def main():
         invalid = exchange(
             "command",
             expect_ok=False,
-            twist=[0.31, 0, 0],
+            twist=[0.41, 0, 0],
             duration_ms=1000,
             lease_ms=600,
         )
@@ -75,8 +75,9 @@ def main():
         for cycle in range(2):
             for label, twist, duration in [
                 ("stand", [0, 0, 0], 1000),
-                ("forward", [0.3, 0, 0], 6000),
-                ("turn", [0.2, 0, 1], 4000),
+                ("forward", [0.4, 0, 0], 6000),
+                ("turn_left", [0.3, 0, 1], 4000),
+                ("turn_right", [0.3, 0, -1], 4000),
             ]:
                 start = exchange(
                     "command", twist=twist, duration_ms=duration, lease_ms=600
@@ -96,10 +97,15 @@ def main():
                 motion_gate = (
                     displacement > 0.1
                     if label == "forward"
-                    else mean_yaw > 0.15
-                    if label == "turn"
+                    else mean_yaw * twist[2] > 0.15
+                    if label.startswith("turn")
                     else None
                 )
+                assert motion_gate is not False, (label, end)
+                assert (
+                    end["motion"]["max_tilt_deg"] < 15
+                    and end["motion"]["min_height"] > 0.1
+                ), end
                 exchange("stop")
                 stable = 0
                 deadline = time.monotonic() + 4
@@ -131,7 +137,7 @@ def main():
         process.stdin.close()
         assert process.wait(timeout=5) == 0
         report = {
-            "acceptance": "protocol/continuous-lifecycle passed; motion gates reported separately",
+            "acceptance": "protocol/continuous-lifecycle and all tested preset motion gates passed",
             "first": first,
             "watchdog": expired,
             "invalid_command": invalid,

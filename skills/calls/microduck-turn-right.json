@@ -1,0 +1,9 @@
+{
+  "skill_id": "microduck.walk",
+  "parameters": {
+    "vx": 0.3,
+    "yaw_rate": -1,
+    "duration_ms": 4000
+  },
+  "timeout_ms": 6000
+}

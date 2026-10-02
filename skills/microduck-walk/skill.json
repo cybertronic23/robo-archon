@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "id": "microduck.walk",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "tool_name": "microduck_walk",
-  "description": "Run bounded body-frame velocity commands on Microduck in MuJoCo. Actual motion is measured; low commands may not initiate walking and commanded speed is not guaranteed.",
+  "description": "Run bounded body-frame velocity commands on Microduck in MuJoCo. Tested play presets: forward vx=0.4; arc turns vx=0.3,yaw_rate=\u00b11. Actual velocity is measured and may differ; smaller commands can stall.",
   "parameters": {
     "vx": {
-      "description": "Requested forward velocity in m/s; low positive commands may fail to initiate walking.",
+      "description": "Requested forward velocity in m/s. Tested play preset 0.4; smaller commands can fail to initiate or restart walking.",
       "required": true,
       "default": null,
       "kind": {
         "type": "number",
-        "min": -0.3,
-        "max": 0.3
+        "min": -0.4,
+        "max": 0.4
       }
     },
     "yaw_rate": {

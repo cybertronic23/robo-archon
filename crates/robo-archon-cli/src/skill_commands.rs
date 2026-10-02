@@ -124,7 +124,7 @@ pub async fn execute(args: &Args) -> Result<bool> {
             }
         });
         crossterm::terminal::enable_raw_mode()?;
-        eprintln!("w: forward, a/d: turn, x: stop, q: quit. Commands expire after 2 seconds.");
+        eprintln!("w: forward (vx=0.4), a/d: turn (vx=0.3, yaw=±1), x: stop, q: quit. Commands expire after 2 seconds.");
     }
     let result: Result<()> = async {
         loop {
@@ -140,9 +140,9 @@ pub async fn execute(args: &Args) -> Result<bool> {
                     break;
                 }
                 let (vx, yaw) = match key {
-                    'w' => (0.3, 0.0),
-                    'a' => (0.2, 1.0),
-                    'd' => (0.2, -1.0),
+                    'w' => (0.4, 0.0),
+                    'a' => (0.3, 1.0),
+                    'd' => (0.3, -1.0),
                     'x' => (0.0, 0.0),
                     _ => continue,
                 };

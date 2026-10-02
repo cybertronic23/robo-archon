@@ -181,7 +181,7 @@ def main():
                         for v in twist
                     ):
                         raise ValueError("twist requires three finite numbers")
-                    if any(abs(v) > limit for v, limit in zip(twist, [0.3, 0.2, 1.0])):
+                    if any(abs(v) > limit for v, limit in zip(twist, [0.4, 0.2, 1.0])):
                         raise ValueError("twist outside verified command envelope")
                     if (
                         type(duration) is not int
