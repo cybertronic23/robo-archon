@@ -75,3 +75,7 @@ __pycache__/
 *.pyc
 
 # Public gallery previews use size-limited GIFs; full videos stay local or in CI artifacts.
+
+# User-installed ONNX packages
+/python/policies/external/**
+!/python/policies/external/.gitkeep

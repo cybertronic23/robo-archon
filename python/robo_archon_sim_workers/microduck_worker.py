@@ -45,6 +45,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--package", type=Path, required=True)
     parser.add_argument("--viewer", action="store_true")
+    parser.add_argument("--policy-package", type=Path)
     parser.add_argument("--record-dir", type=Path)
     args = parser.parse_args()
     package = args.package.resolve()
@@ -55,6 +56,16 @@ def main():
             raise ValueError(f"{name} must be {version}")
     if sys.version_info[:2] != (3, 12):
         raise ValueError("Microduck worker requires Python 3.12")
+    policy_id, policy_path, provenance = (
+        "velstand",
+        package / "velstand.onnx",
+        lock["policy"],
+    )
+    if args.policy_package:
+        from policy_packages import verify_installed
+
+        provenance, policy_path = verify_installed(args.policy_package)
+        policy_id = provenance["id"]
     sys.path.insert(0, str(package))
     import mujoco
     import numpy as np
@@ -73,7 +84,7 @@ def main():
         policy = official.PolicyInference(
             model,
             data,
-            walking_onnx_path=str(package / "velstand.onnx"),
+            walking_onnx_path=str(policy_path),
             bam_ctrl=controller,
             new_cmd_obs=True,
             use_projected_gravity=True,
@@ -138,6 +149,8 @@ def main():
         )
         velocity = policy.quat_rotate_inverse(quat, data.qvel[:3])
         return {
+            "policy_id": policy_id,
+            "policy_provenance": provenance,
             "state": state,
             "reason": reason,
             "fault": fault,

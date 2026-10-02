@@ -1,0 +1,1183 @@
+{
+  "milestone": "M2g.3 compatible policy packages and dynamic skill calls",
+  "date": "2026-10-02",
+  "status": "mechanism accepted as requested using official copied weights and LOCAL MOCK model HTTP",
+  "not_accepted": [
+    "genuine self-trained checkpoint/novel behavior",
+    "real cloud LLM inference",
+    "multiple calls/hot policy switching/composition",
+    "other adapters/robots/simulators/hardware"
+  ],
+  "package_tests": {
+    "acceptance": "passed",
+    "checks": [
+      "clean install",
+      "idempotence",
+      "reject sha256",
+      "reject weight",
+      "reject rate_hz",
+      "reject action_contract",
+      "reject normalization",
+      "reject adapter",
+      "reject id",
+      "reject unexpected",
+      "reject actual ONNX joint-order mismatch with valid checksum",
+      "refuse overwrite",
+      "installed tamper"
+    ],
+    "weights": "official compatibility fixture, not self-trained"
+  },
+  "custom_execution": {
+    "elapsed_ms": 2861,
+    "observation": {
+      "body_velocity": [
+        0.004227200887392604,
+        -0.0001571279894404273,
+        -0.0002426706865775956
+      ],
+      "command": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fault": null,
+      "motion": {
+        "max_tilt_deg": 3.518195390701294,
+        "min_height": 0.11200797371073468,
+        "samples": 73,
+        "start_xyz": [
+          0.00032124935303342916,
+          -9.242233640303016e-05,
+          0.11478313772088018
+        ],
+        "sum_vx": 9.396650085210515,
+        "sum_yaw_rate": -3.52231739088893
+      },
+      "policy_id": "example.velstand",
+      "policy_provenance": {
+        "action_contract": "microduck.joint_offset.14.rad.v1",
+        "adapter": "microduck.twist.v1",
+        "backend": "mujoco",
+        "body": "microduck",
+        "id": "example.velstand",
+        "license": "Apache-2.0",
+        "normalization": "embedded",
+        "observation_contract": "microduck.proprio_command.61.v1",
+        "rate_hz": 50,
+        "schema_version": 1,
+        "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+        "source": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx (official weights copied for compatibility fixture; not self-trained)",
+        "version": "0.1.0",
+        "weight": "policy.onnx"
+      },
+      "reason": "explicit_stop",
+      "simulation_time": 2.0999999999999774,
+      "state": "idle",
+      "stop_confirmed": true,
+      "tilt_deg": 0.5109071731567383,
+      "xyz": [
+        0.18727704682472215,
+        0.007416453303665123,
+        0.11657138797541938
+      ],
+      "yaw": -0.17127664276691457,
+      "yaw_rate": 0.004228976089507341
+    },
+    "reason": "duration_complete",
+    "skill_id": "example.walk",
+    "status": "succeeded",
+    "version": "0.3.0"
+  },
+  "static_validation": {
+    "prepared": {
+      "binding": {
+        "backend": "mujoco",
+        "body": "microduck",
+        "config": {
+          "command_adapter": "microduck.twist.v1"
+        },
+        "policy": "example.velstand",
+        "resources": [
+          "whole_body"
+        ],
+        "runner": "onnx_policy.v1"
+      },
+      "parameters": {
+        "duration_ms": 2000,
+        "vx": 0.4,
+        "vy": 0.0,
+        "yaw_rate": 0.0
+      },
+      "skill_id": "example.walk",
+      "timeout_ms": 4000,
+      "version": "0.3.0"
+    },
+    "validation_only": true
+  },
+  "default_ready_tools": {
+    "readiness": "structural, not behavioral certification",
+    "rejected": [
+      {
+        "reason": "binding/runner/policy/parameter shape is not executable here",
+        "skill_id": "franka.home"
+      }
+    ],
+    "tools": [
+      {
+        "function": {
+          "description": "Hold standing at zero desired twist for a bounded interval. Requires an upright robot; not a recovery strategy.",
+          "name": "microduck_stand",
+          "parameters": {
+            "additionalProperties": false,
+            "properties": {
+              "duration_ms": {
+                "default": 3000,
+                "description": "How long to request motion; runtime timeout must include at least 1000 ms extra for stopping.",
+                "maximum": 9000,
+                "minimum": 100,
+                "type": "integer"
+              },
+              "vx": {
+                "default": 0.0,
+                "description": "Requested forward velocity in m/s; low positive commands may fail to initiate walking.",
+                "maximum": 0.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "vy": {
+                "default": 0.0,
+                "description": "Requested body-frame lateral velocity, m/s.",
+                "maximum": 0.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "yaw_rate": {
+                "default": 0.0,
+                "description": "Requested yaw rate in rad/s.",
+                "maximum": 0.0,
+                "minimum": 0.0,
+                "type": "number"
+              }
+            },
+            "required": [],
+            "type": "object"
+          }
+        },
+        "type": "function"
+      },
+      {
+        "function": {
+          "description": "Set desired twist to zero and hold standing for a bounded interval. Requires an upright robot; not a recovery strategy.",
+          "name": "microduck_stop",
+          "parameters": {
+            "additionalProperties": false,
+            "properties": {
+              "duration_ms": {
+                "default": 3000,
+                "description": "How long to request motion; runtime timeout must include at least 1000 ms extra for stopping.",
+                "maximum": 9000,
+                "minimum": 100,
+                "type": "integer"
+              },
+              "vx": {
+                "default": 0.0,
+                "description": "Requested forward velocity in m/s; low positive commands may fail to initiate walking.",
+                "maximum": 0.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "vy": {
+                "default": 0.0,
+                "description": "Requested body-frame lateral velocity, m/s.",
+                "maximum": 0.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              "yaw_rate": {
+                "default": 0.0,
+                "description": "Requested yaw rate in rad/s.",
+                "maximum": 0.0,
+                "minimum": 0.0,
+                "type": "number"
+              }
+            },
+            "required": [],
+            "type": "object"
+          }
+        },
+        "type": "function"
+      },
+      {
+        "function": {
+          "description": "Run bounded body-frame velocity commands on Microduck in MuJoCo. Tested play presets: forward vx=0.4; arc turns vx=0.3,yaw_rate=±1. Actual velocity is measured and may differ; smaller commands can stall.",
+          "name": "microduck_walk",
+          "parameters": {
+            "additionalProperties": false,
+            "properties": {
+              "duration_ms": {
+                "default": 3000,
+                "description": "How long to request motion; runtime timeout must include at least 1000 ms extra for stopping.",
+                "maximum": 9000,
+                "minimum": 100,
+                "type": "integer"
+              },
+              "vx": {
+                "description": "Requested forward velocity in m/s. Tested play preset 0.4; smaller commands can fail to initiate or restart walking.",
+                "maximum": 0.4,
+                "minimum": -0.4,
+                "type": "number"
+              },
+              "vy": {
+                "default": 0.0,
+                "description": "Requested body-frame lateral velocity, m/s.",
+                "maximum": 0.2,
+                "minimum": -0.2,
+                "type": "number"
+              },
+              "yaw_rate": {
+                "default": 0.0,
+                "description": "Requested yaw rate in rad/s.",
+                "maximum": 1.0,
+                "minimum": -1.0,
+                "type": "number"
+              }
+            },
+            "required": [
+              "vx"
+            ],
+            "type": "object"
+          }
+        },
+        "type": "function"
+      }
+    ]
+  },
+  "dynamic_custom_ready_tools": {
+    "readiness": "structural, not behavioral certification",
+    "rejected": [],
+    "tools": [
+      {
+        "function": {
+          "description": "Official-policy custom package compatibility fixture. Forward preset vx=0.4; not a self-trained skill.",
+          "name": "example_walk",
+          "parameters": {
+            "additionalProperties": false,
+            "properties": {
+              "duration_ms": {
+                "default": 3000,
+                "description": "How long to request motion; runtime timeout must include at least 1000 ms extra for stopping.",
+                "maximum": 9000,
+                "minimum": 100,
+                "type": "integer"
+              },
+              "vx": {
+                "description": "Requested forward velocity in m/s. Tested play preset 0.4; smaller commands can fail to initiate or restart walking.",
+                "maximum": 0.4,
+                "minimum": -0.4,
+                "type": "number"
+              },
+              "vy": {
+                "default": 0.0,
+                "description": "Requested body-frame lateral velocity, m/s.",
+                "maximum": 0.2,
+                "minimum": -0.2,
+                "type": "number"
+              },
+              "yaw_rate": {
+                "default": 0.0,
+                "description": "Requested yaw rate in rad/s.",
+                "maximum": 1.0,
+                "minimum": -1.0,
+                "type": "number"
+              }
+            },
+            "required": [
+              "vx"
+            ],
+            "type": "object"
+          }
+        },
+        "type": "function"
+      }
+    ]
+  },
+  "mock_model_http": {
+    "acceptance": "passed",
+    "transport": "local mock only; no genuine LLM inference",
+    "cases": [
+      {
+        "mode": "valid",
+        "exit_code": 0,
+        "requests": [
+          {
+            "messages": [
+              {
+                "content": "Select at most one available robot skill for this instruction. If it is unsupported, explain why without calling a tool. Do not invent capabilities, goal completion, or exact speed tracking. Tools describe bounded input commands; duration completion may occur with little motion. Only use the supplied tool descriptions and schemas. You cannot alter policy, runner, contracts or time budget.",
+                "role": "system"
+              },
+              {
+                "content": "Use the registered fixture skill to move forward briefly.",
+                "role": "user"
+              }
+            ],
+            "model": "local-fixture",
+            "temperature": 0.2,
+            "tool_choice": "auto",
+            "tools": [
+              {
+                "function": {
+                  "description": "Official-policy custom package compatibility fixture. Forward preset vx=0.4; not a self-trained skill.",
+                  "name": "example_walk",
+                  "parameters": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "duration_ms": {
+                        "default": 3000,
+                        "description": "How long to request motion; runtime timeout must include at least 1000 ms extra for stopping.",
+                        "maximum": 9000,
+                        "minimum": 100,
+                        "type": "integer"
+                      },
+                      "vx": {
+                        "description": "Requested forward velocity in m/s. Tested play preset 0.4; smaller commands can fail to initiate or restart walking.",
+                        "maximum": 0.4,
+                        "minimum": -0.4,
+                        "type": "number"
+                      },
+                      "vy": {
+                        "default": 0.0,
+                        "description": "Requested body-frame lateral velocity, m/s.",
+                        "maximum": 0.2,
+                        "minimum": -0.2,
+                        "type": "number"
+                      },
+                      "yaw_rate": {
+                        "default": 0.0,
+                        "description": "Requested yaw rate in rad/s.",
+                        "maximum": 1.0,
+                        "minimum": -1.0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "vx"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "type": "function"
+              }
+            ]
+          },
+          {
+            "messages": [
+              {
+                "content": "Explain the measured skill result briefly. Use status, fault, measured pose/velocity, motion samples and stop confirmation. Do not claim requested speed/distance was achieved without evidence. Do not request another action.",
+                "role": "system"
+              },
+              {
+                "content": "Use the registered fixture skill to move forward briefly.",
+                "role": "user"
+              },
+              {
+                "content": null,
+                "role": "assistant",
+                "tool_calls": [
+                  {
+                    "function": {
+                      "arguments": "{\"vx\": 0.4, \"duration_ms\": 2000}",
+                      "name": "example_walk"
+                    },
+                    "id": "fixture_call",
+                    "type": "function"
+                  }
+                ]
+              },
+              {
+                "content": "{\"elapsed_ms\":3109,\"observation\":{\"body_velocity\":[0.007360137559721149,-0.002553090876907837,0.000562391120869418],\"command\":[0.0,0.0,0.0],\"fault\":null,\"motion\":{\"max_tilt_deg\":3.830423355102539,\"min_height\":0.11156526515452549,\"samples\":74,\"start_xyz\":[-0.00016088188531717716,-0.000017406078558357447,0.11621543555436029],\"sum_vx\":9.73465041739857,\"sum_yaw_rate\":-6.838238211348653},\"policy_id\":\"example.velstand\",\"policy_provenance\":{\"action_contract\":\"microduck.joint_offset.14.rad.v1\",\"adapter\":\"microduck.twist.v1\",\"backend\":\"mujoco\",\"body\":\"microduck\",\"id\":\"example.velstand\",\"license\":\"Apache-2.0\",\"normalization\":\"embedded\",\"observation_contract\":\"microduck.proprio_command.61.v1\",\"rate_hz\":50,\"schema_version\":1,\"sha256\":\"1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45\",\"source\":\"https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx (official weights copied for compatibility fixture; not self-trained)\",\"version\":\"0.1.0\",\"weight\":\"policy.onnx\"},\"reason\":\"explicit_stop\",\"simulation_time\":2.2799999999999736,\"state\":\"idle\",\"stop_confirmed\":true,\"tilt_deg\":0.25793036818504333,\"xyz\":[0.19621824388554696,-0.01118451229265556,0.11679376181689533],\"yaw\":-0.19458373466455897,\"yaw_rate\":-0.007167208008468151},\"reason\":\"duration_complete\",\"skill_id\":\"example.walk\",\"status\":\"succeeded\",\"version\":\"0.3.0\"}",
+                "role": "tool",
+                "tool_call_id": "fixture_call"
+              }
+            ],
+            "model": "local-fixture",
+            "temperature": 0.2
+          }
+        ],
+        "result": {
+          "call": {
+            "parameters": {
+              "duration_ms": 2000,
+              "vx": 0.4
+            },
+            "skill_id": "example.walk",
+            "timeout_ms": 10000
+          },
+          "executed": true,
+          "feedback": {
+            "text": "Mock acknowledgement of measured result; not real LLM inference."
+          },
+          "result": {
+            "elapsed_ms": 3109,
+            "observation": {
+              "body_velocity": [
+                0.007360137559721149,
+                -0.002553090876907837,
+                0.000562391120869418
+              ],
+              "command": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "fault": null,
+              "motion": {
+                "max_tilt_deg": 3.830423355102539,
+                "min_height": 0.11156526515452549,
+                "samples": 74,
+                "start_xyz": [
+                  -0.00016088188531717716,
+                  -1.7406078558357447e-05,
+                  0.11621543555436029
+                ],
+                "sum_vx": 9.73465041739857,
+                "sum_yaw_rate": -6.838238211348653
+              },
+              "policy_id": "example.velstand",
+              "policy_provenance": {
+                "action_contract": "microduck.joint_offset.14.rad.v1",
+                "adapter": "microduck.twist.v1",
+                "backend": "mujoco",
+                "body": "microduck",
+                "id": "example.velstand",
+                "license": "Apache-2.0",
+                "normalization": "embedded",
+                "observation_contract": "microduck.proprio_command.61.v1",
+                "rate_hz": 50,
+                "schema_version": 1,
+                "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                "source": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx (official weights copied for compatibility fixture; not self-trained)",
+                "version": "0.1.0",
+                "weight": "policy.onnx"
+              },
+              "reason": "explicit_stop",
+              "simulation_time": 2.2799999999999736,
+              "state": "idle",
+              "stop_confirmed": true,
+              "tilt_deg": 0.25793036818504333,
+              "xyz": [
+                0.19621824388554696,
+                -0.01118451229265556,
+                0.11679376181689533
+              ],
+              "yaw": -0.19458373466455897,
+              "yaw_rate": -0.007167208008468151
+            },
+            "reason": "duration_complete",
+            "skill_id": "example.walk",
+            "status": "succeeded",
+            "version": "0.3.0"
+          }
+        },
+        "stderr": null
+      },
+      {
+        "mode": "feedback_fail",
+        "exit_code": 0,
+        "requests": [
+          {
+            "messages": [
+              {
+                "content": "Select at most one available robot skill for this instruction. If it is unsupported, explain why without calling a tool. Do not invent capabilities, goal completion, or exact speed tracking. Tools describe bounded input commands; duration completion may occur with little motion. Only use the supplied tool descriptions and schemas. You cannot alter policy, runner, contracts or time budget.",
+                "role": "system"
+              },
+              {
+                "content": "Use the registered fixture skill to move forward briefly.",
+                "role": "user"
+              }
+            ],
+            "model": "local-fixture",
+            "temperature": 0.2,
+            "tool_choice": "auto",
+            "tools": [
+              {
+                "function": {
+                  "description": "Official-policy custom package compatibility fixture. Forward preset vx=0.4; not a self-trained skill.",
+                  "name": "example_walk",
+                  "parameters": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "duration_ms": {
+                        "default": 3000,
+                        "description": "How long to request motion; runtime timeout must include at least 1000 ms extra for stopping.",
+                        "maximum": 9000,
+                        "minimum": 100,
+                        "type": "integer"
+                      },
+                      "vx": {
+                        "description": "Requested forward velocity in m/s. Tested play preset 0.4; smaller commands can fail to initiate or restart walking.",
+                        "maximum": 0.4,
+                        "minimum": -0.4,
+                        "type": "number"
+                      },
+                      "vy": {
+                        "default": 0.0,
+                        "description": "Requested body-frame lateral velocity, m/s.",
+                        "maximum": 0.2,
+                        "minimum": -0.2,
+                        "type": "number"
+                      },
+                      "yaw_rate": {
+                        "default": 0.0,
+                        "description": "Requested yaw rate in rad/s.",
+                        "maximum": 1.0,
+                        "minimum": -1.0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "vx"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "type": "function"
+              }
+            ]
+          },
+          {
+            "messages": [
+              {
+                "content": "Explain the measured skill result briefly. Use status, fault, measured pose/velocity, motion samples and stop confirmation. Do not claim requested speed/distance was achieved without evidence. Do not request another action.",
+                "role": "system"
+              },
+              {
+                "content": "Use the registered fixture skill to move forward briefly.",
+                "role": "user"
+              },
+              {
+                "content": null,
+                "role": "assistant",
+                "tool_calls": [
+                  {
+                    "function": {
+                      "arguments": "{\"vx\": 0.4, \"duration_ms\": 2000}",
+                      "name": "example_walk"
+                    },
+                    "id": "fixture_call",
+                    "type": "function"
+                  }
+                ]
+              },
+              {
+                "content": "{\"elapsed_ms\":3222,\"observation\":{\"body_velocity\":[0.001570987772306137,0.000467817995551622,-0.0003934168764041957],\"command\":[0.0,0.0,0.0],\"fault\":null,\"motion\":{\"max_tilt_deg\":3.830423355102539,\"min_height\":0.11156526515452549,\"samples\":73,\"start_xyz\":[-0.00016088188531717716,-0.000017406078558357447,0.11621543555436029],\"sum_vx\":9.585329532355091,\"sum_yaw_rate\":-7.339812966063619},\"policy_id\":\"example.velstand\",\"policy_provenance\":{\"action_contract\":\"microduck.joint_offset.14.rad.v1\",\"adapter\":\"microduck.twist.v1\",\"backend\":\"mujoco\",\"body\":\"microduck\",\"id\":\"example.velstand\",\"license\":\"Apache-2.0\",\"normalization\":\"embedded\",\"observation_contract\":\"microduck.proprio_command.61.v1\",\"rate_hz\":50,\"schema_version\":1,\"sha256\":\"1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45\",\"source\":\"https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx (official weights copied for compatibility fixture; not self-trained)\",\"version\":\"0.1.0\",\"weight\":\"policy.onnx\"},\"reason\":\"explicit_stop\",\"simulation_time\":2.359999999999972,\"state\":\"idle\",\"stop_confirmed\":true,\"tilt_deg\":0.3981127142906189,\"xyz\":[0.19555948851309207,-0.011882222801360694,0.11682019507459188],\"yaw\":-0.20554107252435383,\"yaw_rate\":-0.00556581374257803},\"reason\":\"duration_complete\",\"skill_id\":\"example.walk\",\"status\":\"succeeded\",\"version\":\"0.3.0\"}",
+                "role": "tool",
+                "tool_call_id": "fixture_call"
+              }
+            ],
+            "model": "local-fixture",
+            "temperature": 0.2
+          }
+        ],
+        "result": {
+          "call": {
+            "parameters": {
+              "duration_ms": 2000,
+              "vx": 0.4
+            },
+            "skill_id": "example.walk",
+            "timeout_ms": 10000
+          },
+          "executed": true,
+          "feedback": {
+            "error": "LLM HTTP transport failed (exit status: 22)"
+          },
+          "result": {
+            "elapsed_ms": 3222,
+            "observation": {
+              "body_velocity": [
+                0.001570987772306137,
+                0.000467817995551622,
+                -0.0003934168764041957
+              ],
+              "command": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "fault": null,
+              "motion": {
+                "max_tilt_deg": 3.830423355102539,
+                "min_height": 0.11156526515452549,
+                "samples": 73,
+                "start_xyz": [
+                  -0.00016088188531717716,
+                  -1.7406078558357447e-05,
+                  0.11621543555436029
+                ],
+                "sum_vx": 9.585329532355091,
+                "sum_yaw_rate": -7.339812966063619
+              },
+              "policy_id": "example.velstand",
+              "policy_provenance": {
+                "action_contract": "microduck.joint_offset.14.rad.v1",
+                "adapter": "microduck.twist.v1",
+                "backend": "mujoco",
+                "body": "microduck",
+                "id": "example.velstand",
+                "license": "Apache-2.0",
+                "normalization": "embedded",
+                "observation_contract": "microduck.proprio_command.61.v1",
+                "rate_hz": 50,
+                "schema_version": 1,
+                "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                "source": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx (official weights copied for compatibility fixture; not self-trained)",
+                "version": "0.1.0",
+                "weight": "policy.onnx"
+              },
+              "reason": "explicit_stop",
+              "simulation_time": 2.359999999999972,
+              "state": "idle",
+              "stop_confirmed": true,
+              "tilt_deg": 0.3981127142906189,
+              "xyz": [
+                0.19555948851309207,
+                -0.011882222801360694,
+                0.11682019507459188
+              ],
+              "yaw": -0.20554107252435383,
+              "yaw_rate": -0.00556581374257803
+            },
+            "reason": "duration_complete",
+            "skill_id": "example.walk",
+            "status": "succeeded",
+            "version": "0.3.0"
+          }
+        },
+        "stderr": "BAM m6 actuators on 14 joints: kt=0.3660 R=2.8114 vin=7.40V kp_fw=200 vin_drop_gain=0.1 vin_min=6.0 max_current=None forcerange=+/-0.963Nm armature=1.81e-03\nLoading walking policy from: /Users/silenceland/Documents/workspace/emboided-ai/my-repo/robo-archon/python/policies/external/example.velstand/policy.onnx\nWalking policy input: obs, shape: [1, 61]\nWalking policy output: actions, shape: [1, 14]\nSensors found:\n  imu_ang_vel: id=2\nBody IDs:\n  trunk_base: id=1\nNumber of actuators: 14\nDefault pose: [ 0.     -0.0873 -0.4579 -0.0049  0.453   0.3491  0.3491  0.      0.\n  0.      0.0873  0.4579  0.0049 -0.453 ]\nAction scale: 1.0\nVel cmd: [0.40, 0.00, 0.00] [walking]\nVel cmd: [0.00, 0.00, 0.00] [walking]\n"
+      },
+      {
+        "mode": "invalid",
+        "exit_code": 1,
+        "requests": [
+          {
+            "messages": [
+              {
+                "content": "Select at most one available robot skill for this instruction. If it is unsupported, explain why without calling a tool. Do not invent capabilities, goal completion, or exact speed tracking. Tools describe bounded input commands; duration completion may occur with little motion. Only use the supplied tool descriptions and schemas. You cannot alter policy, runner, contracts or time budget.",
+                "role": "system"
+              },
+              {
+                "content": "Use the registered fixture skill to move forward briefly.",
+                "role": "user"
+              }
+            ],
+            "model": "local-fixture",
+            "temperature": 0.2,
+            "tool_choice": "auto",
+            "tools": [
+              {
+                "function": {
+                  "description": "Official-policy custom package compatibility fixture. Forward preset vx=0.4; not a self-trained skill.",
+                  "name": "example_walk",
+                  "parameters": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "duration_ms": {
+                        "default": 3000,
+                        "description": "How long to request motion; runtime timeout must include at least 1000 ms extra for stopping.",
+                        "maximum": 9000,
+                        "minimum": 100,
+                        "type": "integer"
+                      },
+                      "vx": {
+                        "description": "Requested forward velocity in m/s. Tested play preset 0.4; smaller commands can fail to initiate or restart walking.",
+                        "maximum": 0.4,
+                        "minimum": -0.4,
+                        "type": "number"
+                      },
+                      "vy": {
+                        "default": 0.0,
+                        "description": "Requested body-frame lateral velocity, m/s.",
+                        "maximum": 0.2,
+                        "minimum": -0.2,
+                        "type": "number"
+                      },
+                      "yaw_rate": {
+                        "default": 0.0,
+                        "description": "Requested yaw rate in rad/s.",
+                        "maximum": 1.0,
+                        "minimum": -1.0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "vx"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "type": "function"
+              }
+            ]
+          }
+        ],
+        "result": null,
+        "stderr": "Error: unknown parameter runner\n"
+      },
+      {
+        "mode": "unknown",
+        "exit_code": 1,
+        "requests": [
+          {
+            "messages": [
+              {
+                "content": "Select at most one available robot skill for this instruction. If it is unsupported, explain why without calling a tool. Do not invent capabilities, goal completion, or exact speed tracking. Tools describe bounded input commands; duration completion may occur with little motion. Only use the supplied tool descriptions and schemas. You cannot alter policy, runner, contracts or time budget.",
+                "role": "system"
+              },
+              {
+                "content": "Use the registered fixture skill to move forward briefly.",
+                "role": "user"
+              }
+            ],
+            "model": "local-fixture",
+            "temperature": 0.2,
+            "tool_choice": "auto",
+            "tools": [
+              {
+                "function": {
+                  "description": "Official-policy custom package compatibility fixture. Forward preset vx=0.4; not a self-trained skill.",
+                  "name": "example_walk",
+                  "parameters": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "duration_ms": {
+                        "default": 3000,
+                        "description": "How long to request motion; runtime timeout must include at least 1000 ms extra for stopping.",
+                        "maximum": 9000,
+                        "minimum": 100,
+                        "type": "integer"
+                      },
+                      "vx": {
+                        "description": "Requested forward velocity in m/s. Tested play preset 0.4; smaller commands can fail to initiate or restart walking.",
+                        "maximum": 0.4,
+                        "minimum": -0.4,
+                        "type": "number"
+                      },
+                      "vy": {
+                        "default": 0.0,
+                        "description": "Requested body-frame lateral velocity, m/s.",
+                        "maximum": 0.2,
+                        "minimum": -0.2,
+                        "type": "number"
+                      },
+                      "yaw_rate": {
+                        "default": 0.0,
+                        "description": "Requested yaw rate in rad/s.",
+                        "maximum": 1.0,
+                        "minimum": -1.0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "vx"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "type": "function"
+              }
+            ]
+          }
+        ],
+        "result": null,
+        "stderr": "Error: model selected an unavailable tool\n"
+      },
+      {
+        "mode": "refuse",
+        "exit_code": 0,
+        "requests": [
+          {
+            "messages": [
+              {
+                "content": "Select at most one available robot skill for this instruction. If it is unsupported, explain why without calling a tool. Do not invent capabilities, goal completion, or exact speed tracking. Tools describe bounded input commands; duration completion may occur with little motion. Only use the supplied tool descriptions and schemas. You cannot alter policy, runner, contracts or time budget.",
+                "role": "system"
+              },
+              {
+                "content": "Use the registered fixture skill to move forward briefly.",
+                "role": "user"
+              }
+            ],
+            "model": "local-fixture",
+            "temperature": 0.2,
+            "tool_choice": "auto",
+            "tools": [
+              {
+                "function": {
+                  "description": "Official-policy custom package compatibility fixture. Forward preset vx=0.4; not a self-trained skill.",
+                  "name": "example_walk",
+                  "parameters": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "duration_ms": {
+                        "default": 3000,
+                        "description": "How long to request motion; runtime timeout must include at least 1000 ms extra for stopping.",
+                        "maximum": 9000,
+                        "minimum": 100,
+                        "type": "integer"
+                      },
+                      "vx": {
+                        "description": "Requested forward velocity in m/s. Tested play preset 0.4; smaller commands can fail to initiate or restart walking.",
+                        "maximum": 0.4,
+                        "minimum": -0.4,
+                        "type": "number"
+                      },
+                      "vy": {
+                        "default": 0.0,
+                        "description": "Requested body-frame lateral velocity, m/s.",
+                        "maximum": 0.2,
+                        "minimum": -0.2,
+                        "type": "number"
+                      },
+                      "yaw_rate": {
+                        "default": 0.0,
+                        "description": "Requested yaw rate in rad/s.",
+                        "maximum": 1.0,
+                        "minimum": -1.0,
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "vx"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "type": "function"
+              }
+            ]
+          }
+        ],
+        "result": {
+          "executed": false,
+          "refusal": "Requested skill is unavailable."
+        },
+        "stderr": ""
+      }
+    ]
+  },
+  "keyboard_regression": {
+    "acceptance": "passed",
+    "keys": "w a d w, w interrupted by x, q",
+    "native_viewer": false,
+    "results": [
+      {
+        "elapsed_ms": 2871,
+        "observation": {
+          "body_velocity": [
+            0.004592109919833648,
+            0.00454163706881814,
+            0.00022047419031737063
+          ],
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fault": null,
+          "motion": {
+            "max_tilt_deg": 4.050042152404785,
+            "min_height": 0.1116977684213707,
+            "samples": 75,
+            "start_xyz": [
+              0.002803032344010792,
+              -6.44876674777554e-05,
+              0.11658814177593928
+            ],
+            "sum_vx": 9.50384081609025,
+            "sum_yaw_rate": -0.4909457634203136
+          },
+          "policy_id": "velstand",
+          "policy_provenance": {
+            "license": "Apache-2.0",
+            "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+            "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+            "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+          },
+          "reason": "explicit_stop",
+          "simulation_time": 2.8599999999999612,
+          "state": "idle",
+          "stop_confirmed": true,
+          "tilt_deg": 0.41730982065200806,
+          "xyz": [
+            0.19382903211390057,
+            0.013339292775629522,
+            0.11679802338533787
+          ],
+          "yaw": -0.08245606066102429,
+          "yaw_rate": -0.03438776358962059
+        },
+        "reason": "duration_complete",
+        "skill_id": "microduck.walk",
+        "status": "succeeded",
+        "version": "0.3.0"
+      },
+      {
+        "elapsed_ms": 2818,
+        "observation": {
+          "body_velocity": [
+            -0.0015728418224779108,
+            0.00219850826115348,
+            -0.0011654216432118898
+          ],
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fault": null,
+          "motion": {
+            "max_tilt_deg": 3.7636396884918217,
+            "min_height": 0.11347869467164565,
+            "samples": 75,
+            "start_xyz": [
+              0.19410478240758275,
+              0.01344768320204802,
+              0.11670028618800776
+            ],
+            "sum_vx": 6.25361858920049,
+            "sum_yaw_rate": 35.10395187139511
+          },
+          "policy_id": "velstand",
+          "policy_provenance": {
+            "license": "Apache-2.0",
+            "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+            "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+            "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+          },
+          "reason": "explicit_stop",
+          "simulation_time": 5.179999999999912,
+          "state": "idle",
+          "stop_confirmed": true,
+          "tilt_deg": 0.7843453288078308,
+          "xyz": [
+            0.3125664969043039,
+            0.04084795607966864,
+            0.11714689453746464
+          ],
+          "yaw": 0.5836204546437205,
+          "yaw_rate": -0.012256165966391563
+        },
+        "reason": "duration_complete",
+        "skill_id": "microduck.walk",
+        "status": "succeeded",
+        "version": "0.3.0"
+      },
+      {
+        "elapsed_ms": 2791,
+        "observation": {
+          "body_velocity": [
+            0.004317425724112674,
+            0.000403487982901359,
+            -0.0004541944725768834
+          ],
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fault": null,
+          "motion": {
+            "max_tilt_deg": 4.880660533905029,
+            "min_height": 0.11374652845227153,
+            "samples": 72,
+            "start_xyz": [
+              0.3121697164108936,
+              0.040748039025776,
+              0.11692313721889526
+            ],
+            "sum_vx": 7.0258636985150025,
+            "sum_yaw_rate": -47.5763890594244
+          },
+          "policy_id": "velstand",
+          "policy_provenance": {
+            "license": "Apache-2.0",
+            "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+            "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+            "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+          },
+          "reason": "explicit_stop",
+          "simulation_time": 7.399999999999864,
+          "state": "idle",
+          "stop_confirmed": true,
+          "tilt_deg": 0.4410186111927033,
+          "xyz": [
+            0.4482310597572211,
+            0.05836659873531362,
+            0.11682646407204608
+          ],
+          "yaw": -0.4813495765597981,
+          "yaw_rate": -0.026955701410770416
+        },
+        "reason": "duration_complete",
+        "skill_id": "microduck.walk",
+        "status": "succeeded",
+        "version": "0.3.0"
+      },
+      {
+        "elapsed_ms": 2989,
+        "observation": {
+          "body_velocity": [
+            0.0018569150743579612,
+            -0.0003240961499662404,
+            -0.0006324264619552556
+          ],
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fault": null,
+          "motion": {
+            "max_tilt_deg": 3.829758644104004,
+            "min_height": 0.11252853581530348,
+            "samples": 73,
+            "start_xyz": [
+              0.4486161994954157,
+              0.058417021413161824,
+              0.11665799143790184
+            ],
+            "sum_vx": 8.9806559196809,
+            "sum_yaw_rate": -2.808301311917603
+          },
+          "policy_id": "velstand",
+          "policy_provenance": {
+            "license": "Apache-2.0",
+            "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+            "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+            "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+          },
+          "reason": "explicit_stop",
+          "simulation_time": 9.800000000000132,
+          "state": "idle",
+          "stop_confirmed": true,
+          "tilt_deg": 0.4601267278194427,
+          "xyz": [
+            0.6098731246028519,
+            -0.020583198334732357,
+            0.11701451044484032
+          ],
+          "yaw": -0.6134227651319685,
+          "yaw_rate": 0.004249906167387962
+        },
+        "reason": "duration_complete",
+        "skill_id": "microduck.walk",
+        "status": "succeeded",
+        "version": "0.3.0"
+      },
+      {
+        "elapsed_ms": 1486,
+        "observation": {
+          "body_velocity": [
+            0.0029519920882080538,
+            0.0013072888754642538,
+            0.0008613109995914429
+          ],
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fault": null,
+          "motion": {
+            "max_tilt_deg": 1.679229974746704,
+            "min_height": 0.11294328328479122,
+            "samples": 15,
+            "start_xyz": [
+              0.6102569816775618,
+              -0.020849269064132057,
+              0.11692527735700578
+            ],
+            "sum_vx": 0.7804958668302551,
+            "sum_yaw_rate": -0.7371287038549781
+          },
+          "policy_id": "velstand",
+          "policy_provenance": {
+            "license": "Apache-2.0",
+            "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+            "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+            "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+          },
+          "reason": "explicit_stop",
+          "simulation_time": 11.140000000000342,
+          "state": "idle",
+          "stop_confirmed": true,
+          "tilt_deg": 0.5524927973747253,
+          "xyz": [
+            0.6200896690923108,
+            -0.019428522337724883,
+            0.11598920622521346
+          ],
+          "yaw": -0.6027234190093174,
+          "yaw_rate": -0.0002365416003158316
+        },
+        "reason": "cancelled",
+        "skill_id": "microduck.walk",
+        "status": "cancelled",
+        "version": "0.3.0"
+      },
+      {
+        "elapsed_ms": 2420,
+        "observation": {
+          "body_velocity": [
+            0.00026614320593846793,
+            1.8278115853372618e-05,
+            5.349195913100413e-06
+          ],
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fault": null,
+          "motion": {
+            "max_tilt_deg": 0.5352230072021484,
+            "min_height": 0.11597945647704408,
+            "samples": 74,
+            "start_xyz": [
+              0.6201152159272717,
+              -0.01943128517234167,
+              0.1160085030094314
+            ],
+            "sum_vx": 0.002492398867095047,
+            "sum_yaw_rate": 0.057865275693984586
+          },
+          "policy_id": "velstand",
+          "policy_provenance": {
+            "license": "Apache-2.0",
+            "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+            "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+            "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+          },
+          "reason": "explicit_stop",
+          "simulation_time": 12.92000000000062,
+          "state": "idle",
+          "stop_confirmed": true,
+          "tilt_deg": 0.4275009632110596,
+          "xyz": [
+            0.6201573809654944,
+            -0.019478576142622304,
+            0.11605829634836104
+          ],
+          "yaw": -0.6005142975025775,
+          "yaw_rate": 0.0024635642766952515
+        },
+        "reason": "duration_complete",
+        "skill_id": "microduck.stop",
+        "status": "succeeded",
+        "version": "0.2.0"
+      }
+    ]
+  },
+  "rust_tests": 50,
+  "python_ruff": "passed",
+  "weights_origin": "Official velstand checksum unchanged; fixture example.velstand is not self-trained"
+}

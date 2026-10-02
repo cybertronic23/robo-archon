@@ -42,7 +42,7 @@ User → LLM stream → tool_use → ToolRegistry → 结果回传 → 循环至
 
 ## 可扩展技能
 
-Skill 注册与查询已实现：`cargo run -p robo-archon-cli -- --list-skills`。通过 `--skills-dir` 加载用户技能目录；注册仅加载元数据，不执行策略。Microduck 官方策略 Runner 与 Executive 执行已接入；自训练权重及 LLM Skill 调用将在 M2g.3 实现，见 [设计与迭代](docs/skills-design.md) 和 [M2g.1 spec](docs/specs/m2g-1-skill-registry.md)。
+Skill 注册与查询已实现：`cargo run -p robo-archon-cli -- --list-skills`。通过 `--skills-dir` 加载用户技能目录；注册仅加载元数据，不执行策略。Microduck 官方策略 Runner 与 Executive 执行已接入；M2g.3 已接入同契约 ONNX 包及动态 LLM Skill 调用（官方权重副本/本地模拟 API 验收），见 [设计与迭代](docs/skills-design.md) 和 [M2g.1 spec](docs/specs/m2g-1-skill-registry.md)。
 
 ## Robot Gallery
 
@@ -173,7 +173,7 @@ robo-archon/
 | **M2c** | ✅ DeepSeek 等 LLM 编译自然语言 → 原语；平面小车 `diff_car` |
 | **M2d** | ✅ 会话常驻 + ratatui TUI（`--tui`；per-turn media / 中途 estop；待本机 viewer 手测；网页 Chat → 以后 M2e） |
 | **M2f** | 🚧 M2f.1/M2f.2 已完成：本体资料包、Franka/SO101 物理抓放、ManiSkill 同任务验证与演示；M2f.3 Microduck 基础接入已实现，Go2 后续，见 [Gallery](docs/robot-gallery.md) 与 [设计](docs/body-packages-design.md) |
-| **M2g** | 🚧 可扩展技能：M2g.1 注册/发现/调用校验、M2g.2 Runner 与持续执行已实现；下一步 M2g.3 自训练策略与 LLM 调用，见 [技能设计](docs/skills-design.md) |
+| **M2g** | 🚧 可扩展技能：M2g.1 注册/发现/调用校验、M2g.2 Runner 与持续执行已实现；M2g.3 兼容策略包与 LLM 调用机制已实现；真实自训练模型/云端推理待验收，见 [技能设计](docs/skills-design.md) |
 | **M3** | Isaac Sim（次优先） |
 | **M4** | Gazebo 等其它平台 |
 | **M5** | 真机 SO101 / Microduck 等 `RobotBackend` |

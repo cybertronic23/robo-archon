@@ -52,7 +52,7 @@ def main():
         raise AssertionError("keyboard result timeout")
 
     def result():
-        line = wait_for(lambda line: line.startswith('{"skill_id":'))
+        line = wait_for(lambda line: line.startswith("{") and '"skill_id":' in line)
         value = json.loads(line)
         assert (
             value["observation"]["fault"] is None

@@ -691,6 +691,7 @@ dependencies = [
  "async-trait",
  "robo-archon-embodied",
  "robo-archon-kinetic",
+ "robo-archon-skills",
  "serde",
  "serde_json",
  "tokio",

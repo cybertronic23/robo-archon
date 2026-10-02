@@ -3,6 +3,7 @@
 mod pick_place;
 mod session;
 mod skill_commands;
+mod skill_readiness;
 mod tui_app;
 
 use std::io::{self, BufRead, Write};
@@ -30,7 +31,7 @@ use session::{SessionConfig, TurnOutcome};
     name = "robo-archon",
     about = "RoboArchon Agent OS — MuJoCo-ready control loop",
     group(clap::ArgGroup::new("skill_query")
-        .args(["list_skills", "inspect_skill", "validate_skill_call", "run_skill", "skill_keyboard"])
+        .args(["list_skills", "inspect_skill", "validate_skill_call", "run_skill", "skill_keyboard", "skill_instruction", "list_skill_tools", "install_policy"])
         .multiple(false)
         .conflicts_with_all(["install_robot", "doctor_robot", "list_robots", "inspect_robot", "list_models", "demo", "tui", "instruction"]))
 )]
@@ -106,6 +107,22 @@ struct Args {
     /// Interactive terminal keys: w/a/d/x (move/turn/stop), q to quit.
     #[arg(long, requires = "robot")]
     skill_keyboard: bool,
+
+    /// Propose one available skill via LLM tools, execute it, and return measured feedback.
+    #[arg(long, requires = "robot")]
+    skill_instruction: Option<String>,
+
+    /// Show locally ready skills offered to the LLM (separate from metadata listing).
+    #[arg(long, requires = "robot")]
+    list_skill_tools: bool,
+
+    /// Install a data-only compatible ONNX policy package directory.
+    #[arg(long)]
+    install_policy: Option<PathBuf>,
+
+    /// User-installed ONNX packages, outside Git.
+    #[arg(long, default_value = "python/policies/external")]
+    policy_packages: PathBuf,
 
     /// Local pinned Microduck package installed by --install-robot microduck.
     #[arg(long, default_value = "python/models/external/microduck")]

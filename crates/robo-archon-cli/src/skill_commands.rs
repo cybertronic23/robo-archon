@@ -12,7 +12,10 @@ pub fn handle(args: &Args) -> Result<bool> {
     if args.list_skills || args.inspect_skill.is_some() || args.validate_skill_call.is_some() {
         let registry = SkillRegistry::load_dir(&args.skills_dir)?;
         if let Some(path) = &args.validate_skill_call {
-            let catalog = robo_archon_embodied::body::BodyCatalog::load(&args.body_catalog)?;
+            let catalog = crate::skill_readiness::metadata_catalog(
+                robo_archon_embodied::body::BodyCatalog::load(&args.body_catalog)?,
+                &args.policy_packages,
+            )?;
             let call: SkillCall = serde_json::from_slice(&std::fs::read(path)?)?;
             let prepared = registry.prepare(
                 &catalog,
@@ -46,7 +49,30 @@ pub fn handle(args: &Args) -> Result<bool> {
 }
 
 pub async fn execute(args: &Args) -> Result<bool> {
-    if args.run_skill.is_none() && !args.skill_keyboard {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let mut python = std::env::var("ROBO_ARCHON_PYTHON").unwrap_or_else(|_| {
+        root.join(".venv-microduck/bin/python")
+            .to_string_lossy()
+            .into_owned()
+    });
+    if let Some(source) = &args.install_policy {
+        let status = tokio::process::Command::new(&python)
+            .arg(root.join("scripts/install_policy.py"))
+            .arg(source)
+            .arg("--destination-root")
+            .arg(&args.policy_packages)
+            .status()
+            .await?;
+        if !status.success() {
+            bail!("policy installation failed");
+        }
+        return Ok(true);
+    }
+    if args.run_skill.is_none()
+        && !args.skill_keyboard
+        && args.skill_instruction.is_none()
+        && !args.list_skill_tools
+    {
         return Ok(false);
     }
     let body = args.robot.as_deref().context("--robot required")?;
@@ -55,24 +81,79 @@ pub async fn execute(args: &Args) -> Result<bool> {
     }
     let registry = SkillRegistry::load_dir(&args.skills_dir)?;
     let catalog = robo_archon_embodied::body::BodyCatalog::load(&args.body_catalog)?;
-    let mut pending = if let Some(path) = &args.run_skill {
+    let ready = crate::skill_readiness::inspect(
+        &python,
+        &root,
+        &args.skill_assets,
+        &args.policy_packages,
+        &registry,
+        catalog,
+        body,
+        &args.backend,
+    )
+    .await?;
+    let catalog = &ready.catalog;
+    if args.list_skill_tools {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(
+                &json!({"tools":robo_archon_policy::skill_agent::tools(&ready.skills),"rejected":ready.rejected,"readiness":"structural, not behavioral certification"})
+            )?
+        );
+        return Ok(true);
+    }
+    let mut client = None;
+    let mut decision = None;
+    let mut pending = if let Some(instruction) = &args.skill_instruction {
+        let key = args
+            .llm_api_key
+            .clone()
+            .or_else(|| std::env::var("OPENAI_API_KEY").ok())
+            .context("skill instruction requires an LLM API key")?;
+        let connection = robo_archon_policy::chat::ChatClient::new(
+            key,
+            args.llm_base_url
+                .clone()
+                .unwrap_or_else(|| "https://api.deepseek.com".into()),
+            args.llm_model.clone(),
+        );
+        let proposal =
+            robo_archon_policy::skill_agent::propose(&connection, instruction, &ready.skills)
+                .await?;
+        if proposal.call.is_none() {
+            let report = json!({"executed":false,"refusal":proposal.refusal});
+            save_report(args, &report)?;
+            println!("{}", report);
+            return Ok(true);
+        }
+        let call = proposal.call.clone();
+        client = Some(connection);
+        decision = Some(proposal);
+        call
+    } else if let Some(path) = &args.run_skill {
         Some(serde_json::from_slice::<SkillCall>(&std::fs::read(path)?)?)
     } else {
         None
     };
-    // Validate before spawning any worker.
+    let mut selected_policy = "velstand".to_string();
+    // No worker or motion exists until the proposed call passes host validation.
     if let Some(call) = &pending {
-        let prepared = registry.prepare(&catalog, body, &args.backend, call)?;
-        if prepared.binding.runner != "onnx_policy.v1" {
-            bail!("runner is not installed");
+        if !ready.skills.iter().any(|skill| skill.id == call.skill_id) {
+            bail!("skill is not executable: {}", call.skill_id);
         }
+        let prepared = registry.prepare(catalog, body, &args.backend, call)?;
+        selected_policy = prepared
+            .binding
+            .policy
+            .clone()
+            .context("policy reference required")?;
+        robo_archon_sim_bridge::continuous::validate_call(&prepared, &selected_policy)?;
     }
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let mut python = std::env::var("ROBO_ARCHON_PYTHON").unwrap_or_else(|_| {
-        root.join(".venv-microduck/bin/python")
-            .to_string_lossy()
-            .into_owned()
-    });
+    let selected_package = ready
+        .packages
+        .get(&selected_policy)
+        .context("policy is not ready")?
+        .as_deref();
     if args.viewer && cfg!(target_os = "macos") {
         let path = std::path::Path::new(&python)
             .parent()
@@ -86,6 +167,8 @@ pub async fn execute(args: &Args) -> Result<bool> {
         &args.skill_assets,
         args.viewer,
         args.skill_record_dir.as_deref(),
+        &selected_policy,
+        selected_package,
     )
     .await?;
     let mut runners = RunnerRegistry::default();
@@ -159,17 +242,35 @@ pub async fn execute(args: &Args) -> Result<bool> {
                 });
             }
             let call = pending.take().context("skill call missing")?;
-            let prepared = registry.prepare(&catalog, body, &args.backend, &call)?;
+            let prepared = registry.prepare(catalog, body, &args.backend, &call)?;
             let outcome = executive
                 .run_skill(&prepared, runners.get_mut(&prepared.binding.runner)?)
                 .await?;
-            if let Some(path) = &args.skill_report {
-                if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
-                    std::fs::create_dir_all(parent)?;
-                }
-                std::fs::write(path, serde_json::to_string_pretty(&outcome)?)?;
+            let raw = serde_json::to_value(&outcome)?;
+            if let (Some(client), Some(decision), Some(instruction)) =
+                (&client, &decision, &args.skill_instruction)
+            {
+                // Preserve physical evidence before asking the model to explain it.
+                let mut report =
+                    json!({"executed":true,"call":decision.call,"result":raw,"feedback":null});
+                save_report(args, &report)?;
+                report["feedback"] = match robo_archon_policy::skill_agent::feedback(
+                    client,
+                    instruction,
+                    decision,
+                    &raw,
+                )
+                .await
+                {
+                    Ok(text) => json!({"text":text}),
+                    Err(error) => json!({"error":error.to_string()}),
+                };
+                save_report(args, &report)?;
+                println!("{}", report);
+            } else {
+                save_report(args, &raw)?;
+                println!("{}", raw);
             }
-            println!("{}", serde_json::to_string(&outcome)?);
             if !args.skill_keyboard {
                 if outcome.status != SkillStatus::Succeeded {
                     bail!("skill ended: {:?}: {}", outcome.status, outcome.reason);
@@ -190,4 +291,14 @@ pub async fn execute(args: &Args) -> Result<bool> {
     result?;
     shutdown?;
     Ok(true)
+}
+
+fn save_report(args: &Args, value: &serde_json::Value) -> Result<()> {
+    if let Some(path) = &args.skill_report {
+        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(path, serde_json::to_string_pretty(value)?)?;
+    }
+    Ok(())
 }

@@ -14,6 +14,7 @@ pub struct ContinuousRunner {
     input: ChildStdin,
     output: Lines<BufReader<ChildStdout>>,
     sequence: u64,
+    policy_id: String,
 }
 
 impl ContinuousRunner {
@@ -23,6 +24,8 @@ impl ContinuousRunner {
         package: &Path,
         viewer: bool,
         record_dir: Option<&Path>,
+        policy_id: &str,
+        policy_package: Option<&Path>,
     ) -> Result<Self> {
         let mut command = Command::new(python);
         command
@@ -34,6 +37,9 @@ impl ContinuousRunner {
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit())
             .kill_on_drop(true);
+        if let Some(path) = policy_package {
+            command.arg("--policy-package").arg(path);
+        }
         if viewer {
             command.arg("--viewer");
         }
@@ -82,10 +88,14 @@ impl ContinuousRunner {
             input,
             output,
             sequence: 0,
+            policy_id: policy_id.to_string(),
         };
-        runner
+        let hello = runner
             .exchange(json!({"op":"hello"}), Duration::from_secs(30))
             .await?;
+        if hello["policy_id"] != policy_id {
+            bail!("worker loaded a different policy");
+        }
         Ok(runner)
     }
 
@@ -151,29 +161,7 @@ impl SkillRunner for ContinuousRunner {
         "onnx_policy.v1"
     }
     fn validate(&self, skill: &PreparedSkill) -> Result<()> {
-        if skill.binding.body != "microduck"
-            || skill.binding.backend != "mujoco"
-            || skill.binding.policy.as_deref() != Some("velstand")
-            || skill.binding.config != json!({"command_adapter":"microduck.twist.v1"})
-            || skill.binding.resources != ["whole_body"]
-        {
-            bail!("unsupported continuous binding");
-        }
-        let duration = skill.parameters["duration_ms"]
-            .as_u64()
-            .context("duration_ms required")?;
-        if duration == 0 || duration > 10000 || duration + 1000 > skill.timeout_ms {
-            bail!("duration needs at least 1000 ms of stop/IO budget");
-        }
-        for (name, limit) in [("vx", 0.4), ("vy", 0.2), ("yaw_rate", 1.0)] {
-            let value = skill.parameters[name]
-                .as_f64()
-                .context("twist parameter missing")?;
-            if !value.is_finite() || value.abs() > limit {
-                bail!("twist outside adapter limits");
-            }
-        }
-        Ok(())
+        validate_call(skill, &self.policy_id)
     }
     async fn start(&mut self, skill: &PreparedSkill) -> Result<()> {
         self.validate(skill)?;
@@ -241,5 +229,62 @@ impl SkillRunner for ContinuousRunner {
             }
             tokio::time::sleep(Duration::from_millis(100)).await;
         }
+    }
+}
+
+/// Validate the trusted adapter call before creating any worker.
+pub fn validate_call(skill: &PreparedSkill, policy_id: &str) -> Result<()> {
+    if skill.binding.body != "microduck"
+        || skill.binding.backend != "mujoco"
+        || skill.binding.policy.as_deref() != Some(policy_id)
+        || skill.binding.config != json!({"command_adapter":"microduck.twist.v1"})
+        || skill.binding.resources != ["whole_body"]
+    {
+        bail!("unsupported continuous binding");
+    }
+    let duration = skill.parameters["duration_ms"]
+        .as_u64()
+        .context("duration_ms required")?;
+    if duration == 0 || duration > 10000 || duration + 1000 > skill.timeout_ms {
+        bail!("duration needs at least 1000 ms of stop/IO budget");
+    }
+    for (name, limit) in [("vx", 0.4), ("vy", 0.2), ("yaw_rate", 1.0)] {
+        let value = skill.parameters[name]
+            .as_f64()
+            .context("twist parameter missing")?;
+        if !value.is_finite() || value.abs() > limit {
+            bail!("twist outside adapter limits");
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod policy_call_tests {
+    use super::*;
+    use robo_archon_skills::SkillBinding;
+    #[test]
+    fn compatible_custom_policy_is_selected_by_host_and_invalid_calls_are_rejected() {
+        let mut skill = PreparedSkill {
+            skill_id: "user.walk".into(),
+            version: "1".into(),
+            parameters: json!({"vx":0.4,"vy":0.0,"yaw_rate":0.0,"duration_ms":2000}),
+            timeout_ms: 4000,
+            binding: SkillBinding {
+                body: "microduck".into(),
+                backend: "mujoco".into(),
+                runner: "onnx_policy.v1".into(),
+                policy: Some("user.policy".into()),
+                config: json!({"command_adapter":"microduck.twist.v1"}),
+                resources: vec!["whole_body".into()],
+            },
+        };
+        assert!(validate_call(&skill, "user.policy").is_ok());
+        assert!(validate_call(&skill, "velstand").is_err());
+        skill.timeout_ms = 2000;
+        assert!(validate_call(&skill, "user.policy").is_err());
+        skill.timeout_ms = 4000;
+        skill.binding.config = json!({"command_adapter":"shell"});
+        assert!(validate_call(&skill, "user.policy").is_err());
     }
 }

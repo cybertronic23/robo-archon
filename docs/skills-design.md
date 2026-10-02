@@ -1,6 +1,6 @@
 # AgentOS 可扩展技能设计
 
-状态：M2g.1 已完成；M2g.2 已完成可信 Runner 注册、Executive 生命周期与 Microduck 持续控制及限定预设试玩验收。自训练权重与 LLM 调用属于 M2g.3。执行验收见 [M2g.2 spec](specs/m2g-2-continuous-skills.md)。
+状态：M2g.1 已完成；M2g.2 已完成可信 Runner 注册、Executive 生命周期与 Microduck 持续控制及限定预设试玩验收。M2g.3 已实现兼容 ONNX 包与动态 LLM 工具调用，并以官方权重副本及本地模拟 API 验收；真实自训练行为与云端模型推理未验收。执行验收见 [M2g.2 spec](specs/m2g-2-continuous-skills.md)。
 
 AgentOS 的扩展入口是可注册的技能包。官方策略、自训练策略、传统控制器和任务组合使用同一套能力描述，不把机器人名称、技能名单或 ONNX 文件写死在 LLM 提示词中。Microduck 是首个持续策略执行案例，不是技能系统的特殊核心。
 
@@ -50,7 +50,7 @@ flowchart TD
 
 ## 执行扩展点
 
-已实现 `SkillRunner` 接口和 RunnerRegistry，按版本化 ID 注册可信执行适配器。当前仅 `onnx_policy.v1` 的 Microduck 官方 velstand 绑定可执行；以下其余类型仍是后续扩展：
+已实现 `SkillRunner` 接口和 RunnerRegistry，按版本化 ID 注册可信执行适配器。当前 `onnx_policy.v1` 可执行 Microduck 官方 velstand 或安装的同契约 ONNX 包；以下其余类型仍是后续扩展：
 
 - `profile_primitive.v1`：适配已有机械臂原语和 Executive 路径。
 - `onnx_policy.v1`：加载已校验权重，并调用对应 observation/action adapter；策略推理和物理步进留在 worker。
@@ -68,7 +68,7 @@ Executive 保持单机器人唯一执行权。生命周期拟为 `queued → val
 
 Runtime 负责取消、优先级、外部超时和日志；worker 必须独立维护命令 lease/watchdog，让宿主进程退出、连接断开或 LLM 卡住时仍会停止接受运动指令。Runner 的 `stop`/急停由运行时触发，不能仅靠取消一个 Rust future。正常停止、急停、跌倒处理、恢复策略分别定义；跌倒后禁止直接重新发步行指令，reset 标记为仿真重启。
 
-Manifest 的 `entry_conditions` 和 `success_description` 目前是说明数据，不执行字符串表达式。后续 Runner 提供确定性的状态检查与任务判定；不能把“standing”这个字写进 JSON 就宣称已经检查站立。只向 LLM 暴露：绑定兼容、Runner 已注册、依赖就绪、能力已通过验证的工具。M2g.1 的 `compatible_definitions` 仅做本体与平台元数据过滤，不是可执行工具列表。
+Manifest 的 `entry_conditions` 和 `success_description` 目前是说明数据，不执行字符串表达式。后续 Runner 提供确定性的状态检查与任务判定；不能把“standing”这个字写进 JSON 就宣称已经检查站立。最终目录应区分契约就绪与行为验收。M2g.3 当前只向 LLM 暴露绑定兼容、Runner 已注册、依赖与参数契约就绪的工具；这不证明自训练行为或自然语言目标已通过验收，执行结果保留实测证据。M2g.1 的 `compatible_definitions` 仅做本体与平台元数据过滤，不是可执行工具列表。
 
 ONNX 的接入至少校验：权重哈希、模型和本体版本、输入/输出大小与语义、关节顺序、单位、坐标、归一化、控制频率、支持命令范围，以及进入/退出姿态。尺寸相同不代表语义兼容。默认不执行权重包附带的代码。权重和网格独立缓存，Git 保留配置与来源；演示仅提交小 GIF。
 
@@ -82,7 +82,7 @@ ONNX 的接入至少校验：权重哈希、模型和本体版本、输入/输�
 4. Runner 验证依赖与适配，先仿真验收动作和策略切换，记录失败、超时与停止结果。
 5. 验证通过后进入可用工具目录，LLM 才能调用。若训练没有幅度输入，就不添加“幅度”参数。
 
-上述自训练权重全流程属于 M2g.3。当前可以注册使用已安装官方策略的新技能描述，并通过 Runner 执行；不能替换任意自训练权重。
+上述自训练权重全流程属于 M2g.3。当前可安装同契约的自定义 ONNX 包，注册引用它的新 Skill，并通过动态 LLM 工具目录调用；不同观测或动作语义需要新增 adapter。机制验收使用官方权重副本，真实自训练行为待用户提供模型。见 [M2g.3 spec](specs/m2g-3-policy-packages-and-llm.md)。
 
 ## 迭代顺序
 

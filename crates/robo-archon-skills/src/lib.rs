@@ -182,7 +182,7 @@ impl SkillManifest {
         Ok(())
     }
 
-    fn bind<'a>(
+    pub fn bind<'a>(
         &'a self,
         catalog: &BodyCatalog,
         body: &str,
