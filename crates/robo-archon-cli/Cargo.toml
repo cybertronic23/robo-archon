@@ -22,7 +22,7 @@ clap = { workspace = true }
 tokio = { workspace = true, features = ["signal"] }
 serde_json = { workspace = true }
 futures = { workspace = true }
-ratatui = "0.29"
+ratatui = { version = "0.29", features = ["unstable-rendered-line-info"] }
 crossterm = { version = "0.28", features = ["event-stream"] }
 tui-textarea = "0.7"
 async-trait = { workspace = true }

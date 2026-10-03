@@ -4,6 +4,8 @@ mod pick_place;
 mod session;
 mod skill_commands;
 mod skill_readiness;
+mod skill_session;
+mod skill_tui;
 mod tui_app;
 
 use std::io::{self, BufRead, Write};
@@ -26,7 +28,7 @@ use tokio::sync::Mutex;
 
 use session::{SessionConfig, TurnOutcome};
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 #[command(
     name = "robo-archon",
     about = "RoboArchon Agent OS — MuJoCo-ready control loop",
@@ -213,10 +215,18 @@ async fn main() -> Result<()> {
     if env_path.exists() {
         // Preserve explicit terminal exports. Do not display parser errors,
         // which can contain API keys from a malformed line.
-        dotenvy::from_path(&env_path)
-            .map_err(|_| anyhow::anyhow!("Could not load project .env; check its KEY=value syntax"))?;
+        dotenvy::from_path(&env_path).map_err(|_| {
+            anyhow::anyhow!("Could not load project .env; check its KEY=value syntax")
+        })?;
     }
     let mut args = Args::parse();
+
+    if args.tui
+        && (args.robot.as_deref() == Some("microduck")
+            || (args.model == "builtin:desktop_arm" && args.policy == "mock"))
+    {
+        return skill_tui::run(args).await;
+    }
 
     if skill_commands::execute(&args).await? {
         return Ok(());

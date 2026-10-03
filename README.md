@@ -52,6 +52,8 @@ Franka Panda / SO101 已支持固定版本资产安装、归位、摆动与夹�
 
 使用 LLM 前，在仓库根目录执行 `cp -n .env.example .env`，然后在 `.env` 中填写 `DEEPSEEK_API_KEY`。CLI 自动读取本地 `.env`，终端已有的同名环境变量优先；`.env` 不提交到 Git，模板 `.env.example` 可提交。完整配置与 Microduck 对话步骤见 [本地配置](docs/embodied-getting-started.md#本地配置与-microduck-llm-对话)。直接运行技能无需 API Key。
 
+推荐从 TUI 开始：`cargo run -p robo-archon-cli -- --tui`。依次选择 **Microduck 本体资料包 → MuJoCo → 加载 Skills → 对话**。上下键选择、Space 勾选技能、Enter 确认；仿真窗口默认开启，在平台选择页按 `v` 可关闭。当前此 Skill 会话适配 Microduck/MuJoCo；其他本体会显示待适配原因。已有显式模型的旧 TUI 命令继续使用原入口。
+
 ```bash
 # M0：进程内 sim
 cargo run -p robo-archon-cli -- --task-id demo_waypoints --step-ms 0

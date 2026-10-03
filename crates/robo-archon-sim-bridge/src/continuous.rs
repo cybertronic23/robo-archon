@@ -52,6 +52,31 @@ impl ContinuousRunner {
         policy_package: Option<&Path>,
         policies: &std::collections::BTreeMap<String, Option<std::path::PathBuf>>,
     ) -> Result<Self> {
+        Self::launch_with_policies_and_log(
+            python,
+            script,
+            package,
+            viewer,
+            record_dir,
+            policy_id,
+            policy_package,
+            policies,
+            None,
+        )
+        .await
+    }
+
+    pub async fn launch_with_policies_and_log(
+        python: &str,
+        script: &Path,
+        package: &Path,
+        viewer: bool,
+        record_dir: Option<&Path>,
+        policy_id: &str,
+        policy_package: Option<&Path>,
+        policies: &std::collections::BTreeMap<String, Option<std::path::PathBuf>>,
+        log: Option<&Path>,
+    ) -> Result<Self> {
         let mut command = Command::new(python);
         command
             .arg("-u")
@@ -62,6 +87,17 @@ impl ContinuousRunner {
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit())
             .kill_on_drop(true);
+        if let Some(path) = log {
+            if let Some(parent) = path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+            command.stderr(Stdio::from(
+                std::fs::OpenOptions::new()
+                    .create(true)
+                    .append(true)
+                    .open(path)?,
+            ));
+        }
         if let Some(path) = policy_package {
             command.arg("--policy-package").arg(path);
         }

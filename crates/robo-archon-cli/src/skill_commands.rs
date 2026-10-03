@@ -4,7 +4,7 @@ use anyhow::{bail, Context, Result};
 use robo_archon_kinetic::Chronos;
 use robo_archon_runtime::{Executive, ExecutiveConfig};
 use robo_archon_sim_bridge::continuous::ContinuousRunner;
-use robo_archon_skills::{RunnerRegistry, SkillCall, SkillRegistry, SkillRunner, SkillStatus};
+use robo_archon_skills::{RunnerRegistry, SkillCall, SkillRegistry, SkillStatus};
 use serde_json::json;
 use std::path::PathBuf;
 
@@ -347,7 +347,7 @@ pub async fn execute(args: &Args) -> Result<bool> {
     Ok(true)
 }
 
-fn save_report(args: &Args, value: &serde_json::Value) -> Result<()> {
+pub(crate) fn save_report(args: &Args, value: &serde_json::Value) -> Result<()> {
     if let Some(path) = &args.skill_report {
         if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
             std::fs::create_dir_all(parent)?;
@@ -357,7 +357,7 @@ fn save_report(args: &Args, value: &serde_json::Value) -> Result<()> {
     Ok(())
 }
 
-fn prepare_plan(
+pub(crate) fn prepare_plan(
     args: &Args,
     registry: &SkillRegistry,
     ready: &crate::skill_readiness::Readiness,
@@ -383,7 +383,7 @@ fn prepare_plan(
     Ok(plan)
 }
 
-async fn launch_session(
+pub(crate) async fn launch_session(
     args: &Args,
     root: &std::path::Path,
     python: &str,
@@ -399,7 +399,7 @@ async fn launch_session(
     } else {
         python.into()
     };
-    ContinuousRunner::launch_with_policies(
+    ContinuousRunner::launch_with_policies_and_log(
         &python,
         &root.join("python/robo_archon_sim_workers/microduck_worker.py"),
         &args.skill_assets,
@@ -408,11 +408,14 @@ async fn launch_session(
         "velstand",
         None,
         &ready.packages,
+        args.tui.then_some(std::path::Path::new(
+            "tmp-episodes/microduck-tui-worker.log",
+        )),
     )
     .await
 }
 
-fn session_executive(args: &Args) -> Executive {
+pub(crate) fn session_executive(args: &Args) -> Executive {
     let executive = Executive::new(ExecutiveConfig::default(), Chronos::desktop_arm_6dof());
     if args.auto_stop_ms > 0 {
         let cancel = executive.cancel.clone();
@@ -454,7 +457,7 @@ async fn execute_plan_once(
     Ok(true)
 }
 
-fn decision_sequence(
+pub(crate) fn decision_sequence(
     decision: &robo_archon_policy::skill_agent::SkillDecision,
 ) -> Result<robo_archon_skills::SkillSequence> {
     if let Some(sequence) = &decision.sequence {
@@ -514,21 +517,9 @@ async fn execute_session(
         let sequence = serde_json::from_slice(&std::fs::read(path)?)?;
         return execute_plan_once(args, root, python, registry, ready, sequence).await;
     }
-    let key = args
-        .llm_api_key
-        .clone()
-        .or_else(|| std::env::var("OPENAI_API_KEY").ok())
-        .filter(|key| !key.trim().is_empty())
-        .context("skill chat requires API key in this process")?;
-    let client = robo_archon_policy::chat::ChatClient::new(
-        key,
-        args.llm_base_url
-            .clone()
-            .unwrap_or_else(|| "https://api.deepseek.com".into()),
-        args.llm_model.clone(),
-    );
-    let mut executive = session_executive(args);
-    let (sender, mut lines) = tokio::sync::mpsc::unbounded_channel();
+    let client = crate::skill_session::client(args)?;
+    let executive = session_executive(args);
+    let (sender, lines) = tokio::sync::mpsc::unbounded_channel();
     let cancel = executive.cancel.clone();
     let interruption = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
     let input_interruption = interruption.clone();
@@ -562,54 +553,19 @@ async fn execute_session(
         let generation = input_interruption.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
         let _ = sender.send(("/quit".to_string(), generation));
     });
-    let mut runner = launch_session(args, root, python, ready).await?;
+    let runner = launch_session(args, root, python, ready).await?;
     eprintln!("Persistent Microduck chat: enter an instruction, /stop to cancel, /quit to exit. Simulation stays alive between turns.");
-    let mut reports = Vec::new();
-    let execution: Result<()> = async {
-        loop {
-            let message = tokio::select! {
-                message=lines.recv()=>message,
-                _=tokio::signal::ctrl_c()=>{executive.cancel.cancel();break;}
-            };
-            let Some((instruction,generation))=message else { break; };
-            let instruction = instruction.trim();
-            if instruction == "/quit" { break; }
-            if instruction == "/stop" { runner.stop().await?; continue; }
-            if instruction == "/reset" {
-                let observation=runner.reset_simulation().await?;
-                executive.cancel.reset();
-                let report=json!({"executed":false,"explicit_simulation_reset":true,"observation":observation});
-                reports.push(report.clone());save_report(args,&json!({"turns":reports}))?;println!("{report}");continue;
-            }
-            if instruction.is_empty() || generation != interruption.load(std::sync::atomic::Ordering::SeqCst) { continue; }
-            executive.cancel.reset();
-            if generation != interruption.load(std::sync::atomic::Ordering::SeqCst) { executive.cancel.cancel(); continue; }
-            let history = json!(reports.iter().rev().take(8).collect::<Vec<_>>());
-            let proposal = match robo_archon_policy::skill_agent::propose_with_context(&client, instruction, &ready.skills, &history).await {
-                Ok(p) => p,
-                Err(error) => { let report=json!({"instruction":instruction,"executed":false,"error":error.to_string()}); reports.push(report.clone()); save_report(args, &json!({"turns":reports}))?; println!("{report}"); continue; }
-            };
-            if proposal.call.is_none() && proposal.sequence.is_none() {
-                let report=json!({"instruction":instruction,"executed":false,"refusal":proposal.refusal});
-                reports.push(report.clone()); save_report(args, &json!({"turns":reports}))?; println!("{report}"); continue;
-            }
-            let plan = match decision_sequence(&proposal).and_then(|s| prepare_plan(args, registry, ready, &s)) {
-                Ok(p)=>p,
-                Err(error)=> { let report=json!({"instruction":instruction,"executed":false,"error":error.to_string()}); reports.push(report.clone()); save_report(args,&json!({"turns":reports}))?; println!("{report}"); continue; }
-            };
-            let outcome = executive.run_sequence(&plan, &mut runner).await?;
-            let mut report=json!({"instruction":instruction,"executed":true,"result":outcome,"feedback":null});
-            reports.push(report.clone()); save_report(args, &json!({"turns":reports}))?;
-            report["feedback"] = match robo_archon_policy::skill_agent::feedback(&client, instruction, &proposal, &outcome).await { Ok(text)=>json!({"text":text}), Err(e)=>json!({"error":e.to_string()}) };
-            *reports.last_mut().unwrap()=report.clone(); save_report(args,&json!({"turns":reports}))?; println!("{report}");
-            if outcome["status"] == "failed" { eprintln!("Task failed. Use /reset for an explicit simulation restart, or /quit. No automatic recovery."); }
-        }
-        Ok(())
-    }.await;
-    let stopped = runner.stop().await;
-    let shutdown = runner.shutdown().await;
-    execution?;
-    stopped?;
-    shutdown?;
+    crate::skill_session::run_chat(
+        args,
+        registry,
+        ready,
+        client,
+        executive,
+        runner,
+        lines,
+        interruption,
+        None,
+    )
+    .await?;
     Ok(true)
 }

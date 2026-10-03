@@ -1,0 +1,1623 @@
+{
+  "accepted": true,
+  "model_source": "LOCAL MOCK, not cloud",
+  "cases": [
+    {
+      "case": "selection_whitelist_api_trace_reset_cancel_and_resume",
+      "accepted": true,
+      "planning": {
+        "tool_calls": [
+          {
+            "function": {
+              "arguments": "{\"vx\": 0.4, \"duration_ms\": 1000}",
+              "name": "microduck_walk"
+            },
+            "id": "tui-response-2-call",
+            "type": "function"
+          }
+        ],
+        "trace": {
+          "connection": {
+            "requested_model": "local-tui-request-model",
+            "service": "127.0.0.1:62652"
+          },
+          "response_id": "tui-response-2",
+          "response_model": "local-tui-response-model",
+          "usage": {
+            "completion_tokens": 20,
+            "prompt_tokens": 100,
+            "total_tokens": 120
+          }
+        }
+      },
+      "feedback_trace": {
+        "connection": {
+          "requested_model": "local-tui-request-model",
+          "service": "127.0.0.1:62652"
+        },
+        "response_id": "tui-response-3",
+        "response_model": "local-tui-response-model",
+        "usage": {
+          "completion_tokens": 20,
+          "prompt_tokens": 100,
+          "total_tokens": 120
+        }
+      },
+      "motion_status": "succeeded",
+      "reset_episode": 1
+    },
+    {
+      "case": "ctrl_c_during_motion_stops_and_restores_terminal",
+      "accepted": true,
+      "viewer": true
+    }
+  ],
+  "requests": [
+    {
+      "id": "tui-response-1",
+      "tools": [
+        "microduck_walk"
+      ],
+      "model": "local-tui-request-model"
+    },
+    {
+      "id": "tui-response-2",
+      "tools": [
+        "microduck_walk"
+      ],
+      "model": "local-tui-request-model"
+    },
+    {
+      "id": "tui-response-3",
+      "tools": [],
+      "model": "local-tui-request-model"
+    },
+    {
+      "id": "tui-response-4",
+      "tools": [
+        "microduck_walk"
+      ],
+      "model": "local-tui-request-model"
+    },
+    {
+      "id": "tui-response-5",
+      "tools": [
+        "microduck_walk"
+      ],
+      "model": "local-tui-request-model"
+    },
+    {
+      "id": "tui-response-6",
+      "tools": [
+        "microduck_walk"
+      ],
+      "model": "local-tui-request-model"
+    },
+    {
+      "id": "tui-response-7",
+      "tools": [],
+      "model": "local-tui-request-model"
+    },
+    {
+      "id": "tui-response-8",
+      "tools": [
+        "microduck_walk"
+      ],
+      "model": "local-tui-request-model"
+    }
+  ],
+  "rust_tests_passed": 60,
+  "cli_regression": {
+    "llm_ordered_sequence": {
+      "exit_code": 0,
+      "result": {
+        "executed": true,
+        "feedback": {
+          "text": "LOCAL MOCK: measured result received."
+        },
+        "result": {
+          "elapsed_ms": 5335,
+          "error": null,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.00013304769997458837,
+              -2.1900749449115747e-05,
+              -0.0002622894653899043
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 0,
+            "fault": null,
+            "joint_positions": [
+              -0.014314317379870862,
+              -0.08702348142652756,
+              -0.43991204705911463,
+              -0.0032419959750837426,
+              0.4350390287703922,
+              0.2274022634353078,
+              0.4461731091147689,
+              -0.040221818726208995,
+              -0.020933760546272804,
+              0.03818868763097007,
+              0.09490690737807984,
+              0.4475356246306509,
+              -0.008552065759944246,
+              -0.4482638281775288
+            ],
+            "motion": {
+              "max_tilt_deg": 0.26318714022636414,
+              "min_height": 0.11685110226909942,
+              "samples": 37,
+              "start_xyz": [
+                0.13805541317466186,
+                -0.0009528845206647696,
+                0.11732082713599618
+              ],
+              "sum_vx": -0.0038709270259698714,
+              "sum_vy": 0.0013386315730382072,
+              "sum_yaw_rate": 0.06201700051315129
+            },
+            "policy_id": "velstand",
+            "policy_provenance": {
+              "license": "Apache-2.0",
+              "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+              "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+              "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+            },
+            "reason": "explicit_stop",
+            "simulation_time": 3.919999999999938,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.23573395609855652,
+            "xyz": [
+              0.13788564871593578,
+              -0.0009495628924554548,
+              0.11670099657851447
+            ],
+            "yaw": 0.17642389603680225,
+            "yaw_rate": 0.005328362341970205
+          },
+          "plan": {
+            "steps": [
+              {
+                "binding": {
+                  "backend": "mujoco",
+                  "body": "microduck",
+                  "config": {
+                    "command_adapter": "microduck.twist.v1"
+                  },
+                  "policy": "velstand",
+                  "resources": [
+                    "whole_body"
+                  ],
+                  "runner": "onnx_policy.v1"
+                },
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.4,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "skill_id": "microduck.walk",
+                "timeout_ms": 10000,
+                "version": "0.4.0"
+              },
+              {
+                "binding": {
+                  "backend": "mujoco",
+                  "body": "microduck",
+                  "config": {
+                    "command_adapter": "microduck.twist.v1"
+                  },
+                  "policy": "velstand",
+                  "resources": [
+                    "whole_body"
+                  ],
+                  "runner": "onnx_policy.v1"
+                },
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.3,
+                  "vy": 0.0,
+                  "yaw_rate": 1.0
+                },
+                "skill_id": "microduck.walk",
+                "timeout_ms": 10000,
+                "version": "0.4.0"
+              },
+              {
+                "binding": {
+                  "backend": "mujoco",
+                  "body": "microduck",
+                  "config": {
+                    "command_adapter": "microduck.twist.v1"
+                  },
+                  "policy": "velstand",
+                  "resources": [
+                    "whole_body"
+                  ],
+                  "runner": "onnx_policy.v1"
+                },
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.0,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "skill_id": "microduck.stop",
+                "timeout_ms": 10000,
+                "version": "0.2.0"
+              }
+            ],
+            "timeout_ms": 30000
+          },
+          "planned_steps": 3,
+          "status": "succeeded",
+          "steps": [
+            {
+              "elapsed_ms": 1862,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.004471079158104966,
+                  0.0016783060629202511,
+                  0.000867909313465171
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "joint_positions": [
+                  -0.0021588540711128187,
+                  -0.08626632749181037,
+                  -0.45531288719883034,
+                  0.02246719965706069,
+                  0.4730736175727848,
+                  0.19414317807477885,
+                  0.4448042371805681,
+                  -0.03429697081494451,
+                  -0.0217456160026077,
+                  0.04224069608914009,
+                  0.1054440321840592,
+                  0.4377295768969171,
+                  -0.013300964074535845,
+                  -0.4486686246702932
+                ],
+                "motion": {
+                  "max_tilt_deg": 3.5544605255126953,
+                  "min_height": 0.11156526515452549,
+                  "samples": 38,
+                  "start_xyz": [
+                    -0.00016088188531717716,
+                    -1.7406078558357447e-05,
+                    0.11621543555436029
+                  ],
+                  "sum_vx": 4.285781678795087,
+                  "sum_vy": 0.03797188321138996,
+                  "sum_yaw_rate": -2.9428442791104317
+                },
+                "policy_id": "velstand",
+                "policy_provenance": {
+                  "license": "Apache-2.0",
+                  "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                  "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                  "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+                },
+                "reason": "explicit_stop",
+                "simulation_time": 1.3799999999999926,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.39016950130462646,
+                "xyz": [
+                  0.08612024386351187,
+                  0.0027401436208396553,
+                  0.11665354620852282
+                ],
+                "yaw": -0.17036813642875037,
+                "yaw_rate": -0.013193360529839993
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.walk",
+              "status": "succeeded",
+              "version": "0.4.0"
+            },
+            {
+              "elapsed_ms": 1822,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  -0.00168868906823414,
+                  0.0010300220485776116,
+                  -0.000906540609264544
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "joint_positions": [
+                  -0.016270414090232856,
+                  -0.101671201797445,
+                  -0.4374262686259318,
+                  -0.003498703118988912,
+                  0.4357336116334759,
+                  0.22766242063519945,
+                  0.44600362912490177,
+                  -0.03994942344904272,
+                  -0.02112428700339495,
+                  0.038282391871710286,
+                  0.11592608716166455,
+                  0.44601771153264586,
+                  -0.008907212142272065,
+                  -0.4422287896288925
+                ],
+                "motion": {
+                  "max_tilt_deg": 3.732293128967285,
+                  "min_height": 0.1132913916468565,
+                  "samples": 37,
+                  "start_xyz": [
+                    0.08630895781280036,
+                    0.0028298322339765578,
+                    0.11661175640839094
+                  ],
+                  "sum_vx": 2.589802694061305,
+                  "sum_vy": 0.019704759147540052,
+                  "sum_yaw_rate": 15.348139755427836
+                },
+                "policy_id": "velstand",
+                "policy_provenance": {
+                  "license": "Apache-2.0",
+                  "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                  "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                  "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+                },
+                "reason": "explicit_stop",
+                "simulation_time": 2.719999999999964,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.34774231910705566,
+                "xyz": [
+                  0.13816548661370714,
+                  -0.000966751183722916,
+                  0.11735656252095296
+                ],
+                "yaw": 0.1731211594870653,
+                "yaw_rate": -0.006436689756810665
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.walk",
+              "status": "succeeded",
+              "version": "0.4.0"
+            },
+            {
+              "elapsed_ms": 1378,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  -0.00044301934724568057,
+                  3.839394220800608e-05,
+                  -0.0003343303409519481
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 0,
+                "fault": null,
+                "joint_positions": [
+                  -0.0145356895169568,
+                  -0.08887743602311106,
+                  -0.43891272607138104,
+                  -0.0032707255456477496,
+                  0.4353784701900357,
+                  0.2274961179597789,
+                  0.44614423512468304,
+                  -0.04015252997469724,
+                  -0.020965217405289092,
+                  0.03821241691740169,
+                  0.09656330088578628,
+                  0.4474899135396356,
+                  -0.008607891458227258,
+                  -0.448161859170203
+                ],
+                "motion": {
+                  "max_tilt_deg": 0.26318714022636414,
+                  "min_height": 0.11685110226909942,
+                  "samples": 37,
+                  "start_xyz": [
+                    0.13805541317466186,
+                    -0.0009528845206647696,
+                    0.11732082713599618
+                  ],
+                  "sum_vx": -0.0038709270259698714,
+                  "sum_vy": 0.0013386315730382072,
+                  "sum_yaw_rate": 0.06201700051315129
+                },
+                "policy_id": "velstand",
+                "policy_provenance": {
+                  "license": "Apache-2.0",
+                  "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                  "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                  "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+                },
+                "reason": "explicit_stop",
+                "simulation_time": 3.719999999999943,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.20558421313762665,
+                "xyz": [
+                  0.1378803906588678,
+                  -0.000940621265875315,
+                  0.11676333610505332
+                ],
+                "yaw": 0.17537759176278978,
+                "yaw_rate": 0.011134608648717403
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.stop",
+              "status": "succeeded",
+              "version": "0.2.0"
+            }
+          ]
+        },
+        "sequence": {
+          "schema_version": 1,
+          "steps": [
+            {
+              "parameters": {
+                "duration_ms": 1000,
+                "vx": 0.4
+              },
+              "skill_id": "microduck.walk",
+              "timeout_ms": 10000
+            },
+            {
+              "parameters": {
+                "duration_ms": 1000,
+                "vx": 0.3,
+                "yaw_rate": 1.0
+              },
+              "skill_id": "microduck.walk",
+              "timeout_ms": 10000
+            },
+            {
+              "parameters": {
+                "duration_ms": 1000
+              },
+              "skill_id": "microduck.stop",
+              "timeout_ms": 10000
+            }
+          ],
+          "timeout_ms": 30000
+        }
+      }
+    },
+    "persistent_chat": {
+      "turns": [
+        {
+          "executed": true,
+          "feedback": {
+            "text": "LOCAL MOCK: measured result received.",
+            "trace": {
+              "connection": {
+                "requested_model": "local-mock",
+                "service": "127.0.0.1:61634"
+              },
+              "response_id": null,
+              "response_model": null,
+              "usage": null
+            }
+          },
+          "instruction": "first turn",
+          "planning": {
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"steps\": [{\"tool_name\": \"microduck_walk\", \"parameters\": {\"vx\": 0.4, \"duration_ms\": 1000}}, {\"tool_name\": \"microduck_walk\", \"parameters\": {\"vx\": 0.3, \"yaw_rate\": 1.0, \"duration_ms\": 1000}}, {\"tool_name\": \"microduck_stop\", \"parameters\": {\"duration_ms\": 1000}}]}",
+                  "name": "archon_sequence"
+                },
+                "id": "local_mock_call",
+                "type": "function"
+              }
+            ],
+            "trace": {
+              "connection": {
+                "requested_model": "local-mock",
+                "service": "127.0.0.1:61634"
+              },
+              "response_id": null,
+              "response_model": null,
+              "usage": null
+            }
+          },
+          "result": {
+            "elapsed_ms": 5476,
+            "error": null,
+            "observation": {
+              "active_behavior": null,
+              "body_velocity": [
+                0.0006303541846725431,
+                -0.00016686497026650087,
+                -0.00023350947922294303
+              ],
+              "command": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "episode_id": 0,
+              "fault": null,
+              "joint_positions": [
+                -0.010864712361269428,
+                -0.08438604643453672,
+                -0.44634277119051985,
+                -0.0044230247648695,
+                0.4381792713605227,
+                0.22047052506724785,
+                0.4446105543788979,
+                -0.04074038140085405,
+                -0.01838309817869385,
+                0.04165641408998575,
+                0.0925742567499055,
+                0.4499946663226015,
+                -0.0040072588739656755,
+                -0.4466819035267431
+              ],
+              "motion": {
+                "max_tilt_deg": 0.30066588521003723,
+                "min_height": 0.11677822076606,
+                "samples": 37,
+                "start_xyz": [
+                  0.1358361033509626,
+                  -0.0002680641253361089,
+                  0.11712241627097617
+                ],
+                "sum_vx": -0.0033907575285047403,
+                "sum_vy": 0.00103378491181761,
+                "sum_yaw_rate": 0.030831692653009668
+              },
+              "policy_id": "velstand",
+              "policy_provenance": {
+                "license": "Apache-2.0",
+                "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+              },
+              "reason": "explicit_stop",
+              "simulation_time": 3.999999999999937,
+              "state": "idle",
+              "stop_confirmed": true,
+              "tilt_deg": 0.3077413737773895,
+              "xyz": [
+                0.1358332317738837,
+                -0.0002494829362779122,
+                0.11669685125634596
+              ],
+              "yaw": 0.21618098240124867,
+              "yaw_rate": 0.00031293227220885456
+            },
+            "plan": {
+              "steps": [
+                {
+                  "binding": {
+                    "backend": "mujoco",
+                    "body": "microduck",
+                    "config": {
+                      "command_adapter": "microduck.twist.v1"
+                    },
+                    "policy": "velstand",
+                    "resources": [
+                      "whole_body"
+                    ],
+                    "runner": "onnx_policy.v1"
+                  },
+                  "parameters": {
+                    "duration_ms": 1000,
+                    "vx": 0.4,
+                    "vy": 0.0,
+                    "yaw_rate": 0.0
+                  },
+                  "skill_id": "microduck.walk",
+                  "timeout_ms": 10000,
+                  "version": "0.4.0"
+                },
+                {
+                  "binding": {
+                    "backend": "mujoco",
+                    "body": "microduck",
+                    "config": {
+                      "command_adapter": "microduck.twist.v1"
+                    },
+                    "policy": "velstand",
+                    "resources": [
+                      "whole_body"
+                    ],
+                    "runner": "onnx_policy.v1"
+                  },
+                  "parameters": {
+                    "duration_ms": 1000,
+                    "vx": 0.3,
+                    "vy": 0.0,
+                    "yaw_rate": 1.0
+                  },
+                  "skill_id": "microduck.walk",
+                  "timeout_ms": 10000,
+                  "version": "0.4.0"
+                },
+                {
+                  "binding": {
+                    "backend": "mujoco",
+                    "body": "microduck",
+                    "config": {
+                      "command_adapter": "microduck.twist.v1"
+                    },
+                    "policy": "velstand",
+                    "resources": [
+                      "whole_body"
+                    ],
+                    "runner": "onnx_policy.v1"
+                  },
+                  "parameters": {
+                    "duration_ms": 1000,
+                    "vx": 0.0,
+                    "vy": 0.0,
+                    "yaw_rate": 0.0
+                  },
+                  "skill_id": "microduck.stop",
+                  "timeout_ms": 10000,
+                  "version": "0.2.0"
+                }
+              ],
+              "timeout_ms": 30000
+            },
+            "planned_steps": 3,
+            "status": "succeeded",
+            "steps": [
+              {
+                "elapsed_ms": 1925,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.007057404043738698,
+                    0.0013684571570038548,
+                    -0.0007886731723456761
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "joint_positions": [
+                    -0.00944475885346062,
+                    -0.08800201693790503,
+                    -0.43328122709372285,
+                    0.015925848239191097,
+                    0.447942948649867,
+                    0.190501303109114,
+                    0.4574112747810795,
+                    -0.031117543638898265,
+                    -0.01442874191596143,
+                    0.02882656636870313,
+                    0.09924582755853856,
+                    0.4621262045816002,
+                    -0.0055689134683805114,
+                    -0.4664471556370529
+                  ],
+                  "motion": {
+                    "max_tilt_deg": 3.5544605255126953,
+                    "min_height": 0.11156526515452549,
+                    "samples": 36,
+                    "start_xyz": [
+                      -0.00016088188531717716,
+                      -1.7406078558357447e-05,
+                      0.11621543555436029
+                    ],
+                    "sum_vx": 4.017479703905145,
+                    "sum_vy": -0.2045302709956442,
+                    "sum_yaw_rate": -3.6643592789769177
+                  },
+                  "policy_id": "velstand",
+                  "policy_provenance": {
+                    "license": "Apache-2.0",
+                    "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                    "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                    "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+                  },
+                  "reason": "explicit_stop",
+                  "simulation_time": 1.399999999999992,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.377941757440567,
+                  "xyz": [
+                    0.08292850513430026,
+                    0.0005304993494292531,
+                    0.11667497412105104
+                  ],
+                  "yaw": -0.16234902128061351,
+                  "yaw_rate": 0.0023230009246617556
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.walk",
+                "status": "succeeded",
+                "version": "0.4.0"
+              },
+              {
+                "elapsed_ms": 1883,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.00325832036974012,
+                    0.002127664030545696,
+                    -0.0016565854955442657
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "joint_positions": [
+                    -0.011264481991580316,
+                    -0.09357637624314206,
+                    -0.4440552072605498,
+                    -0.004621855860556883,
+                    0.4396649236195935,
+                    0.2205014676306118,
+                    0.4443891106864524,
+                    -0.04048395355841307,
+                    -0.01853360868553793,
+                    0.04186046534151596,
+                    0.1083547283127228,
+                    0.44932068535758296,
+                    -0.004259655675170873,
+                    -0.44519095786215573
+                  ],
+                  "motion": {
+                    "max_tilt_deg": 3.5357377529144287,
+                    "min_height": 0.11301365648184312,
+                    "samples": 37,
+                    "start_xyz": [
+                      0.08326437699350465,
+                      0.0004981427107622524,
+                      0.11670608109139873
+                    ],
+                    "sum_vx": 2.628940188867385,
+                    "sum_vy": 0.016230811815062696,
+                    "sum_yaw_rate": 17.21953135728836
+                  },
+                  "policy_id": "velstand",
+                  "policy_provenance": {
+                    "license": "Apache-2.0",
+                    "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                    "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                    "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+                  },
+                  "reason": "explicit_stop",
+                  "simulation_time": 2.779999999999963,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.2639295756816864,
+                  "xyz": [
+                    0.1357590802034739,
+                    -0.00034160273911126767,
+                    0.11716365557094496
+                  ],
+                  "yaw": 0.2136924552596035,
+                  "yaw_rate": -0.01669127680361271
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.walk",
+                "status": "succeeded",
+                "version": "0.4.0"
+              },
+              {
+                "elapsed_ms": 1400,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.0004337382812970612,
+                    1.8989546643434933e-06,
+                    2.112701415448655e-05
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "joint_positions": [
+                    -0.010931771029672075,
+                    -0.08550181251393128,
+                    -0.44571378515349935,
+                    -0.00443673032696768,
+                    0.4386076289582845,
+                    0.2204747783294549,
+                    0.44457384321815174,
+                    -0.04069447898858173,
+                    -0.018408296938038183,
+                    0.041696023753200424,
+                    0.09342109703856948,
+                    0.449961026293035,
+                    -0.004040749575268778,
+                    -0.4464897241846726
+                  ],
+                  "motion": {
+                    "max_tilt_deg": 0.30066588521003723,
+                    "min_height": 0.11677822076606,
+                    "samples": 37,
+                    "start_xyz": [
+                      0.1358361033509626,
+                      -0.0002680641253361089,
+                      0.11712241627097617
+                    ],
+                    "sum_vx": -0.0033907575285047403,
+                    "sum_vy": 0.00103378491181761,
+                    "sum_yaw_rate": 0.030831692653009668
+                  },
+                  "policy_id": "velstand",
+                  "policy_provenance": {
+                    "license": "Apache-2.0",
+                    "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                    "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                    "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+                  },
+                  "reason": "explicit_stop",
+                  "simulation_time": 3.799999999999941,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.2719624638557434,
+                  "xyz": [
+                    0.1357984746427723,
+                    -0.00025133922958407256,
+                    0.1167272797663434
+                  ],
+                  "yaw": 0.21546020113039735,
+                  "yaw_rate": 0.000992863904684782
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.stop",
+                "status": "succeeded",
+                "version": "0.2.0"
+              }
+            ]
+          }
+        },
+        {
+          "executed": true,
+          "feedback": {
+            "text": "LOCAL MOCK: measured result received.",
+            "trace": {
+              "connection": {
+                "requested_model": "local-mock",
+                "service": "127.0.0.1:61634"
+              },
+              "response_id": null,
+              "response_model": null,
+              "usage": null
+            }
+          },
+          "instruction": "second turn",
+          "planning": {
+            "tool_calls": [
+              {
+                "function": {
+                  "arguments": "{\"duration_ms\": 1000}",
+                  "name": "microduck_stand"
+                },
+                "id": "local_mock_call",
+                "type": "function"
+              }
+            ],
+            "trace": {
+              "connection": {
+                "requested_model": "local-mock",
+                "service": "127.0.0.1:61634"
+              },
+              "response_id": null,
+              "response_model": null,
+              "usage": null
+            }
+          },
+          "result": {
+            "elapsed_ms": 1671,
+            "error": null,
+            "observation": {
+              "active_behavior": null,
+              "body_velocity": [
+                -3.1623811540174795e-05,
+                -1.0658805551912209e-05,
+                4.509158327909221e-06
+              ],
+              "command": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "episode_id": 0,
+              "fault": null,
+              "joint_positions": [
+                -0.010358195474223585,
+                -0.08365317037891122,
+                -0.44761399256840745,
+                -0.004141855743370466,
+                0.44003776577315823,
+                0.2204558144397667,
+                0.4448208129504798,
+                -0.041028355559156585,
+                -0.018239942675851908,
+                0.04142175493954623,
+                0.09151254894222344,
+                0.4504147777525295,
+                -0.0036507330952629904,
+                -0.4486012711133056
+              ],
+              "motion": {
+                "max_tilt_deg": 0.3214254081249237,
+                "min_height": 0.11667114875978243,
+                "samples": 37,
+                "start_xyz": [
+                  0.13585178509543638,
+                  -0.0002505131921713788,
+                  0.11668780570371216
+                ],
+                "sum_vx": -0.011926866891024,
+                "sum_vy": -0.004682057057780918,
+                "sum_yaw_rate": 0.06048040489986306
+              },
+              "policy_id": "velstand",
+              "policy_provenance": {
+                "license": "Apache-2.0",
+                "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+              },
+              "reason": "explicit_stop",
+              "simulation_time": 5.219999999999911,
+              "state": "idle",
+              "stop_confirmed": true,
+              "tilt_deg": 0.22028693556785583,
+              "xyz": [
+                0.1356322820965509,
+                -0.0003627627649032758,
+                0.11675070640221548
+              ],
+              "yaw": 0.21747422365891003,
+              "yaw_rate": -0.0007293312228284776
+            },
+            "plan": {
+              "steps": [
+                {
+                  "binding": {
+                    "backend": "mujoco",
+                    "body": "microduck",
+                    "config": {
+                      "command_adapter": "microduck.twist.v1"
+                    },
+                    "policy": "velstand",
+                    "resources": [
+                      "whole_body"
+                    ],
+                    "runner": "onnx_policy.v1"
+                  },
+                  "parameters": {
+                    "duration_ms": 1000,
+                    "vx": 0.0,
+                    "vy": 0.0,
+                    "yaw_rate": 0.0
+                  },
+                  "skill_id": "microduck.stand",
+                  "timeout_ms": 10000,
+                  "version": "0.2.0"
+                }
+              ],
+              "timeout_ms": 10000
+            },
+            "planned_steps": 1,
+            "status": "succeeded",
+            "steps": [
+              {
+                "elapsed_ms": 1400,
+                "observation": {
+                  "active_behavior": null,
+                  "body_velocity": [
+                    0.0004999758436611012,
+                    1.3938074724237202e-05,
+                    -4.591986292455552e-06
+                  ],
+                  "command": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "episode_id": 0,
+                  "fault": null,
+                  "joint_positions": [
+                    -0.010424083838804329,
+                    -0.0836910365250429,
+                    -0.4474836675261213,
+                    -0.004190601114497024,
+                    0.4397940347991059,
+                    0.22045658657047537,
+                    0.44478908647946785,
+                    -0.04098048970993558,
+                    -0.018263841534347743,
+                    0.0414591835832836,
+                    0.09157479368063058,
+                    0.4503990400502157,
+                    -0.003707441694553197,
+                    -0.4484505020775371
+                  ],
+                  "motion": {
+                    "max_tilt_deg": 0.3214254081249237,
+                    "min_height": 0.11667114875978243,
+                    "samples": 37,
+                    "start_xyz": [
+                      0.13585178509543638,
+                      -0.0002505131921713788,
+                      0.11668780570371216
+                    ],
+                    "sum_vx": -0.011926866891024,
+                    "sum_vy": -0.004682057057780918,
+                    "sum_yaw_rate": 0.06048040489986306
+                  },
+                  "policy_id": "velstand",
+                  "policy_provenance": {
+                    "license": "Apache-2.0",
+                    "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                    "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                    "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+                  },
+                  "reason": "explicit_stop",
+                  "simulation_time": 5.019999999999915,
+                  "state": "idle",
+                  "stop_confirmed": true,
+                  "tilt_deg": 0.22381176054477692,
+                  "xyz": [
+                    0.13564561059928051,
+                    -0.00035931689740216125,
+                    0.1167512778990783
+                  ],
+                  "yaw": 0.21731654424478916,
+                  "yaw_rate": -0.00036927021574229
+                },
+                "reason": "duration_complete",
+                "skill_id": "microduck.stand",
+                "status": "succeeded",
+                "version": "0.2.0"
+              }
+            ]
+          }
+        }
+      ],
+      "same_episode": true,
+      "explicit_reset": {
+        "executed": false,
+        "explicit_simulation_reset": true,
+        "observation": {
+          "active_behavior": null,
+          "body_velocity": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "episode_id": 1,
+          "fault": null,
+          "joint_positions": [
+            0.0,
+            -0.08730000257492065,
+            -0.4578999876976013,
+            -0.004900000058114529,
+            0.453000009059906,
+            0.3490999937057495,
+            0.3490999937057495,
+            0.0,
+            0.0,
+            0.0,
+            0.08730000257492065,
+            0.4578999876976013,
+            0.004900000058114529,
+            -0.453000009059906
+          ],
+          "motion": null,
+          "policy_id": "velstand",
+          "policy_provenance": {
+            "license": "Apache-2.0",
+            "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+            "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+            "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+          },
+          "reason": "explicit_reset",
+          "simulation_time": 0.0,
+          "state": "idle",
+          "tilt_deg": 0.0,
+          "xyz": [
+            0.0,
+            0.0,
+            0.125
+          ],
+          "yaw": 0.0,
+          "yaw_rate": 0.0
+        }
+      },
+      "after_reset": {
+        "executed": true,
+        "feedback": {
+          "text": "LOCAL MOCK: measured result received.",
+          "trace": {
+            "connection": {
+              "requested_model": "local-mock",
+              "service": "127.0.0.1:61634"
+            },
+            "response_id": null,
+            "response_model": null,
+            "usage": null
+          }
+        },
+        "instruction": "second turn after reset",
+        "planning": {
+          "tool_calls": [
+            {
+              "function": {
+                "arguments": "{\"duration_ms\": 1000}",
+                "name": "microduck_stand"
+              },
+              "id": "local_mock_call",
+              "type": "function"
+            }
+          ],
+          "trace": {
+            "connection": {
+              "requested_model": "local-mock",
+              "service": "127.0.0.1:61634"
+            },
+            "response_id": null,
+            "response_model": null,
+            "usage": null
+          }
+        },
+        "result": {
+          "elapsed_ms": 1661,
+          "error": null,
+          "observation": {
+            "active_behavior": null,
+            "body_velocity": [
+              -0.00013018214316192324,
+              -0.0009844744782093271,
+              -0.000897401186967265
+            ],
+            "command": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "episode_id": 1,
+            "fault": null,
+            "joint_positions": [
+              -0.0031865727402610447,
+              -0.0833779982537172,
+              -0.4439666252602065,
+              0.008624746447719172,
+              0.4394398908934743,
+              0.23812309552045685,
+              0.41872020446507013,
+              -0.04206867242024371,
+              -0.0002484362377399732,
+              0.02504615282310601,
+              0.09097599109350885,
+              0.4547428826124964,
+              -0.004543138798278949,
+              -0.4439553920555608
+            ],
+            "motion": {
+              "max_tilt_deg": 1.0799216032028198,
+              "min_height": 0.11478313772088018,
+              "samples": 38,
+              "start_xyz": [
+                -0.00016088188531717716,
+                -1.7406078558357436e-05,
+                0.11621543555436029
+              ],
+              "sum_vx": 0.14292805758878008,
+              "sum_vy": 0.00017312553000981988,
+              "sum_yaw_rate": 0.10780226320457588
+            },
+            "policy_id": "velstand",
+            "policy_provenance": {
+              "license": "Apache-2.0",
+              "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+              "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+              "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+            },
+            "reason": "explicit_stop",
+            "simulation_time": 1.2599999999999951,
+            "state": "idle",
+            "stop_confirmed": true,
+            "tilt_deg": 0.9104271531105042,
+            "xyz": [
+              0.0028706222033165695,
+              -6.000679658454008e-05,
+              0.11653179132020164
+            ],
+            "yaw": 0.004073438490662745,
+            "yaw_rate": 3.561617631930858e-05
+          },
+          "plan": {
+            "steps": [
+              {
+                "binding": {
+                  "backend": "mujoco",
+                  "body": "microduck",
+                  "config": {
+                    "command_adapter": "microduck.twist.v1"
+                  },
+                  "policy": "velstand",
+                  "resources": [
+                    "whole_body"
+                  ],
+                  "runner": "onnx_policy.v1"
+                },
+                "parameters": {
+                  "duration_ms": 1000,
+                  "vx": 0.0,
+                  "vy": 0.0,
+                  "yaw_rate": 0.0
+                },
+                "skill_id": "microduck.stand",
+                "timeout_ms": 10000,
+                "version": "0.2.0"
+              }
+            ],
+            "timeout_ms": 10000
+          },
+          "planned_steps": 1,
+          "status": "succeeded",
+          "steps": [
+            {
+              "elapsed_ms": 1373,
+              "observation": {
+                "active_behavior": null,
+                "body_velocity": [
+                  0.00023104678827601033,
+                  0.0003876456245889333,
+                  0.000745243405107078
+                ],
+                "command": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "episode_id": 1,
+                "fault": null,
+                "joint_positions": [
+                  -0.0032031856226499675,
+                  -0.08404070481436794,
+                  -0.44398259326027095,
+                  0.008706530882475824,
+                  0.4393554831197309,
+                  0.23830991958976963,
+                  0.4185887242663201,
+                  -0.04203038620769385,
+                  -0.0001918642167439022,
+                  0.02500352543281647,
+                  0.09167421118278515,
+                  0.4547195164344477,
+                  -0.004533161028511322,
+                  -0.443870682439208
+                ],
+                "motion": {
+                  "max_tilt_deg": 1.0799216032028198,
+                  "min_height": 0.11478313772088018,
+                  "samples": 38,
+                  "start_xyz": [
+                    -0.00016088188531717716,
+                    -1.7406078558357436e-05,
+                    0.11621543555436029
+                  ],
+                  "sum_vx": 0.14292805758878008,
+                  "sum_vy": 0.00017312553000981988,
+                  "sum_yaw_rate": 0.10780226320457588
+                },
+                "policy_id": "velstand",
+                "policy_provenance": {
+                  "license": "Apache-2.0",
+                  "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                  "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                  "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+                },
+                "reason": "explicit_stop",
+                "simulation_time": 1.0399999999999998,
+                "state": "idle",
+                "stop_confirmed": true,
+                "tilt_deg": 0.8775956630706787,
+                "xyz": [
+                  0.00280090748514633,
+                  -6.963338927601935e-05,
+                  0.1165532347474526
+                ],
+                "yaw": 0.00411173822802373,
+                "yaw_rate": -0.0006115575670264661
+              },
+              "reason": "duration_complete",
+              "skill_id": "microduck.stand",
+              "status": "succeeded",
+              "version": "0.2.0"
+            }
+          ]
+        }
+      }
+    },
+    "queued_stop_discards_motion": {
+      "model_requests": 0,
+      "exit_code": 0
+    },
+    "chat_sigint": {
+      "executed": true,
+      "feedback": {
+        "error": "feedback cancelled; measured execution retained"
+      },
+      "instruction": "first turn",
+      "planning": {
+        "tool_calls": [
+          {
+            "function": {
+              "arguments": "{\"steps\": [{\"tool_name\": \"microduck_walk\", \"parameters\": {\"vx\": 0.4, \"duration_ms\": 1000}}, {\"tool_name\": \"microduck_walk\", \"parameters\": {\"vx\": 0.3, \"yaw_rate\": 1.0, \"duration_ms\": 1000}}, {\"tool_name\": \"microduck_stop\", \"parameters\": {\"duration_ms\": 1000}}]}",
+              "name": "archon_sequence"
+            },
+            "id": "local_mock_call",
+            "type": "function"
+          }
+        ],
+        "trace": {
+          "connection": {
+            "requested_model": "local-mock",
+            "service": "127.0.0.1:61634"
+          },
+          "response_id": null,
+          "response_model": null,
+          "usage": null
+        }
+      },
+      "result": {
+        "elapsed_ms": 1593,
+        "error": null,
+        "observation": {
+          "active_behavior": null,
+          "body_velocity": [
+            -0.0007682709655108945,
+            0.00013394288280931815,
+            -0.0004529589654868888
+          ],
+          "command": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "episode_id": 0,
+          "fault": null,
+          "joint_positions": [
+            -0.007006102857087618,
+            -0.07704129480622533,
+            -0.4441529100784647,
+            0.026543921976699626,
+            0.4686042188746281,
+            0.20194524445880996,
+            0.4367770030016115,
+            -0.04895116146406308,
+            -0.014307286316813895,
+            0.045330635041868,
+            0.10097106584283204,
+            0.43431787641329833,
+            -0.010366377183141776,
+            -0.4422308579030023
+          ],
+          "motion": {
+            "max_tilt_deg": 2.8474385738372803,
+            "min_height": 0.11156526515452549,
+            "samples": 19,
+            "start_xyz": [
+              -0.00016088188531717716,
+              -1.7406078558357447e-05,
+              0.11621543555436029
+            ],
+            "sum_vx": 1.5586398963632553,
+            "sum_vy": 0.14088686522606303,
+            "sum_yaw_rate": -2.082973398268223
+          },
+          "policy_id": "velstand",
+          "policy_provenance": {
+            "license": "Apache-2.0",
+            "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+            "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+            "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+          },
+          "reason": "explicit_stop",
+          "simulation_time": 1.1999999999999964,
+          "state": "idle",
+          "stop_confirmed": true,
+          "tilt_deg": 0.5478693246841431,
+          "xyz": [
+            0.03628110420565679,
+            0.007616926654274222,
+            0.1163694148626976
+          ],
+          "yaw": -0.14676358284300753,
+          "yaw_rate": -0.0022874718997627497
+        },
+        "plan": {
+          "steps": [
+            {
+              "binding": {
+                "backend": "mujoco",
+                "body": "microduck",
+                "config": {
+                  "command_adapter": "microduck.twist.v1"
+                },
+                "policy": "velstand",
+                "resources": [
+                  "whole_body"
+                ],
+                "runner": "onnx_policy.v1"
+              },
+              "parameters": {
+                "duration_ms": 1000,
+                "vx": 0.4,
+                "vy": 0.0,
+                "yaw_rate": 0.0
+              },
+              "skill_id": "microduck.walk",
+              "timeout_ms": 10000,
+              "version": "0.4.0"
+            },
+            {
+              "binding": {
+                "backend": "mujoco",
+                "body": "microduck",
+                "config": {
+                  "command_adapter": "microduck.twist.v1"
+                },
+                "policy": "velstand",
+                "resources": [
+                  "whole_body"
+                ],
+                "runner": "onnx_policy.v1"
+              },
+              "parameters": {
+                "duration_ms": 1000,
+                "vx": 0.3,
+                "vy": 0.0,
+                "yaw_rate": 1.0
+              },
+              "skill_id": "microduck.walk",
+              "timeout_ms": 10000,
+              "version": "0.4.0"
+            },
+            {
+              "binding": {
+                "backend": "mujoco",
+                "body": "microduck",
+                "config": {
+                  "command_adapter": "microduck.twist.v1"
+                },
+                "policy": "velstand",
+                "resources": [
+                  "whole_body"
+                ],
+                "runner": "onnx_policy.v1"
+              },
+              "parameters": {
+                "duration_ms": 1000,
+                "vx": 0.0,
+                "vy": 0.0,
+                "yaw_rate": 0.0
+              },
+              "skill_id": "microduck.stop",
+              "timeout_ms": 10000,
+              "version": "0.2.0"
+            }
+          ],
+          "timeout_ms": 30000
+        },
+        "planned_steps": 3,
+        "status": "cancelled",
+        "steps": [
+          {
+            "elapsed_ms": 1298,
+            "observation": {
+              "active_behavior": null,
+              "body_velocity": [
+                0.002256214466292756,
+                -2.464427442908289e-05,
+                -0.0004296050981720357
+              ],
+              "command": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "episode_id": 0,
+              "fault": null,
+              "joint_positions": [
+                -0.007227170460751288,
+                -0.07702575647255333,
+                -0.44413880681996776,
+                0.026660122557228168,
+                0.4686300697692321,
+                0.20189632036178648,
+                0.43673649472803633,
+                -0.04894622183680076,
+                -0.014343638878728629,
+                0.04537818757397056,
+                0.1071864696377675,
+                0.43280769372816913,
+                -0.010435737684902932,
+                -0.4421028706951792
+              ],
+              "motion": {
+                "max_tilt_deg": 2.8474385738372803,
+                "min_height": 0.11156526515452549,
+                "samples": 19,
+                "start_xyz": [
+                  -0.00016088188531717716,
+                  -1.7406078558357447e-05,
+                  0.11621543555436029
+                ],
+                "sum_vx": 1.5586398963632553,
+                "sum_vy": 0.14088686522606303,
+                "sum_yaw_rate": -2.082973398268223
+              },
+              "policy_id": "velstand",
+              "policy_provenance": {
+                "license": "Apache-2.0",
+                "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+                "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+                "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+              },
+              "reason": "explicit_stop",
+              "simulation_time": 0.9800000000000008,
+              "state": "idle",
+              "stop_confirmed": true,
+              "tilt_deg": 0.6731849908828735,
+              "xyz": [
+                0.036233651806568914,
+                0.007603090431412875,
+                0.11647160464715677
+              ],
+              "yaw": -0.14547043424520625,
+              "yaw_rate": -0.004685562569648027
+            },
+            "reason": "cancelled",
+            "skill_id": "microduck.walk",
+            "status": "cancelled",
+            "version": "0.4.0"
+          }
+        ]
+      }
+    }
+  },
+  "not_accepted": [
+    "real cloud model and billing verification",
+    "iTerm2 human visual review",
+    "remote Skill/MCP market",
+    "second Skill session runner",
+    "hardware"
+  ]
+}

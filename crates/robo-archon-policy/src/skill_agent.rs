@@ -170,10 +170,28 @@ pub async fn feedback(
     decision: &SkillDecision,
     result: &Value,
 ) -> Result<String> {
+    let evidence = feedback_evidence(client, instruction, decision, result).await?;
+    Ok(evidence["text"]
+        .as_str()
+        .context("feedback text missing")?
+        .to_string())
+}
+
+pub async fn feedback_evidence(
+    client: &ChatClient,
+    instruction: &str,
+    decision: &SkillDecision,
+    result: &Value,
+) -> Result<Value> {
     let id = decision.assistant["tool_calls"][0]["id"]
         .as_str()
         .context("call ID missing")?;
-    let assistant=client.messages(vec![json!({"role":"system","content":"Explain the measured skill result briefly. Use status, fault, measured pose/velocity, motion samples and stop confirmation. Do not claim requested speed/distance was achieved without evidence. Do not request another action."}),json!({"role":"user","content":instruction}),decision.assistant.clone(),json!({"role":"tool","tool_call_id":id,"content":result.to_string()})],None).await?;
+    let mut planning_message = decision.assistant.clone();
+    planning_message
+        .as_object_mut()
+        .context("assistant message")?
+        .remove("_archon_trace");
+    let assistant=client.messages(vec![json!({"role":"system","content":"Explain the measured skill result briefly in the user's language. Use status, fault, measured pose/velocity, motion samples and stop confirmation. Do not claim requested speed/distance was achieved without evidence. Do not request another action."}),json!({"role":"user","content":instruction}),planning_message,json!({"role":"tool","tool_call_id":id,"content":result.to_string()})],None).await?;
     if assistant
         .get("tool_calls")
         .and_then(Value::as_array)
@@ -181,10 +199,10 @@ pub async fn feedback(
     {
         bail!("feedback must not propose another call");
     }
-    Ok(assistant["content"]
+    let text = assistant["content"]
         .as_str()
-        .context("feedback text missing")?
-        .to_string())
+        .context("feedback text missing")?;
+    Ok(json!({"text":text,"trace":assistant["_archon_trace"]}))
 }
 
 #[cfg(test)]

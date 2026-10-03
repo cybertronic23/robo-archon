@@ -12,6 +12,19 @@ pub struct ChatClient {
 }
 
 impl ChatClient {
+    /// Public connection metadata; excludes credentials, URL paths and queries.
+    pub fn connection_metadata(&self) -> serde_json::Value {
+        let authority = self
+            .base_url
+            .split("://")
+            .nth(1)
+            .unwrap_or("")
+            .split(['/', '?', '#'])
+            .next()
+            .unwrap_or("");
+        let host = authority.rsplit('@').next().unwrap_or("");
+        serde_json::json!({"service":host,"requested_model":self.model})
+    }
     pub fn new(
         api_key: impl Into<String>,
         base_url: impl Into<String>,
@@ -183,10 +196,36 @@ impl ChatClient {
         }
         let response: serde_json::Value =
             serde_json::from_slice(&output.stdout).context("invalid LLM response JSON")?;
-        let message = response["choices"][0]["message"].clone();
+        let mut message = response["choices"][0]["message"].clone();
         if message["role"] != "assistant" {
             bail!("LLM response has no assistant message");
         }
+        message["_archon_trace"] = serde_json::json!({
+            "connection":self.connection_metadata(),
+            "response_id":response["id"],
+            "response_model":response["model"],
+            "usage":response["usage"]
+        });
         Ok(message)
+    }
+}
+
+#[cfg(test)]
+mod connection_tests {
+    use super::*;
+    #[test]
+    fn metadata_excludes_key_url_credentials_and_query() {
+        let client = ChatClient::new(
+            "secret-api-key",
+            "https://user:password@example.org/v1?token=secret-query",
+            "test-model",
+        );
+        let metadata = client.connection_metadata();
+        assert_eq!(metadata["service"], "example.org");
+        assert_eq!(metadata["requested_model"], "test-model");
+        let text = metadata.to_string();
+        for private in ["secret-api-key", "password", "secret-query", "/v1"] {
+            assert!(!text.contains(private));
+        }
     }
 }

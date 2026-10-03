@@ -38,12 +38,21 @@ CLI 在解析参数前自动加载项目根目录的 `.env`，不需要 `export`
 
 ```bash
 cargo build -p robo-archon-cli
-target/debug/robo-archon --robot microduck --backend mujoco \
-  --skill-chat --viewer \
-  --skill-report tmp-episodes/manual-chat.json
+target/debug/robo-archon --tui
 ```
 
-在终端中输入“向前走两秒”，按回车，等待动作结束后继续下一条。`/stop` 取消动作，`/reset` 重置仿真，`/quit` 退出。直接执行 `--run-skill` 无需 API Key。
+在 TUI 中按以下顺序配置会话：
+
+1. 用上下键选择 **Microduck 本体资料包**，Enter 确认。
+2. 选择 **MuJoCo**，Enter 后检查 Python、资产和策略；平台页按 `v` 可开关仿真窗口，默认开启。
+3. Skills 默认勾选所有就绪项；用上下键移动、Space 勾选/取消，Enter 加载并进入对话。加载巡逻等组合技能时，需要同时勾选其依赖的行走、停止技能。
+4. 输入“向前走两秒”，Enter 发送，等待本轮完成后继续。忙碌时可用 `/stop` 取消，`/reset` 显式重置仿真，`/quit` 或 Ctrl-C 停车退出；PgUp/PgDn 查看历史。
+
+界面显示实际服务域名、配置模型、模型返回的响应 ID/模型/token usage（服务提供时）、工具调用与参数、实测状态及模型反馈。这些字段可帮助定位调用目标，但不能代替服务商账单；本地 mock 验收不代表真实云模型验收。
+
+默认报告为 `tmp-episodes/microduck-tui-chat.json`，详细 Worker 日志为 `tmp-episodes/microduck-tui-worker.log`，都保留在本地。通过 `--skill-report PATH` 可指定报告路径。当前 Skill 会话 Runner 支持 Microduck/MuJoCo；选择其他本体或平台会显示未适配原因。
+
+需要脚本或普通行输入时，继续使用 `--robot microduck --backend mujoco --skill-chat --viewer --skill-report tmp-episodes/manual-chat.json`，与 TUI 共用同一个 Skill 会话引擎。直接执行 `--run-skill` 无需 API Key。原有 `--tui --model builtin:diff_car --policy instruction` 等显式模型 TUI 保留。
 
 Microduck 默认使用项目的 `.venv-microduck/bin/python`（Python 3.12）。模板中的 `ROBO_ARCHON_PYTHON` 是可选覆盖项，通常保留注释即可；如果终端曾设置为其他环境，请执行 `unset ROBO_ARCHON_PYTHON` 恢复默认解释器。
 

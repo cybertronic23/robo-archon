@@ -7,10 +7,16 @@
 ## 具身主线 M2f：本体资料包与跨平台机器人接入
 
 - M2f.1：已实现平台无关元数据、关系校验、四款计划资料包与 CLI 查询。
-- M2f.2：资产固定版本安装与 Franka/SO101 基础控制已实现；抓取任务与第二仿真平台验证待实现。见 [M2f.2a spec](../docs/specs/m2f-2-arm-bindings.md)。
-- M2f.3：待实现 Go2/Microduck 持续控制与策略接入。
+- M2f.2：Franka/SO101 的 MuJoCo 抓放与 Franka 的 ManiSkill 同任务绑定已交付。见 [spec](../docs/specs/m2f-2-arm-bindings.md)。
+- M2f.3：Microduck 官方策略仿真接入已完成，并在 M2g 持续扩展；Go2 接入独立留在后续迭代。
 
 M2e 保留原网页 Chat 规划。见 [设计](../docs/body-packages-design.md) 与 [spec](../docs/specs/m2f-1-body-packages.md)。下方版本路线属于历史数字平面。
+
+## 具身主线 M2g：可扩展 Skill 与交互会话
+
+- M2g.1–M2g.4：技能注册、连续控制、自定义 ONNX 包、模型工具调用、组合动作与 Microduck 官方行为的本地验收已完成；真实云调用按运行证据单独验收。
+- M2g.5（当前）：TUI 本体 → 平台 → 就绪检查 → 加载 Skills → 持续对话，CLI/TUI 共用会话引擎，补齐模型调用证据。见 [设计与验收规格](../docs/specs/m2g-5-tui-skill-session.md)。
+- M2g.6（下一迭代）：本地包管理、会话配置保存与第二种 Runner 的扩展接口；Skill/MCP 市场先完成统一发现设计，远程市场与 MCP 执行适配分开验收。见 [迭代计划](m2g-6-local-packages-and-market.md)。
 
 ## 版本策略
 
