@@ -188,7 +188,11 @@ pub async fn execute(args: &Args) -> Result<bool> {
     // No worker or motion exists until the proposed call passes host validation.
     if let Some(call) = &pending {
         if !ready.skills.iter().any(|skill| skill.id == call.skill_id) {
-            bail!("skill is not executable: {}", call.skill_id);
+            bail!(
+                "skill is not executable: {} — {}",
+                call.skill_id,
+                ready.unavailable_reason(&call.skill_id)
+            );
         }
         let prepared = registry.prepare(catalog, body, &args.backend, call)?;
         selected_policy = prepared
@@ -366,7 +370,11 @@ fn prepare_plan(
     )?;
     for leaf in &plan.steps {
         if !ready.skills.iter().any(|s| s.id == leaf.skill_id) {
-            bail!("sequence contains unavailable skill {}", leaf.skill_id);
+            bail!(
+                "sequence contains unavailable skill {} — {}",
+                leaf.skill_id,
+                ready.unavailable_reason(&leaf.skill_id)
+            );
         }
         let id = leaf.binding.policy.as_deref().context("policy required")?;
         robo_archon_sim_bridge::continuous::validate_call(leaf, id)?;

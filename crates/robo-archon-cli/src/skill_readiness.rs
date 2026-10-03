@@ -16,6 +16,25 @@ pub struct Readiness {
     pub rejected: Vec<Value>,
 }
 
+impl Readiness {
+    pub fn unavailable_reason(&self, skill_id: &str) -> String {
+        // Runtime/asset failures reject every policy; preserve that root cause as
+        // well as the skill rejection instead of hiding it behind availability.
+        self.rejected
+            .iter()
+            .filter(|item| item["skill_id"] == skill_id || item["id"].is_string())
+            .map(|item| {
+                let id = item["id"].as_str().unwrap_or(skill_id);
+                format!(
+                    "{id}: {}",
+                    item["reason"].as_str().unwrap_or("unknown reason")
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("; ")
+    }
+}
+
 pub async fn inspect(
     python: &str,
     root: &Path,
