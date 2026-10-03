@@ -50,6 +50,8 @@ Franka Panda / SO101 已支持固定版本资产安装、归位、摆动与夹�
 
 ## 快速开始（具身）
 
+使用 LLM 前，在仓库根目录执行 `cp -n .env.example .env`，然后在 `.env` 中填写 `DEEPSEEK_API_KEY`。CLI 自动读取本地 `.env`，终端已有的同名环境变量优先；`.env` 不提交到 Git，模板 `.env.example` 可提交。完整配置与 Microduck 对话步骤见 [本地配置](docs/embodied-getting-started.md#本地配置与-microduck-llm-对话)。直接运行技能无需 API Key。
+
 ```bash
 # M0：进程内 sim
 cargo run -p robo-archon-cli -- --task-id demo_waypoints --step-ms 0

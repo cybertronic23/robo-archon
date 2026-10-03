@@ -14,6 +14,39 @@ Observation → Policy → Safety → Chronos → RobotBackend → Episode
 
 单机器人只有一个 **Executive（执行权威）**；急停与抢占由 Runtime 仲裁，不由多 LLM 协商控制。
 
+## 本地配置与 Microduck LLM 对话
+
+在仓库根目录复制配置模板（`-n` 保留已有的本地配置）：
+
+```bash
+cp -n .env.example .env
+```
+
+编辑 `.env`，填写自己的 DeepSeek Key，并保存：
+
+```dotenv
+DEEPSEEK_API_KEY=你的真实Key
+LLM_BASE_URL=https://api.deepseek.com
+LLM_MODEL=deepseek-chat
+```
+
+CLI 在解析参数前自动加载项目根目录的 `.env`，不需要 `export` 或 `source`。终端已有的同名环境变量优先于 `.env`；如果要改用文件中的值，可先在当前终端执行 `unset DEEPSEEK_API_KEY LLM_BASE_URL LLM_MODEL`。`.env` 和 `.env.*` 本地配置被 Git 忽略，仅 `.env.example` 模板纳入版本控制。模板中不要填写真实凭据。
+
+使用其他 OpenAI 兼容服务时，删除 `DEEPSEEK_API_KEY` 行，配置 `OPENAI_API_KEY`，并修改对应的 `LLM_BASE_URL` 和 `LLM_MODEL`。Python 验收脚本目前不自动读取 `.env`，直接使用脚本时仍需终端环境变量；以上自动加载适用于 `robo-archon` CLI。
+
+安装好 [Microduck 仿真环境与资产](specs/m2g-4-microduck-composition.md) 后，启动持续对话：
+
+```bash
+cargo build -p robo-archon-cli
+target/debug/robo-archon --robot microduck --backend mujoco \
+  --skill-chat --viewer \
+  --skill-report tmp-episodes/manual-chat.json
+```
+
+在终端中输入“向前走两秒”，按回车，等待动作结束后继续下一条。`/stop` 取消动作，`/reset` 重置仿真，`/quit` 退出。直接执行 `--run-skill` 无需 API Key。
+
+Microduck 默认使用项目的 `.venv-microduck/bin/python`（Python 3.12）。模板中的 `ROBO_ARCHON_PYTHON` 是可选覆盖项，通常保留注释即可；如果终端曾设置为其他环境，请执行 `unset ROBO_ARCHON_PYTHON` 恢复默认解释器。
+
 ## 运行仿真 MVP（M0）
 
 ```bash
