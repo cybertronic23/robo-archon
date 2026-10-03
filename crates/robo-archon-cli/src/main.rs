@@ -209,6 +209,13 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let env_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.env");
+    if env_path.exists() {
+        // Preserve explicit terminal exports. Do not display parser errors,
+        // which can contain API keys from a malformed line.
+        dotenvy::from_path(&env_path)
+            .map_err(|_| anyhow::anyhow!("Could not load project .env; check its KEY=value syntax"))?;
+    }
     let mut args = Args::parse();
 
     if skill_commands::execute(&args).await? {

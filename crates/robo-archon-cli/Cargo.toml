@@ -26,3 +26,4 @@ ratatui = "0.29"
 crossterm = { version = "0.28", features = ["event-stream"] }
 tui-textarea = "0.7"
 async-trait = { workspace = true }
+dotenvy = "0.15.7"

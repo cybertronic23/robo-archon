@@ -114,6 +114,7 @@ pub async fn execute(args: &Args) -> Result<bool> {
             .llm_api_key
             .clone()
             .or_else(|| std::env::var("OPENAI_API_KEY").ok())
+            .filter(|key| !key.trim().is_empty())
             .context("skill instruction requires an LLM API key")?;
         let connection = robo_archon_policy::chat::ChatClient::new(
             key,
@@ -517,6 +518,7 @@ async fn execute_session(
         .llm_api_key
         .clone()
         .or_else(|| std::env::var("OPENAI_API_KEY").ok())
+        .filter(|key| !key.trim().is_empty())
         .context("skill chat requires API key in this process")?;
     let client = robo_archon_policy::chat::ChatClient::new(
         key,
