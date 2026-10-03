@@ -5,13 +5,13 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
+use crossterm::cursor::MoveTo;
 use crossterm::event::{Event, EventStream, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use crossterm::execute;
 use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, size as term_size, EnterAlternateScreen,
     LeaveAlternateScreen,
 };
-use crossterm::cursor::MoveTo;
 use futures::StreamExt;
 use ratatui::backend::CrosstermBackend;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
@@ -22,9 +22,9 @@ use ratatui::Terminal;
 use tokio::sync::{mpsc, Mutex};
 use tui_textarea::{Input, Key, TextArea};
 
+use robo_archon_embodied::RobotBackend;
 use robo_archon_perception::PerceptionBridge;
 use robo_archon_runtime::{EventBus, Executive, RuntimeEvent};
-use robo_archon_embodied::RobotBackend;
 
 use crate::session::{self, SessionConfig, TurnOutcome};
 
@@ -424,11 +424,7 @@ fn draw(
         if panel.y > 0 {
             let top = Rect::new(0, 0, full.width, panel.y);
             f.render_widget(Clear, top);
-            f.render_widget(
-                Paragraph::new("  (MuJoCo viewer 请放在旁边；此区域留空)")
-                    .style(Style::default().fg(Color::DarkGray)),
-                top,
-            );
+            crate::brand::render(f, top);
         }
 
         f.render_widget(Clear, panel);
@@ -444,10 +440,10 @@ fn draw(
 
         let title = Paragraph::new(Line::from(vec![
             Span::styled(
-                " RoboArchon ",
+                " /\\ RoboArchon ",
                 Style::default()
                     .fg(Color::Black)
-                    .bg(Color::Rgb(120, 200, 180))
+                    .bg(crate::brand::ORANGE)
                     .add_modifier(Modifier::BOLD),
             ),
             Span::raw(" "),

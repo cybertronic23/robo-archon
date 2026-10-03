@@ -1,11 +1,16 @@
 # docs/ — 用户文档
 
+<p align="center">
+  <img src="brand/roboarchon-logo.png" alt="RoboArchon：双机械臂拱门与三角核心" width="640" />
+</p>
+
 面向 **使用 / 集成 RoboArchon** 的稳定技术文档（安装、快速开始、接口契约、配置说明等）。
 
 开发过程中的评估、讨论与设计推演见本地目录 `notes/`（暂不入库，见 `.gitignore`）。
 
 | 文档 | 说明 |
 |------|------|
+| [brand/README.md](brand/README.md) | 官方品牌图与终端 ASCII 标志 |
 | [skills-design.md](./skills-design.md) | 可解耦 Skill、Runner、自训练策略与迭代设计 |
 | [specs/m2g-1-skill-registry.md](./specs/m2g-1-skill-registry.md) | 已实现的注册/发现/静态调用校验 |
 | [embodied-getting-started.md](./embodied-getting-started.md) | 具身平面：仿真 MVP 运行与 sim→real 契约概要 |

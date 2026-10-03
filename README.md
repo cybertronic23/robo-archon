@@ -1,5 +1,9 @@
 # RoboArchon
 
+<p align="center">
+  <img src="docs/brand/roboarchon-logo.png" alt="RoboArchon：双机械臂拱门与三角核心" width="640" />
+</p>
+
 RoboArchon 是面向 **Physical AI** 的具身 Agent OS / Harness（Rust）。
 
 本仓库聚焦具身主线；桌面数字 Agent Harness 源码仍在 `crates/archon-*`（包名未改），后续可迁到独立仓库。

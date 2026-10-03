@@ -219,10 +219,11 @@ pub async fn run(mut args: Args) -> Result<()> {
             let help=if stage==Stage::Chat {"Enter 发送 · /stop · /reset · /quit · Ctrl-C · PgUp/PgDn"}
                 else {"↑↓ 选择 · Space 勾选 Skill · Enter 确认/加载 · Esc 返回 · Ctrl-C 退出"};
             screen.0.draw(|f|{
-                let layout=Layout::default().direction(Direction::Vertical).constraints([Constraint::Length(4),Constraint::Min(4),Constraint::Length(3),Constraint::Length(3)]).split(f.area());
-                f.render_widget(Paragraph::new(top).block(Block::default().borders(Borders::ALL)),layout[0]);
-                let width = layout[1].width.saturating_sub(2).max(1);
-                let visible = layout[1].height.saturating_sub(2) as usize;
+                let layout=Layout::default().direction(Direction::Vertical).constraints([Constraint::Length(crate::brand::height(f.area())),Constraint::Length(4),Constraint::Min(4),Constraint::Length(3),Constraint::Length(3)]).split(f.area());
+                crate::brand::render(f, layout[0]);
+                f.render_widget(Paragraph::new(top).block(Block::default().borders(Borders::ALL)),layout[1]);
+                let width = layout[2].width.saturating_sub(2).max(1);
+                let visible = layout[2].height.saturating_sub(2) as usize;
                 let rows = Paragraph::new(content.clone()).wrap(Wrap {trim:false}).line_count(width);
                 let maximum = rows.saturating_sub(visible).min(u16::MAX as usize) as u16;
                 let offset = if stage==Stage::Chat {
@@ -232,9 +233,9 @@ pub async fn run(mut args: Args) -> Result<()> {
                     Paragraph::new(prefix).wrap(Wrap {trim:false}).line_count(width)
                         .saturating_sub(visible).min(u16::MAX as usize) as u16
                 };
-                f.render_widget(Paragraph::new(content).wrap(Wrap{trim:false}).scroll((offset,0)).block(Block::default().borders(Borders::ALL).title(if stage==Stage::Chat{"对话与执行证据"}else{"会话配置"})),layout[1]);
-                f.render_widget(Paragraph::new(if message.is_empty(){help.to_string()}else{format!("{message} · {help}")}).style(Style::default().fg(Color::Yellow)).wrap(Wrap{trim:false}),layout[2]);
-                f.render_widget(Paragraph::new(input.clone()).block(Block::default().borders(Borders::ALL).title(if busy{"运行中：可输入 /stop、/reset、/quit"}else{"输入指令"})),layout[3]);
+                f.render_widget(Paragraph::new(content).wrap(Wrap{trim:false}).scroll((offset,0)).block(Block::default().borders(Borders::ALL).title(if stage==Stage::Chat{"对话与执行证据"}else{"会话配置"})),layout[2]);
+                f.render_widget(Paragraph::new(if message.is_empty(){help.to_string()}else{format!("{message} · {help}")}).style(Style::default().fg(Color::Yellow)).wrap(Wrap{trim:false}),layout[3]);
+                f.render_widget(Paragraph::new(input.clone()).block(Block::default().borders(Borders::ALL).title(if busy{"运行中：可输入 /stop、/reset、/quit"}else{"输入指令"})),layout[4]);
             })?;
             tokio::select! {
                 _=tick.tick()=>{},

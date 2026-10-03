@@ -1,5 +1,6 @@
 //! RoboArchon CLI — sim / MuJoCo assets / language instructions / TUI.
 
+mod brand;
 mod pick_place;
 mod session;
 mod skill_commands;
