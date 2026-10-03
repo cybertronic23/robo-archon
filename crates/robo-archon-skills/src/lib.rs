@@ -401,7 +401,7 @@ mod tests {
     #[test]
     fn user_package_discovered_and_body_bindings_checked() {
         let registry = SkillRegistry::load_dir(&root().join("skills")).unwrap();
-        assert_eq!(registry.list().count(), 10);
+        assert_eq!(registry.list().count(), 11);
         assert_eq!(
             registry
                 .compatible_definitions(&catalog(), "franka_panda", "mujoco")
@@ -412,7 +412,7 @@ mod tests {
             registry
                 .compatible_definitions(&catalog(), "microduck", "mujoco")
                 .len(),
-            4
+            5
         );
         let request = SkillCall {
             skill_id: "microduck.walk".into(),

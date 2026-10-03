@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "id": "microduck.showcase",
+  "version": "0.1.0",
+  "tool_name": "microduck_showcase",
+  "description": "Run the fixed one-minute Microduck showcase: 16 forward, left/right arc and stop intervals, 60 seconds total requested durations. Uses tested walking presets only, no sit/roll/kick. Wall time depends on simulation speed; no exact distance or closed route is promised.",
+  "parameters": {},
+  "max_duration_ms": 120000,
+  "entry_conditions": [
+    "standing",
+    "controller_ready"
+  ],
+  "success_description": "Every child interval completed and measured stop confirmed; no exact route claimed.",
+  "bindings": [
+    {
+      "body": "microduck",
+      "backend": "mujoco",
+      "runner": "sequence.v1",
+      "policy": null,
+      "config": {
+        "steps": [
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.4,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.3,
+              "yaw_rate": 1.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.4,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.3,
+              "yaw_rate": -1.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.4,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.stop",
+            "parameters": {
+              "duration_ms": 2000
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.4,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.3,
+              "yaw_rate": -1.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.4,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.3,
+              "yaw_rate": 1.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.4,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.stop",
+            "parameters": {
+              "duration_ms": 2000
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.4,
+              "yaw_rate": 0.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.3,
+              "yaw_rate": 1.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.walk",
+            "parameters": {
+              "duration_ms": 4000,
+              "vx": 0.3,
+              "yaw_rate": -1.0
+            },
+            "timeout_ms": 7000
+          },
+          {
+            "skill_id": "microduck.stop",
+            "parameters": {
+              "duration_ms": 4000
+            },
+            "timeout_ms": 7000
+          }
+        ]
+      },
+      "resources": [
+        "whole_body"
+      ]
+    }
+  ]
+}

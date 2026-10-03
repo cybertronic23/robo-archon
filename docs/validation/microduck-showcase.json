@@ -1,0 +1,23 @@
+{
+  "accepted": true,
+  "verification": "direct fixed Skill execution, native MuJoCo viewer; no LLM request",
+  "skill": "microduck.showcase",
+  "version": "0.1.0",
+  "requested_duration_ms": 60000,
+  "elapsed_ms": 72057,
+  "steps": 16,
+  "all_steps_succeeded": true,
+  "stop_confirmed": true,
+  "fault": null,
+  "final_xyz": [
+    -0.2525961831209837,
+    -1.4224966287491352,
+    0.1166111005641446
+  ],
+  "policy_provenance": {
+    "license": "Apache-2.0",
+    "revision": "d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0",
+    "sha256": "1c659be55da94bc5753b707de5c6a3e7c49931e05ca3b6991615cef1a8ba9a45",
+    "url": "https://huggingface.co/pollen-robotics/microduck-policies/resolve/d5a8b55033e157f1af2ed6bd5c1e435b770a8ee0/velstand.onnx"
+  }
+}

@@ -153,6 +153,12 @@ def main():
         import mujoco.viewer
 
         viewer = mujoco.viewer.launch_passive(model, data)
+        # Keep long walking showcases in frame while preserving user orbit/zoom.
+        with viewer.lock():
+            viewer.cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
+            viewer.cam.trackbodyid = mujoco.mj_name2id(
+                model, mujoco.mjtObj.mjOBJ_BODY, "trunk_base"
+            )
     renderer = None
     if args.record_dir:
         args.record_dir.mkdir(parents=True, exist_ok=False)

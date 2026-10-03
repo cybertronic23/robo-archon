@@ -52,6 +52,18 @@ target/debug/robo-archon --tui
 
 默认报告为 `tmp-episodes/microduck-tui-chat.json`，详细 Worker 日志为 `tmp-episodes/microduck-tui-worker.log`，都保留在本地。通过 `--skill-report PATH` 可指定报告路径。当前 Skill 会话 Runner 支持 Microduck/MuJoCo；选择其他本体或平台会显示未适配原因。
 
+### 一分钟录屏演示
+
+加载 `microduck.showcase`、`microduck.walk` 和 `microduck.stop`（默认全部勾选），在 TUI 输入：
+
+```text
+执行一分钟的鸭子巡游演示，使用 microduck_showcase。
+```
+
+这是固定的 16 段前进、左右转弯和停车组合，请求时长合计 60 秒；实际耗时还包含停稳、模型请求和仿真运行开销。执行顺序固定，不承诺精确距离或回到原点。MuJoCo 窗口默认跟随机器人，仍可手动调整角度和缩放。录屏前先彩排；若跌倒，用 `/reset` 显式重置。本演示不包含坐下、翻滚或踢腿。
+
+添加技能后需要重启 TUI 才能重新发现它。需要无模型的固定动作验收时，可运行 `target/debug/robo-archon --robot microduck --backend mujoco --run-skill skills/calls/microduck-showcase.json --viewer`；该直接执行方式不调用 LLM，录屏说明应与实际运行方式一致。
+
 需要脚本或普通行输入时，继续使用 `--robot microduck --backend mujoco --skill-chat --viewer --skill-report tmp-episodes/manual-chat.json`，与 TUI 共用同一个 Skill 会话引擎。直接执行 `--run-skill` 无需 API Key。原有 `--tui --model builtin:diff_car --policy instruction` 等显式模型 TUI 保留。
 
 Microduck 默认使用项目的 `.venv-microduck/bin/python`（Python 3.12）。模板中的 `ROBO_ARCHON_PYTHON` 是可选覆盖项，通常保留注释即可；如果终端曾设置为其他环境，请执行 `unset ROBO_ARCHON_PYTHON` 恢复默认解释器。
